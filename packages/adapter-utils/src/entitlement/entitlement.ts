@@ -4,15 +4,15 @@ import type {
 	WebhookBenefitGrantRevokedPayload,
 } from "@polar-sh/sdk/models/components";
 
-type EntitlementProperties = Record<string, string>;
+export type EntitlementProperties = Record<string, string>;
 
-type EntitlementHandler = (
+export type EntitlementHandler = (
 	payload:
 		| WebhookBenefitGrantCreatedPayload
 		| WebhookBenefitGrantRevokedPayload,
 ) => Promise<void>;
 
-interface EntitlementContext<T extends EntitlementProperties> {
+export interface EntitlementContext<T extends EntitlementProperties> {
 	customer: Customer;
 	properties: T;
 	payload:
@@ -38,7 +38,7 @@ export class EntitlementStrategy<T extends EntitlementProperties> {
 		return this;
 	}
 
-	public async handler(slug: string): Promise<EntitlementHandler> {
+	public handler(slug: string): EntitlementHandler {
 		return async (
 			payload:
 				| WebhookBenefitGrantCreatedPayload
@@ -77,16 +77,3 @@ export class EntitlementStrategy<T extends EntitlementProperties> {
 export const Entitlement = <T extends EntitlementProperties>() => {
 	return new EntitlementStrategy<T>();
 };
-
-interface FigmaTeamEntitlementProperties {
-	[key: string]: string;
-	figmaTeamId: string;
-}
-
-export const FigmaTeam = Entitlement<FigmaTeamEntitlementProperties>()
-	.grant(async (context) => {
-		/** figma.team.addMember(context.properties.figmaTeamId, context.customer.email) */
-	})
-	.revoke(async (context) => {
-		/** figma.team.removeMember(context.properties.figmaTeamId, context.customer.email) */
-	});
