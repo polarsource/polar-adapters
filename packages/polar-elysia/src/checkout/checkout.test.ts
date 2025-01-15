@@ -81,4 +81,31 @@ describe("Checkout middleware", () => {
 			error: "Missing productId or productPriceId in query params",
 		});
 	});
+
+	it("should encode metadata JSON properly", async () => {
+		const app = new Elysia();
+		app.get(
+			"/",
+			Checkout({
+				accessToken: "mock-access-token",
+			}),
+		);
+
+		const metadata = {
+			foo: "bar",
+		};
+
+		const url = new URL("http://localhost/");
+		url.searchParams.set("productId", "mock-product-id");
+		url.searchParams.set("metadata", JSON.stringify(metadata));
+
+		const response = await app.handle(new Request(url.toString()));
+
+		expect(response.status).toBe(302);
+		expect(response.headers.get("location")).toBe(mockCheckoutUrl);
+		expect(mockCheckoutCreate).toHaveBeenCalledWith({
+			productId: "mock-product-id",
+			metadata,
+		});
+	});
 });

@@ -27,6 +27,7 @@ Pass query params to this route.
 - customerId (optional) `?productId=xxx&customerId=xxx`
 - customerEmail (optional) `?productId=xxx&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?productId=xxx&customerName=Jane`
+- metadata (optional) `URL-Encoded JSON string`
 
 ## Customer Portal
 
