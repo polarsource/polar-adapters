@@ -1,9 +1,6 @@
 import { it, describe, expect } from "vitest";
-import {
-	FigmaTeam,
-	type FigmaTeamEntitlementProperties,
-} from "./FigmaEntitlement";
-import type { EntitlementContext } from "../entitlement/entitlement";
+import { FigmaTeam, type FigmaTeamEntitlementProperties } from "./Figma";
+import type { EntitlementContext } from "../../entitlement/entitlement";
 import type {
 	Benefit,
 	WebhookBenefitGrantCreatedPayload,

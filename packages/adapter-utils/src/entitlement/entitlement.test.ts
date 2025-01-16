@@ -3,6 +3,7 @@ import { Entitlement } from "./entitlement";
 import type {
 	Benefit,
 	WebhookBenefitGrantCreatedPayload,
+	WebhookBenefitGrantRevokedPayload,
 } from "@polar-sh/sdk/models/components";
 
 describe("Entitlement", () => {
@@ -10,9 +11,7 @@ describe("Entitlement", () => {
 		const onGrant = vi.fn();
 		const onRevoke = vi.fn();
 
-		const entitlement = Entitlement<{ test: string }>()
-			.grant(onGrant)
-			.revoke(onRevoke);
+		const entitlement = Entitlement<{ test: string }>().grant(onGrant);
 
 		expect(entitlement).toBeDefined();
 
@@ -70,5 +69,36 @@ describe("Entitlement", () => {
 		});
 
 		expect(onRevoke).not.toHaveBeenCalled();
+	});
+
+	it("should run revoke on handler", () => {
+		const onGrant = vi.fn();
+		const onRevoke = vi.fn();
+
+		const entitlement = Entitlement<{ test: string }>()
+			.grant(onGrant)
+			.revoke(onRevoke);
+
+		const payload = {
+			type: "benefit_grant.revoked",
+			data: {
+				id: "123",
+				createdAt: new Date(),
+				modifiedAt: new Date(),
+				isGranted: false,
+				benefitId: "123",
+				customerId: "123",
+			},
+		} as WebhookBenefitGrantRevokedPayload;
+
+		entitlement.handler("test")(payload);
+
+		expect(onGrant).not.toHaveBeenCalled();
+
+		expect(onRevoke).toHaveBeenCalledWith({
+			payload,
+			customer: payload.data.customer,
+			properties: payload.data.properties,
+		});
 	});
 });

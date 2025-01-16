@@ -1,4 +1,4 @@
-import { Entitlement } from "../entitlement/entitlement";
+import { Entitlement } from "../../entitlement/entitlement";
 
 export interface FigmaTeamEntitlementProperties {
 	[key: string]: string;
