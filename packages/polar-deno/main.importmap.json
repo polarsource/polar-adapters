@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "npm:@polar-sh/sdk": "./mocks/sdk.ts",
+    "npm:@polar-sh/sdk/webhooks/index.js": "./mocks/webhook.ts"
+  }
+}

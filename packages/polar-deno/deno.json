@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts",
+    "test": "deno test --allow-net --allow-env --allow-import --importmap=main.importmap.json"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1"
+  }
+}
