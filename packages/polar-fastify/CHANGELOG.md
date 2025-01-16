@@ -1,5 +1,19 @@
 # @polar-sh/elysia
 
+## 0.1.8
+
+### Patch Changes
+
+- 4038228: make sure to pass either price or product in checkout
+- Updated dependencies [4038228]
+  - @polar-sh/adapter-utils@0.1.2
+
+## 0.1.7
+
+### Patch Changes
+
+- 2746035: Add productPriceId param capability
+
 ## 0.1.6
 
 ### Patch Changes

@@ -1,5 +1,31 @@
 # @polar-sh/nuxt
 
+## 0.1.10
+
+### Patch Changes
+
+- 4038228: make sure to pass either price or product in checkout
+- Updated dependencies [4038228]
+  - @polar-sh/adapter-utils@0.1.2
+
+## 0.1.9
+
+### Patch Changes
+
+- 2746035: Add productPriceId param capability
+
+## 0.1.8
+
+### Patch Changes
+
+- 8cdbaca: remove private field
+
+## 0.1.7
+
+### Patch Changes
+
+- 91abcc4: init nuxt
+
 ## 0.1.6
 
 ### Patch Changes

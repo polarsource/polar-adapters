@@ -10,7 +10,7 @@ Create a Checkout handler which takes care of redirections.
 
 ```typescript
 import { Checkout } from "@polar-sh/astro";
-import { POLAR_ACCESS_TOKEN, POLAR_SUCCESS_URL } from "astro:env/server"
+import { POLAR_ACCESS_TOKEN, POLAR_SUCCESS_URL } from "astro:env/server";
 
 export const GET = Checkout({
   accessToken: POLAR_ACCESS_TOKEN,
@@ -23,7 +23,8 @@ export const GET = Checkout({
 
 Pass query params to this route.
 
-- productId (required) `?productId=xxx`
+- productId (or productPriceId) `?productId=xxx`
+- productPriceId (or productId) `?productPriceId=xxx`
 - customerId (optional) `?productId=xxx&customerId=xxx`
 - customerEmail (optional) `?productId=xxx&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?productId=xxx&customerName=Jane`
@@ -34,7 +35,7 @@ Create a customer portal where your customer can view orders and subscriptions.
 
 ```typescript
 import { CustomerPortal } from "@polar-sh/astro";
-import { POLAR_ACCESS_TOKEN } from "astro:env/server"
+import { POLAR_ACCESS_TOKEN } from "astro:env/server";
 
 export const GET = CustomerPortal({
   accessToken: POLAR_ACCESS_TOKEN,
@@ -61,19 +62,19 @@ export const POST = Webhooks({
 
 The Webhook handler also supports granular handlers for easy integration.
 
-- onCheckoutCreated: (payload) => 
-- onCheckoutUpdated: (payload) => 
-- onOrderCreated: (payload) => 
-- onSubscriptionCreated: (payload) => 
-- onSubscriptionUpdated: (payload) => 
-- onSubscriptionActive: (payload) => 
-- onSubscriptionCanceled: (payload) => 
-- onSubscriptionRevoked: (payload) => 
-- onProductCreated: (payload) => 
-- onProductUpdated: (payload) => 
-- onOrganizationUpdated: (payload) => 
-- onBenefitCreated: (payload) => 
-- onBenefitUpdated: (payload) => 
-- onBenefitGrantCreated: (payload) => 
-- onBenefitGrantUpdated: (payload) => 
-- onBenefitGrantRevoked: (payload) => 
+- onCheckoutCreated: (payload) =>
+- onCheckoutUpdated: (payload) =>
+- onOrderCreated: (payload) =>
+- onSubscriptionCreated: (payload) =>
+- onSubscriptionUpdated: (payload) =>
+- onSubscriptionActive: (payload) =>
+- onSubscriptionCanceled: (payload) =>
+- onSubscriptionRevoked: (payload) =>
+- onProductCreated: (payload) =>
+- onProductUpdated: (payload) =>
+- onOrganizationUpdated: (payload) =>
+- onBenefitCreated: (payload) =>
+- onBenefitUpdated: (payload) =>
+- onBenefitGrantCreated: (payload) =>
+- onBenefitGrantUpdated: (payload) =>
+- onBenefitGrantRevoked: (payload) =>

@@ -58,10 +58,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with subscription created", async () => {
     const onSubscriptionCreated = vi.fn();
 
-    await handleWebhookPayload({ type: "subscription.created", data: {} } as any, {
-      webhookSecret: "test",
-      onSubscriptionCreated,
-    });
+    await handleWebhookPayload(
+      { type: "subscription.created", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onSubscriptionCreated,
+      },
+    );
     expect(onSubscriptionCreated).toHaveBeenCalledWith({
       type: "subscription.created",
       data: {},
@@ -71,10 +74,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with subscription updated", async () => {
     const onSubscriptionUpdated = vi.fn();
 
-    await handleWebhookPayload({ type: "subscription.updated", data: {} } as any, {
-      webhookSecret: "test",
-      onSubscriptionUpdated,
-    });
+    await handleWebhookPayload(
+      { type: "subscription.updated", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onSubscriptionUpdated,
+      },
+    );
     expect(onSubscriptionUpdated).toHaveBeenCalledWith({
       type: "subscription.updated",
       data: {},
@@ -84,10 +90,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with subscription active", async () => {
     const onSubscriptionActive = vi.fn();
 
-    await handleWebhookPayload({ type: "subscription.active", data: {} } as any, {
-      webhookSecret: "test",
-      onSubscriptionActive,
-    });
+    await handleWebhookPayload(
+      { type: "subscription.active", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onSubscriptionActive,
+      },
+    );
     expect(onSubscriptionActive).toHaveBeenCalledWith({
       type: "subscription.active",
       data: {},
@@ -97,10 +106,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with subscription canceled", async () => {
     const onSubscriptionCanceled = vi.fn();
 
-    await handleWebhookPayload({ type: "subscription.canceled", data: {} } as any, {
-      webhookSecret: "test",
-      onSubscriptionCanceled,
-    });
+    await handleWebhookPayload(
+      { type: "subscription.canceled", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onSubscriptionCanceled,
+      },
+    );
     expect(onSubscriptionCanceled).toHaveBeenCalledWith({
       type: "subscription.canceled",
       data: {},
@@ -110,10 +122,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with subscription revoked", async () => {
     const onSubscriptionRevoked = vi.fn();
 
-    await handleWebhookPayload({ type: "subscription.revoked", data: {} } as any, {
-      webhookSecret: "test",
-      onSubscriptionRevoked,
-    });
+    await handleWebhookPayload(
+      { type: "subscription.revoked", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onSubscriptionRevoked,
+      },
+    );
     expect(onSubscriptionRevoked).toHaveBeenCalledWith({
       type: "subscription.revoked",
       data: {},
@@ -149,10 +164,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with organization updated", async () => {
     const onOrganizationUpdated = vi.fn();
 
-    await handleWebhookPayload({ type: "organization.updated", data: {} } as any, {
-      webhookSecret: "test",
-      onOrganizationUpdated,
-    });
+    await handleWebhookPayload(
+      { type: "organization.updated", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onOrganizationUpdated,
+      },
+    );
     expect(onOrganizationUpdated).toHaveBeenCalledWith({
       type: "organization.updated",
       data: {},
@@ -188,10 +206,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with benefit grant created", async () => {
     const onBenefitGrantCreated = vi.fn();
 
-    await handleWebhookPayload({ type: "benefit_grant.created", data: {} } as any, {
-      webhookSecret: "test",
-      onBenefitGrantCreated,
-    });
+    await handleWebhookPayload(
+      { type: "benefit_grant.created", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onBenefitGrantCreated,
+      },
+    );
     expect(onBenefitGrantCreated).toHaveBeenCalledWith({
       type: "benefit_grant.created",
       data: {},
@@ -201,10 +222,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with benefit grant updated", async () => {
     const onBenefitGrantUpdated = vi.fn();
 
-    await handleWebhookPayload({ type: "benefit_grant.updated", data: {} } as any, {
-      webhookSecret: "test",
-      onBenefitGrantUpdated,
-    });
+    await handleWebhookPayload(
+      { type: "benefit_grant.updated", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onBenefitGrantUpdated,
+      },
+    );
     expect(onBenefitGrantUpdated).toHaveBeenCalledWith({
       type: "benefit_grant.updated",
       data: {},
@@ -214,10 +238,13 @@ describe("webhooks", () => {
   it("should handle webhook payload with benefit grant revoked", async () => {
     const onBenefitGrantRevoked = vi.fn();
 
-    await handleWebhookPayload({ type: "benefit_grant.revoked", data: {} } as any, {
-      webhookSecret: "test",
-      onBenefitGrantRevoked,
-    });
+    await handleWebhookPayload(
+      { type: "benefit_grant.revoked", data: {} } as any,
+      {
+        webhookSecret: "test",
+        onBenefitGrantRevoked,
+      },
+    );
     expect(onBenefitGrantRevoked).toHaveBeenCalledWith({
       type: "benefit_grant.revoked",
       data: {},

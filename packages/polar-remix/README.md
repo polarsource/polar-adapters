@@ -22,7 +22,8 @@ export const loader = Checkout({
 
 Pass query params to this route.
 
-- productId (required) `?productId=xxx`
+- productId (or productPriceId) `?productId=xxx`
+- productPriceId (or productId) `?productPriceId=xxx`
 - customerId (optional) `?productId=xxx&customerId=xxx`
 - customerEmail (optional) `?productId=xxx&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?productId=xxx&customerName=Jane`
@@ -58,19 +59,19 @@ export const action = Webhooks({
 
 The Webhook handler also supports granular handlers for easy integration.
 
-- onCheckoutCreated: (payload) => 
-- onCheckoutUpdated: (payload) => 
-- onOrderCreated: (payload) => 
-- onSubscriptionCreated: (payload) => 
-- onSubscriptionUpdated: (payload) => 
-- onSubscriptionActive: (payload) => 
-- onSubscriptionCanceled: (payload) => 
-- onSubscriptionRevoked: (payload) => 
-- onProductCreated: (payload) => 
-- onProductUpdated: (payload) => 
-- onOrganizationUpdated: (payload) => 
-- onBenefitCreated: (payload) => 
-- onBenefitUpdated: (payload) => 
-- onBenefitGrantCreated: (payload) => 
-- onBenefitGrantUpdated: (payload) => 
-- onBenefitGrantRevoked: (payload) => 
+- onCheckoutCreated: (payload) =>
+- onCheckoutUpdated: (payload) =>
+- onOrderCreated: (payload) =>
+- onSubscriptionCreated: (payload) =>
+- onSubscriptionUpdated: (payload) =>
+- onSubscriptionActive: (payload) =>
+- onSubscriptionCanceled: (payload) =>
+- onSubscriptionRevoked: (payload) =>
+- onProductCreated: (payload) =>
+- onProductUpdated: (payload) =>
+- onOrganizationUpdated: (payload) =>
+- onBenefitCreated: (payload) =>
+- onBenefitUpdated: (payload) =>
+- onBenefitGrantCreated: (payload) =>
+- onBenefitGrantUpdated: (payload) =>
+- onBenefitGrantRevoked: (payload) =>

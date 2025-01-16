@@ -1,5 +1,19 @@
 # @polar-sh/sveltekit
 
+## 0.3.8
+
+### Patch Changes
+
+- 4038228: make sure to pass either price or product in checkout
+- Updated dependencies [4038228]
+  - @polar-sh/adapter-utils@0.1.2
+
+## 0.3.7
+
+### Patch Changes
+
+- 2746035: Add productPriceId param capability
+
 ## 0.3.6
 
 ### Patch Changes

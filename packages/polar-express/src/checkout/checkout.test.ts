@@ -52,7 +52,27 @@ describe("Checkout middleware", () => {
 			});
 	});
 
-	it("should return 400 when productId is not defined", async () => {
+	it("should redirect to checkout when productPriceId is valid", async () => {
+		const app = express();
+		app.get(
+			"/",
+			Checkout({
+				accessToken: "mock-access-token",
+			}),
+		);
+
+		supertest(app)
+			.get("/?productPriceId=mock-product-price-id")
+			.expect(302)
+			.expect("location", mockCheckoutUrl)
+			.end((err) => {
+				if (err) {
+					throw err;
+				}
+			});
+	});
+
+	it("should return 400 when productId and productPriceId are not defined", async () => {
 		const app = express();
 		app.get(
 			"/",
@@ -64,7 +84,9 @@ describe("Checkout middleware", () => {
 		supertest(app)
 			.get("/")
 			.expect(400)
-			.expect({ error: "Missing productId in query params" })
+			.expect({
+				error: "Missing productId or productPriceId in query params",
+			})
 			.end((err) => {
 				if (err) {
 					throw err;

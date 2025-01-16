@@ -23,7 +23,8 @@ export const GET = Checkout({
 
 Pass query params to this route.
 
-- productId (required) `?productId=xxx`
+- productId (or productPriceId) `?productId=xxx`
+- productPriceId (or productId) `?productPriceId=xxx`
 - customerId (optional) `?productId=xxx&customerId=xxx`
 - customerEmail (optional) `?productId=xxx&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?productId=xxx&customerName=Jane`

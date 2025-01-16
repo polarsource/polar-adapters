@@ -22,11 +22,12 @@ export const Checkout = ({
 
 	return async (req: NextRequest) => {
 		const url = new URL(req.url);
-		const productId = url.searchParams.get("productId");
+		const productId = url.searchParams.get("productId") ?? undefined;
+		const productPriceId = url.searchParams.get("productPriceId") ?? undefined;
 
-		if (!productId) {
+		if (!productId && !productPriceId) {
 			return NextResponse.json(
-				{ error: "Missing productId in query params" },
+				{ error: "Missing productId or productPriceId in query params" },
 				{ status: 400 },
 			);
 		}
@@ -39,7 +40,9 @@ export const Checkout = ({
 
 		try {
 			const result = await polar.checkouts.custom.create({
-				productId,
+				...(productId
+					? { productId }
+					: { productPriceId: productPriceId ?? "" }),
 				successUrl: success?.toString(),
 				customerId: url.searchParams.get("customerId") ?? undefined,
 				customerEmail: url.searchParams.get("customerEmail") ?? undefined,

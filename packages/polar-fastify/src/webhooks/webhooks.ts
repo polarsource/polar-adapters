@@ -1,4 +1,7 @@
-import { handleWebhookPayload, WebhooksConfig } from "@polar-sh/adapter-utils";
+import {
+	type WebhooksConfig,
+	handleWebhookPayload,
+} from "@polar-sh/adapter-utils";
 import {
 	WebhookVerificationError,
 	validateEvent,

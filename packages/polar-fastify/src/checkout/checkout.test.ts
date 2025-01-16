@@ -50,7 +50,26 @@ describe("Checkout middleware", () => {
 		expect(response.headers["location"]).toBe(mockCheckoutUrl);
 	});
 
-	it("should return 400 when productId is not defined", async () => {
+	it("should redirect to checkout when productPriceId is valid", async () => {
+		const app = fastify();
+		app.get(
+			"/",
+			Checkout({
+				accessToken: "mock-access-token",
+			}),
+		);
+
+		const response = await app.inject({
+			url: "http://localhost/?productPriceId=mock-product-price-id",
+			method: "GET",
+		});
+
+		expect(response.statusCode).toBe(302);
+		// biome-ignore lint/complexity/useLiteralKeys: fix ci
+		expect(response.headers["location"]).toBe(mockCheckoutUrl);
+	});
+
+	it("should return 400 when productId and productPriceId are not defined", async () => {
 		const app = fastify();
 		app.get(
 			"/",
@@ -66,7 +85,7 @@ describe("Checkout middleware", () => {
 
 		expect(response.statusCode).toBe(400);
 		expect(response.json()).toEqual({
-			error: "Missing productId in query params",
+			error: "Missing productId or productPriceId in query params",
 		});
 	});
 });
