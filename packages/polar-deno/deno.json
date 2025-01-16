@@ -1,4 +1,7 @@
 {
+  "name": "@polar-sh/deno",
+  "version": "0.1.0",
+  "exports": "./main.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
     "test": "deno test --allow-net --allow-env --allow-import --importmap=main.importmap.json"
