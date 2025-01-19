@@ -74,6 +74,8 @@ export class EntitlementStrategy<T extends EntitlementProperties> {
 	}
 }
 
-export const Entitlement = <T extends EntitlementProperties>() => {
+export const Entitlement = <
+	T extends EntitlementProperties = EntitlementProperties,
+>() => {
 	return new EntitlementStrategy<T>();
 };
