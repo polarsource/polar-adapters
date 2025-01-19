@@ -17,9 +17,11 @@ import type {
   WebhookBenefitGrantUpdatedPayload,
   WebhookBenefitGrantRevokedPayload,
 } from "@polar-sh/sdk/models/components";
+import { Entitlements } from "../entitlement/entitlement";
 
 export interface WebhooksConfig {
   webhookSecret: string;
+  entitlements?: typeof Entitlements;
   onPayload?: (payload: ReturnType<typeof validateEvent>) => Promise<void>;
   onCheckoutCreated?: (payload: WebhookCheckoutCreatedPayload) => Promise<void>;
   onCheckoutUpdated?: (payload: WebhookCheckoutUpdatedPayload) => Promise<void>;
@@ -59,7 +61,7 @@ export interface WebhooksConfig {
 
 export const handleWebhookPayload = async (
   payload: ReturnType<typeof validateEvent>,
-  { webhookSecret, onPayload, ...eventHandlers }: WebhooksConfig,
+  { webhookSecret, entitlements, onPayload, ...eventHandlers }: WebhooksConfig,
 ) => {
   const promises: Promise<void>[] = [];
 
@@ -146,6 +148,16 @@ export const handleWebhookPayload = async (
     case "benefit_grant.revoked":
       if (eventHandlers.onBenefitGrantRevoked) {
         promises.push(eventHandlers.onBenefitGrantRevoked(payload));
+      }
+  }
+
+  switch (payload.type) {
+    case "benefit_grant.created":
+    case "benefit_grant.revoked":
+      if (entitlements) {
+        for (const handler of entitlements.handlers) {
+          promises.push(handler(payload));
+        }
       }
   }
 
