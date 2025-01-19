@@ -1,5 +1,11 @@
 # polar-nextjs
 
+## 0.3.9
+
+### Patch Changes
+
+- 1b19260: Await webhook
+
 ## 0.3.8
 
 ### Patch Changes
