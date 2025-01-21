@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/deno",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": "./main.ts",
   "tasks": {
     "dev": "deno run --watch main.ts",
