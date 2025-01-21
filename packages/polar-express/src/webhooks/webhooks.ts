@@ -11,6 +11,7 @@ import type { Request, RequestHandler, Response } from "express";
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
+	entitlements,
 	...eventHandlers
 }: WebhooksConfig): RequestHandler => {
 	return async (req: Request, res: Response) => {
@@ -42,6 +43,7 @@ export const Webhooks = ({
 
 		await handleWebhookPayload(webhookPayload, {
 			webhookSecret,
+			entitlements,
 			onPayload,
 			...eventHandlers,
 		});

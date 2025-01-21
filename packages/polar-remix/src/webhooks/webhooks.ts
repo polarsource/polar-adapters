@@ -11,6 +11,7 @@ import type { ActionFunction } from "../types";
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
+	entitlements,
 	...eventHandlers
 }: WebhooksConfig): ActionFunction => {
 	return async ({ request }) => {
@@ -44,6 +45,7 @@ export const Webhooks = ({
 
 		await handleWebhookPayload(webhookPayload, {
 			webhookSecret,
+			entitlements,
 			onPayload,
 			...eventHandlers,
 		});

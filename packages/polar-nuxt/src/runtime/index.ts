@@ -132,6 +132,7 @@ export const CustomerPortal = ({
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
+	entitlements,
 	...eventHandlers
 }: WebhooksConfig) => {
 	return async (event: H3Event) => {
@@ -160,6 +161,7 @@ export const Webhooks = ({
 
 		await handleWebhookPayload(webhookPayload, {
 			webhookSecret,
+			entitlements,
 			onPayload,
 			...eventHandlers,
 		});

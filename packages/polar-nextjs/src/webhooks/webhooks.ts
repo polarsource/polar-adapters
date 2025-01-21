@@ -10,6 +10,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export const Webhooks = ({
 	webhookSecret,
+	entitlements,
 	onPayload,
 	...eventHandlers
 }: WebhooksConfig) => {
@@ -39,6 +40,7 @@ export const Webhooks = ({
 
 		await handleWebhookPayload(webhookPayload, {
 			webhookSecret,
+			entitlements,
 			onPayload,
 			...eventHandlers,
 		});

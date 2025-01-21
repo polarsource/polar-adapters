@@ -11,6 +11,8 @@ import type { FastifyReply, FastifyRequest, RouteHandler } from "fastify";
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
+	entitlements,
+	...eventHandlers
 }: WebhooksConfig): RouteHandler => {
 	return async (request: FastifyRequest, reply: FastifyReply) => {
 		const requestBody =
@@ -40,7 +42,12 @@ export const Webhooks = ({
 			return reply.status(500).send({ error: "Internal server error" });
 		}
 
-		await handleWebhookPayload(webhookPayload, { webhookSecret, onPayload });
+		await handleWebhookPayload(webhookPayload, {
+			webhookSecret,
+			entitlements,
+			onPayload,
+			...eventHandlers,
+		});
 
 		return { received: true };
 	};

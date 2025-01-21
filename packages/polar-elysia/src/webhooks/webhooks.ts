@@ -12,6 +12,7 @@ import type { InlineHandler } from "elysia/dist/types";
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
+	entitlements,
 	...eventHandlers
 }: WebhooksConfig): InlineHandler => {
 	return async (ctx: Context) => {
@@ -41,6 +42,7 @@ export const Webhooks = ({
 
 		await handleWebhookPayload(webhookPayload, {
 			webhookSecret,
+			entitlements,
 			onPayload,
 			...eventHandlers,
 		});

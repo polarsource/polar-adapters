@@ -128,6 +128,7 @@ export const CustomerPortal = ({
 
 export const Webhooks = ({
   webhookSecret,
+  entitlements,
   onPayload,
   ...eventHandlers
 }: WebhooksConfig): WebhookHandler => {
@@ -158,6 +159,7 @@ export const Webhooks = ({
 
     await handleWebhookPayload(webhookPayload, {
       webhookSecret,
+      entitlements,
       onPayload,
       ...eventHandlers,
     });

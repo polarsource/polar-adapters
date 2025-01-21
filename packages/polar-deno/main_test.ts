@@ -7,7 +7,6 @@ import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 import { describe, it } from "https://deno.land/std/testing/bdd.ts";
 import { Checkout, CustomerPortal, Webhooks } from "./main.ts";
 
-
 describe("Checkout", () => {
   it("should return 400 if productId is missing", async () => {
     const checkout = Checkout({ accessToken: "test-token" });
@@ -59,7 +58,6 @@ describe("CustomerPortal", () => {
 
     assertEquals(response.status, 302);
     assertEquals(url.origin, mockCustomerPortalUrl);
-
   });
 });
 
@@ -94,9 +92,10 @@ describe("Webhooks", () => {
   it("should handle webhook payload successfully", async () => {
     const webhook = Webhooks({
       webhookSecret,
-      onPayload: () => new Promise((resolve) => {
-        resolve();
-      }),
+      onPayload: () =>
+        new Promise((resolve) => {
+          resolve();
+        }),
     });
 
     // Note: In a real test, you'd need to generate a valid signature
