@@ -8,6 +8,14 @@ import {
   type WebhooksConfig,
   handleWebhookPayload,
 } from "@polar-sh/adapter-utils";
+
+export {
+  type EntitlementContext,
+  type EntitlementHandler,
+  type EntitlementProperties,
+  EntitlementStrategy,
+  Entitlements,
+} from "@polar-sh/adapter-utils";
 export interface CheckoutConfig {
   accessToken?: string;
   successUrl?: string;

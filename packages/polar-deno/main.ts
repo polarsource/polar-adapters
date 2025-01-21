@@ -8,6 +8,14 @@ import {
   validateEvent,
 } from "npm:@polar-sh/sdk/webhooks/index.js";
 
+export {
+  EntitlementContext,
+  EntitlementHandler,
+  EntitlementProperties,
+  EntitlementStrategy,
+  Entitlements,
+} from "npm:@polar-sh/adapter-utils/index.js";
+
 export interface CheckoutConfig {
   accessToken?: string;
   successUrl?: string;

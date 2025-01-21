@@ -16,6 +16,14 @@ import {
 	sendRedirect,
 } from "h3";
 
+export {
+	EntitlementContext,
+	EntitlementHandler,
+	EntitlementProperties,
+	EntitlementStrategy,
+	Entitlements,
+} from "@polar-sh/adapter-utils";
+
 export interface CheckoutConfig {
 	accessToken?: string;
 	successUrl?: string;

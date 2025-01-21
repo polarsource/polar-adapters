@@ -8,6 +8,14 @@ import {
 } from "@polar-sh/sdk/webhooks";
 import type { APIRoute } from "astro";
 
+export {
+	EntitlementContext,
+	EntitlementHandler,
+	EntitlementProperties,
+	EntitlementStrategy,
+	Entitlements,
+} from "@polar-sh/adapter-utils";
+
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,

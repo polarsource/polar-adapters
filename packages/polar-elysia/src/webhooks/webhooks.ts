@@ -9,6 +9,14 @@ import {
 import type { Context } from "elysia";
 import type { InlineHandler } from "elysia/dist/types";
 
+export {
+	EntitlementContext,
+	EntitlementHandler,
+	EntitlementProperties,
+	EntitlementStrategy,
+	Entitlements,
+} from "@polar-sh/adapter-utils";
+
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
