@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.2.9
+
+### Patch Changes
+
+- f732797: Exports Entitlement class
+- Updated dependencies [f732797]
+  - @polar-sh/adapter-utils@0.1.3
+
 ## 0.2.8
 
 ### Patch Changes

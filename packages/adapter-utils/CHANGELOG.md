@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.3
+
+### Patch Changes
+
+- f732797: Exports Entitlement class
+
 ## 0.1.2
 
 ### Patch Changes
