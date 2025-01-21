@@ -1,5 +1,13 @@
 # @polar-sh/elysia
 
+## 0.1.13
+
+### Patch Changes
+
+- 350a4e8: Export entitlement utils
+- Updated dependencies [350a4e8]
+  - @polar-sh/adapter-utils@0.1.5
+
 ## 0.1.12
 
 ### Patch Changes

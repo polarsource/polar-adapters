@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.5
+
+### Patch Changes
+
+- 350a4e8: Export entitlement utils
+
 ## 0.1.4
 
 ### Patch Changes

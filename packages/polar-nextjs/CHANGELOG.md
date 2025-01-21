@@ -1,5 +1,13 @@
 # polar-nextjs
 
+## 0.3.12
+
+### Patch Changes
+
+- 350a4e8: Export entitlement utils
+- Updated dependencies [350a4e8]
+  - @polar-sh/adapter-utils@0.1.5
+
 ## 0.3.11
 
 ### Patch Changes
