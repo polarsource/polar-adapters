@@ -1,5 +1,13 @@
 # @polar-sh/astro
 
+## 0.3.4
+
+### Patch Changes
+
+- 2ec8d0d: implement entitlements
+- Updated dependencies [2ec8d0d]
+  - @polar-sh/adapter-utils@0.1.4
+
 ## 0.3.3
 
 ### Patch Changes

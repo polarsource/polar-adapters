@@ -1,5 +1,13 @@
 # polar-nextjs
 
+## 0.3.11
+
+### Patch Changes
+
+- 2ec8d0d: implement entitlements
+- Updated dependencies [2ec8d0d]
+  - @polar-sh/adapter-utils@0.1.4
+
 ## 0.3.10
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.4
+
+### Patch Changes
+
+- 2ec8d0d: implement entitlements
+
 ## 0.1.3
 
 ### Patch Changes

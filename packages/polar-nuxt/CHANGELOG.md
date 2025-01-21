@@ -1,5 +1,14 @@
 # @polar-sh/nuxt
 
+## 0.1.12
+
+### Patch Changes
+
+- 2ec8d0d: implement entitlements
+- 2a78d47: init nuxt
+- Updated dependencies [2ec8d0d]
+  - @polar-sh/adapter-utils@0.1.4
+
 ## 0.1.11
 
 ### Patch Changes
