@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.2.12
+
+### Patch Changes
+
+- b002bc1: export types
+- Updated dependencies [b002bc1]
+  - @polar-sh/adapter-utils@0.1.6
+
 ## 0.2.11
 
 ### Patch Changes

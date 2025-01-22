@@ -1,5 +1,13 @@
 # @polar-sh/sveltekit
 
+## 0.3.12
+
+### Patch Changes
+
+- b002bc1: export types
+- Updated dependencies [b002bc1]
+  - @polar-sh/adapter-utils@0.1.6
+
 ## 0.3.11
 
 ### Patch Changes
