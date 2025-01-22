@@ -44,7 +44,7 @@ export const Checkout = ({
 				...(productId
 					? { productId }
 					: { productPriceId: productPriceId ?? "" }),
-				successUrl: success?.toString(),
+				successUrl: success ? decodeURI(success.toString()) : undefined,
 				customerId: url.searchParams.get("customerId") ?? undefined,
 				customerEmail: url.searchParams.get("customerEmail") ?? undefined,
 				customerName: url.searchParams.get("customerName") ?? undefined,

@@ -57,7 +57,7 @@ export const Checkout = ({
     try {
       const result = await polar.checkouts.custom.create({
         productId,
-        successUrl: success?.toString(),
+        successUrl: success ? decodeURI(success.toString()) : undefined,
         customerId: url.searchParams.get("customerId") ?? undefined,
         customerEmail: url.searchParams.get("customerEmail") ?? undefined,
         customerName: url.searchParams.get("customerName") ?? undefined,
