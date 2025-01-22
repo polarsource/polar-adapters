@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.7
+
+### Patch Changes
+
+- 1d6d075: decode the URI properly
+
 ## 0.1.6
 
 ### Patch Changes

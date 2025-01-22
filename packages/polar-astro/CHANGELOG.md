@@ -1,5 +1,13 @@
 # @polar-sh/astro
 
+## 0.3.7
+
+### Patch Changes
+
+- 1d6d075: decode the URI properly
+- Updated dependencies [1d6d075]
+  - @polar-sh/adapter-utils@0.1.7
+
 ## 0.3.6
 
 ### Patch Changes
