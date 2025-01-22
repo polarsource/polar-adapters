@@ -9,9 +9,9 @@ import {
 import { type NextRequest, NextResponse } from "next/server";
 
 export {
-	EntitlementContext,
-	EntitlementHandler,
-	EntitlementProperties,
+	type EntitlementContext,
+	type EntitlementHandler,
+	type EntitlementProperties,
 	EntitlementStrategy,
 	Entitlements,
 } from "@polar-sh/adapter-utils";

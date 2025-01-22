@@ -17,9 +17,9 @@ import {
 } from "h3";
 
 export {
-	EntitlementContext,
-	EntitlementHandler,
-	EntitlementProperties,
+	type EntitlementContext,
+	type EntitlementHandler,
+	type EntitlementProperties,
 	EntitlementStrategy,
 	Entitlements,
 } from "@polar-sh/adapter-utils";

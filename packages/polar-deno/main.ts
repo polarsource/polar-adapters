@@ -9,9 +9,9 @@ import {
 } from "npm:@polar-sh/sdk/webhooks/index.js";
 
 export {
-  EntitlementContext,
-  EntitlementHandler,
-  EntitlementProperties,
+  type EntitlementContext,
+  type EntitlementHandler,
+  type EntitlementProperties,
   EntitlementStrategy,
   Entitlements,
 } from "npm:@polar-sh/adapter-utils/index.js";

@@ -10,9 +10,9 @@ import {
 import type { Context } from "hono";
 
 export {
-	EntitlementContext,
-	EntitlementHandler,
-	EntitlementProperties,
+	type EntitlementContext,
+	type EntitlementHandler,
+	type EntitlementProperties,
 	EntitlementStrategy,
 	Entitlements,
 } from "@polar-sh/adapter-utils";

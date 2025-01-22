@@ -10,9 +10,9 @@ import type { Context } from "elysia";
 import type { InlineHandler } from "elysia/dist/types";
 
 export {
-	EntitlementContext,
-	EntitlementHandler,
-	EntitlementProperties,
+	type EntitlementContext,
+	type EntitlementHandler,
+	type EntitlementProperties,
 	EntitlementStrategy,
 	Entitlements,
 } from "@polar-sh/adapter-utils";
