@@ -28,7 +28,7 @@
 	],
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.20.0"
+		"@polar-sh/sdk": "^0.21.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
