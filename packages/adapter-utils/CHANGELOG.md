@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.8
+
+### Patch Changes
+
+- 9dd847d: Bump Polar SDK
+
 ## 0.1.7
 
 ### Patch Changes

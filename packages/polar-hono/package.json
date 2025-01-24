@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/hono",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "Polar integration for Hono",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
