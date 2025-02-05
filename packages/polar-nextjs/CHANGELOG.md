@@ -1,5 +1,13 @@
 # polar-nextjs
 
+## 0.3.16
+
+### Patch Changes
+
+- 845f91d: Upgrade SDK usage
+- Updated dependencies [845f91d]
+  - @polar-sh/adapter-utils@0.1.9
+
 ## 0.3.15
 
 ### Patch Changes

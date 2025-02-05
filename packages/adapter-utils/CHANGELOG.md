@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.9
+
+### Patch Changes
+
+- 845f91d: Upgrade SDK usage
+
 ## 0.1.8
 
 ### Patch Changes
