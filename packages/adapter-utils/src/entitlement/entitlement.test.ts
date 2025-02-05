@@ -1,9 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import type {
-  Benefit,
-  WebhookBenefitGrantCreatedPayload,
-  WebhookBenefitGrantRevokedPayload,
-} from "@polar-sh/sdk/models/components";
+import type { Benefit } from "@polar-sh/sdk/models/components/benefit";
+import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload";
+import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload";
 import { EntitlementStrategy } from "./entitlement";
 
 describe("EntitlementStrategy", () => {

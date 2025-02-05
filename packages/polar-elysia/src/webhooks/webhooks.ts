@@ -7,7 +7,7 @@ import {
 	validateEvent,
 } from "@polar-sh/sdk/webhooks";
 import type { Context } from "elysia";
-import type { InlineHandler } from "elysia/dist/types";
+import type { InlineHandler } from "elysia/types";
 
 export {
 	type EntitlementContext,

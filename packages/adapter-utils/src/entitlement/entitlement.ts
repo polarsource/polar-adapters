@@ -1,8 +1,6 @@
-import type {
-  Customer,
-  WebhookBenefitGrantCreatedPayload,
-  WebhookBenefitGrantRevokedPayload,
-} from "@polar-sh/sdk/models/components";
+import type { Customer } from "@polar-sh/sdk/models/components/customer";
+import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload";
+import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload";
 
 export type EntitlementProperties = Record<string, string>;
 

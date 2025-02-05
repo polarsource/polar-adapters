@@ -6,7 +6,7 @@ import { Polar } from "npm:@polar-sh/sdk";
 import {
   WebhookVerificationError,
   validateEvent,
-} from "npm:@polar-sh/sdk/webhooks/index.js";
+} from "npm:@polar-sh/sdk/webhooks.js";
 
 export {
   type EntitlementContext,
@@ -55,7 +55,7 @@ export const Checkout = ({
     }
 
     try {
-      const result = await polar.checkouts.custom.create({
+      const result = await polar.checkouts.create({
         productId,
         successUrl: success ? decodeURI(success.toString()) : undefined,
         customerId: url.searchParams.get("customerId") ?? undefined,

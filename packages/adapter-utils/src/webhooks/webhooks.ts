@@ -1,22 +1,24 @@
 import { validateEvent } from "@polar-sh/sdk/webhooks";
-import type {
-  WebhookCheckoutCreatedPayload,
-  WebhookCheckoutUpdatedPayload,
-  WebhookOrderCreatedPayload,
-  WebhookSubscriptionCreatedPayload,
-  WebhookSubscriptionUpdatedPayload,
-  WebhookSubscriptionActivePayload,
-  WebhookSubscriptionCanceledPayload,
-  WebhookSubscriptionRevokedPayload,
-  WebhookProductCreatedPayload,
-  WebhookProductUpdatedPayload,
-  WebhookOrganizationUpdatedPayload,
-  WebhookBenefitCreatedPayload,
-  WebhookBenefitUpdatedPayload,
-  WebhookBenefitGrantCreatedPayload,
-  WebhookBenefitGrantUpdatedPayload,
-  WebhookBenefitGrantRevokedPayload,
-} from "@polar-sh/sdk/models/components";
+import { WebhookBenefitCreatedPayload } from '@polar-sh/sdk/models/components/webhookbenefitcreatedpayload';
+import { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload";
+import { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload";
+import { WebhookBenefitGrantUpdatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantupdatedpayload";
+import { WebhookBenefitUpdatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitupdatedpayload";
+import { WebhookCheckoutCreatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutcreatedpayload";
+import { WebhookCheckoutUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutupdatedpayload";
+import { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload";
+import { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload";
+import { WebhookOrganizationUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorganizationupdatedpayload";
+import { WebhookProductCreatedPayload } from "@polar-sh/sdk/models/components/webhookproductcreatedpayload";
+import { WebhookProductUpdatedPayload } from "@polar-sh/sdk/models/components/webhookproductupdatedpayload";
+import { WebhookRefundCreatedPayload } from "@polar-sh/sdk/models/components/webhookrefundcreatedpayload";
+import { WebhookRefundUpdatedPayload } from "@polar-sh/sdk/models/components/webhookrefundupdatedpayload";
+import { WebhookSubscriptionActivePayload } from "@polar-sh/sdk/models/components/webhooksubscriptionactivepayload";
+import { WebhookSubscriptionCanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptioncanceledpayload";
+import { WebhookSubscriptionCreatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptioncreatedpayload";
+import { WebhookSubscriptionRevokedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionrevokedpayload";
+import { WebhookSubscriptionUncanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionuncanceledpayload";
+import { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload";
 import { Entitlements } from "../entitlement/entitlement";
 
 export interface WebhooksConfig {
@@ -26,6 +28,9 @@ export interface WebhooksConfig {
   onCheckoutCreated?: (payload: WebhookCheckoutCreatedPayload) => Promise<void>;
   onCheckoutUpdated?: (payload: WebhookCheckoutUpdatedPayload) => Promise<void>;
   onOrderCreated?: (payload: WebhookOrderCreatedPayload) => Promise<void>;
+  onOrderRefunded?: (payload: WebhookOrderRefundedPayload) => Promise<void>;
+  onRefundCreated?: (payload: WebhookRefundCreatedPayload) => Promise<void>;
+  onRefundUpdated?: (payload: WebhookRefundUpdatedPayload) => Promise<void>;
   onSubscriptionCreated?: (
     payload: WebhookSubscriptionCreatedPayload,
   ) => Promise<void>;
@@ -40,6 +45,9 @@ export interface WebhooksConfig {
   ) => Promise<void>;
   onSubscriptionRevoked?: (
     payload: WebhookSubscriptionRevokedPayload,
+  ) => Promise<void>;
+  onSubscriptionUncanceled?: (
+    payload: WebhookSubscriptionUncanceledPayload,
   ) => Promise<void>;
   onProductCreated?: (payload: WebhookProductCreatedPayload) => Promise<void>;
   onProductUpdated?: (payload: WebhookProductUpdatedPayload) => Promise<void>;

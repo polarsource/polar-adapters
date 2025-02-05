@@ -64,7 +64,7 @@ export const Checkout = ({
 		}
 
 		try {
-			const result = await polar.checkouts.custom.create({
+			const result = await polar.checkouts.create({
 				...(productId
 					? { productId }
 					: { productPriceId: productPriceId ?? "" }),

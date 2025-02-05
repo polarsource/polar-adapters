@@ -18,8 +18,6 @@ export class Polar {
   };
 
   checkouts = {
-    custom: {
-      create: mockCheckoutCreate,
-    },
+    create: mockCheckoutCreate,
   };
 }

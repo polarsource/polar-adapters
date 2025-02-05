@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@polar-sh/adapter-utils": "workspace:*",
-    "@polar-sh/sdk": "^0.21.3"
+    "@polar-sh/sdk": "^0.24.0"
   },
   "peerDependencies": {
     "elysia": "^1.2.10"

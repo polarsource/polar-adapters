@@ -1,6 +1,6 @@
 import { Polar } from "@polar-sh/sdk";
 import type { Context } from "elysia";
-import type { InlineHandler } from "elysia/dist/types";
+import type { InlineHandler } from "elysia/types";
 
 export interface CheckoutConfig {
 	accessToken?: string;
@@ -39,7 +39,7 @@ export const Checkout = ({
 		}
 
 		try {
-			const result = await polar.checkouts.custom.create({
+			const result = await polar.checkouts.create({
 				...(productId
 					? { productId }
 					: { productPriceId: productPriceId ?? "" }),

@@ -14,9 +14,7 @@ vi.mock("@polar-sh/sdk", async (importOriginal) => {
 		};
 
 		checkouts = {
-			custom: {
-				create: mockCheckoutCreate,
-			},
+			create: mockCheckoutCreate,
 		};
 	}
 

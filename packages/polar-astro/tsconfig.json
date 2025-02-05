@@ -5,7 +5,7 @@
 		"skipLibCheck": true,
 		"declaration": true,
 		"module": "esnext",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"typeRoots": ["./types", "./node_modules/@types"]
 	},
 	"include": ["src", "env.d.ts"]

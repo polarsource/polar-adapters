@@ -1,5 +1,4 @@
 import {
-  EntitlementProperties,
   Entitlements,
   EntitlementStrategy,
 } from "../entitlement/entitlement";
