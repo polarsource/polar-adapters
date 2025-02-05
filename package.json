@@ -7,7 +7,7 @@
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check": "turbo check",
-    "ci": "turbo check && turbo test && turbo build",
+    "ci": "turbo build && turbo check && turbo test",
     "test": "turbo test -- run",
     "publish-packages": "turbo run lint check build && changeset publish"
   },
