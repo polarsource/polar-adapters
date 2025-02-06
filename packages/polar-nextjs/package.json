@@ -44,7 +44,7 @@
 			"--loader=ts-node/esm"
 		]
 	},
-	"peerDependencies": {
-		"next": "^15.0.0"
-	}
+  "peerDependencies": {
+    "next": "^15.0.0 || ^15.2.0-canary.*"
+  }
 }
