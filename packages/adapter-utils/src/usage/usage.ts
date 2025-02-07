@@ -1,32 +1,30 @@
-import { UsageMeter, type UsageMeterContext } from "./meter";
+import { UsageMeter, UsageMeterConfig, type UsageMeterContext } from "./meter";
+
+export * from "./meter";
 
 type Handler<TRequest, TResponse> = (
 	req: TRequest,
 	res: TResponse,
 ) => Promise<TResponse>;
 
-export interface PolarUsageConfig {
-	accessToken?: string;
-	server?: 'sandbox' | 'production';
-}
-
-type UsageStrategy<TRequest, TUsageContext, TStrategyClient> = (
+export type UsageStrategy<TRequest, TUsageContext, TStrategyClient> = (
 	req: TRequest,
 	meterHandler: (context: TUsageContext) => Promise<void>,
+	getCustomerId: (req: TRequest) => Promise<string> | string | undefined,
 ) => TStrategyClient;
 
-export class PolarUsage<TRequest, TContext extends UsageMeterContext = UsageMeterContext, TStrategyClient = never> {
-	private meter: UsageMeter;
+export class Usage<TRequest, TResponse, TContext extends UsageMeterContext = UsageMeterContext, TStrategyClient = never> {
+	private usageMeter: UsageMeter<TContext>;
 	private getCustomerId?: (req: TRequest) => Promise<string> | string | undefined;
 	private strategyHandler?: UsageStrategy<TRequest, TContext, TStrategyClient>;
 
-	constructor(config?: PolarUsageConfig) {
-		this.meter = new UsageMeter(config);
+	constructor(config?: UsageMeterConfig) {
+		this.usageMeter = new UsageMeter(config);
 	}
 
 	private createMeterHandler() {
 		return async (context: TContext) => {
-			await this.meter.run(context);
+			await this.usageMeter.run(context);
 		};
 	}
 
@@ -40,7 +38,17 @@ export class PolarUsage<TRequest, TContext extends UsageMeterContext = UsageMete
 		handler: UsageStrategy<TRequest, TStrategyContext, TNewStrategyClient>,
 	) {
 		this.strategyHandler = handler as any;
-		return this as unknown as PolarUsage<TRequest, TStrategyContext, TNewStrategyClient>;
+		return this as unknown as Usage<TRequest, TResponse, TStrategyContext, TNewStrategyClient>;
+	}
+
+
+	public meter(
+		meter: string,
+		transformer: (ctx: TContext) => number,
+	) {
+		this.usageMeter.meter(meter, transformer);
+
+		return this;
 	}
 
 	public handler<TResponse>(
@@ -55,32 +63,14 @@ export class PolarUsage<TRequest, TContext extends UsageMeterContext = UsageMete
 				throw new Error('Strategy handler is not set');
 			}
 
+			if (!this.getCustomerId) {
+				throw new Error('Customer ID resolver is not set');
+			}
+
 			const meterHandler = await this.createMeterHandler();
-			const strategyClient = this.strategyHandler(req, meterHandler);
+			const strategyClient = this.strategyHandler(req, meterHandler, this.getCustomerId);
 
 			return callback(req, res, strategyClient);
 		};
 	}
 }
-
-const Usage = <TRequest>() => {
-	return new PolarUsage<TRequest>();
-}
-
-
-
-
-
-Usage<Request>()
-	.customer((req) => req.headers.get('X-Polar-Customer-Id') ?? '')
-	.strategy((req, meterHandler) => {
-		console.log(req, meterHandler);
-
-		return {haha: 123}
-	})
-	.handler((req, res, strategyClient) => {
-		console.log(req, res, strategyClient);
-
-		strategyClient.haha
-		return new Response('ok')
-	})

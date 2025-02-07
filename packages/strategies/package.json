@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/strategies",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Core package for Polar strategies",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -24,13 +24,14 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polar-sh/adapter-utils": "workspace:*",
-    "@ai-sdk/provider": "^1.0.7"
+    "@ai-sdk/provider": "^1.0.7",
+    "@polar-sh/adapter-utils": "workspace:*"
   },
   "peerDependencies": {
     "ai": "^4.1.17"
   },
   "devDependencies": {
+    "@ai-sdk/openai": "^1.1.9",
     "@sindresorhus/tsconfig": "^7.0.0",
     "ai": "^4.1.17",
     "tsup": "^8.3.5",

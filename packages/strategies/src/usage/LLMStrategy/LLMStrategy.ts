@@ -3,116 +3,21 @@ import type {
 	LanguageModelV1CallOptions,
 	LanguageModelV1StreamPart,
 } from "@ai-sdk/provider";
-import { Meter, UsageStrategy } from "@polar-sh/adapter-utils";
+import { UsageStrategy, UsageMeterContext } from "@polar-sh/adapter-utils";
 import { wrapLanguageModel, LanguageModelV1Middleware } from "ai";
 
-
-
-
-export const LLMStrategy = <TRequest, TResponse>(model: LanguageModelV1) => {
-	return (meter: Meter) => {
-
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-type Handler<TRequest, TResponse> = (
-	req: TRequest,
-	res: TResponse,
-) => Promise<TResponse>;
-
-interface LLMStrategyContext extends MeterContext {
+type LLMStrategyContext = UsageMeterContext<{
 	promptTokens: number;
 	completionTokens: number;
-}
+}>
 
-
-
-
-
-
-export const LLMStrategy = <TRequest, TResponse>(model: LanguageModelV1) => {
-
-}
-
-
-
-
-
-export class LLMStrategy<TRequest> {
-	private model: LanguageModelV1;
-	private meter: PolestarMeter<LLMStrategyContext>;
-	private getCustomerId?: (req: TRequest) => Promise<string> | undefined;
-
-	constructor(model: LanguageModelV1) {
-		this.model = model;
-		this.meter = new Meter<LLMStrategyContext>();
-	}
-
-	public customer(callback: (req: TRequest) => Promise<string>) {
-		this.getCustomerId = callback;
-
-		return this;
-	}
-
-	public increment(
-		meter: string,
-		transformer: (ctx: LLMStrategyContext) => number,
-	) {
-		this.meter.increment(meter, transformer);
-
-		return this;
-	}
-
-	public handler<TResponse>(
-		callback: (
-			req: TRequest,
-			res: TResponse,
-			model: LanguageModelV1,
-		) => Promise<TResponse>,
-	): Handler<TRequest, TResponse> {
-		return async (req: TRequest, res: TResponse) => {
-			const model = wrapLanguageModel({
-				model: this.model,
-				middleware: await this.middleware(req),
-			});
-
-			return callback(req, res, model);
-		};
-	}
-
-	private async middleware(req: TRequest): Promise<LanguageModelV1Middleware> {
-		const meter = await this.createMeterHandler();
-
-		return {
-			wrapGenerate: this.wrapGenerate(meter, req),
-			wrapStream: this.wrapStream(meter, req),
-		};
-	}
-
-	private async createMeterHandler() {
-		return async (context: LLMStrategyContext) => {
-			await this.meter.run(context);
-		};
-	}
-
-	private wrapGenerate(
-		meter: (context: PolestarLLMContext) => Promise<void>,
+export const LLMStrategy = <TRequest>(model: LanguageModelV1): UsageStrategy<TRequest, LLMStrategyContext, LanguageModelV1> => {
+	const middleware = (
 		req: TRequest,
-	) {
-		return async (options: {
+		meter: (context: LLMStrategyContext) => Promise<void>,
+		getCustomerId: (req: TRequest) => Promise<string> | string | undefined
+	): LanguageModelV1Middleware => {
+		const wrapGenerate = async (options: {
 			doGenerate: () => ReturnType<LanguageModelV1["doGenerate"]>;
 			params: LanguageModelV1CallOptions;
 			model: LanguageModelV1;
@@ -121,21 +26,15 @@ export class LLMStrategy<TRequest> {
 
 			await meter({
 				usage: result.usage,
-				customerId: (await this.getCustomerId?.(req)) ?? "",
+				customerId: (await getCustomerId?.(req)) ?? "",
+				req,
 			});
 
 			return result;
 		};
-	}
 
-	private wrapStream(
-		meter: (context: PolestarLLMContext) => Promise<void>,
-		req: TRequest,
-	) {
-		return async ({
-			doStream,
-			params,
-			model,
+		const wrapStream = async ({
+			doStream
 		}: {
 			doStream: () => ReturnType<LanguageModelV1["doStream"]>;
 			params: LanguageModelV1CallOptions;
@@ -151,7 +50,8 @@ export class LLMStrategy<TRequest> {
 					if (chunk.type === "finish") {
 						await meter({
 							usage: chunk.usage,
-							customerId: (await this.getCustomerId?.(req)) ?? "",
+							customerId: (await getCustomerId?.(req)) ?? "",
+							req,
 						});
 					}
 
@@ -164,5 +64,19 @@ export class LLMStrategy<TRequest> {
 				...rest,
 			};
 		};
+
+		return {
+			wrapGenerate,
+			wrapStream,
+		};
+	};
+
+	return (req, meterHandler, getCustomerId) => {
+		const wrappedModel = wrapLanguageModel({
+			model,
+			middleware: middleware(req, meterHandler, getCustomerId),
+		});
+
+		return wrappedModel;
 	}
 }
