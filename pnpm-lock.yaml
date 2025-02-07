@@ -24,9 +24,6 @@ importers:
 
   packages/adapter-utils:
     dependencies:
-      '@ai-sdk/provider':
-        specifier: ^1.0.7
-        version: 1.0.7
       '@polar-sh/sdk':
         specifier: ^0.24.0
         version: 0.24.0(zod@3.24.1)
