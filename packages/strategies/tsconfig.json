@@ -1,0 +1,12 @@
+{
+	"extends": "@sindresorhus/tsconfig",
+	"compilerOptions": {
+		"outDir": "dist",
+		"skipLibCheck": true,
+		"declaration": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"allowSyntheticDefaultImports": true
+	},
+	"include": ["src"]
+}

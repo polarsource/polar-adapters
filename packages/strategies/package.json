@@ -1,0 +1,40 @@
+{
+  "name": "@polar-sh/strategies",
+  "version": "0.1.0",
+  "description": "Core package for Polar strategies",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --outDir dist",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@polar-sh/adapter-utils": "workspace:*",
+    "@ai-sdk/provider": "^1.0.7"
+  },
+  "peerDependencies": {
+    "ai": "^4.1.17"
+  },
+  "devDependencies": {
+    "@sindresorhus/tsconfig": "^7.0.0",
+    "ai": "^4.1.17",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
