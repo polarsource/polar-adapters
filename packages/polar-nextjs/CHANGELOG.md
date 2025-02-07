@@ -1,5 +1,13 @@
 # polar-nextjs
 
+## 0.3.17
+
+### Patch Changes
+
+- Updated dependencies [7922261]
+- Updated dependencies [e7a7352]
+  - @polar-sh/adapter-utils@0.1.10
+
 ## 0.3.16
 
 ### Patch Changes

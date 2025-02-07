@@ -1,5 +1,12 @@
 # @polar-sh/adapter-utils
 
+## 0.1.10
+
+### Patch Changes
+
+- 7922261: fix pkgs
+- e7a7352: add usage utils
+
 ## 0.1.9
 
 ### Patch Changes
