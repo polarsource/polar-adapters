@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/strategies",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Core package for Polar strategies",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

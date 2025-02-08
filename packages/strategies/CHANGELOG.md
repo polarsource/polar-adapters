@@ -1,5 +1,12 @@
 # @polar-sh/strategies
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [f798821]
+  - @polar-sh/adapter-utils@0.1.11
+
 ## 0.0.2
 
 ### Patch Changes

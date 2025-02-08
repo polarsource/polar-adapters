@@ -1,5 +1,12 @@
 # @polar-sh/hono
 
+## 0.2.17
+
+### Patch Changes
+
+- Updated dependencies [f798821]
+  - @polar-sh/adapter-utils@0.1.11
+
 ## 0.2.16
 
 ### Patch Changes
