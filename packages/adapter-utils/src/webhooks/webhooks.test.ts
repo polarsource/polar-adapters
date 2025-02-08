@@ -1,7 +1,4 @@
-import {
-  Entitlements,
-  EntitlementStrategy,
-} from "../entitlement/entitlement";
+import { Entitlements, EntitlementStrategy } from "../entitlement/entitlement";
 import { handleWebhookPayload } from "./webhooks";
 import { describe, expect, it, vi } from "vitest";
 
