@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --outDir dist",
+    "build": "tsup src/index.ts --format esm,cjs --dts --outDir dist"
   },
   "keywords": [],
   "author": "",
