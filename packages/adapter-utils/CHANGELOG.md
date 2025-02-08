@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.11
+
+### Patch Changes
+
+- f798821: add support for usage in nextjs adapter
+
 ## 0.1.10
 
 ### Patch Changes
