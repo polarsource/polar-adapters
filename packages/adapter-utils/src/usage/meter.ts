@@ -3,7 +3,7 @@ import { UsageEngine } from "./core";
 
 export interface UsageMeterConfig {
 	accessToken?: string;
-	server?: 'sandbox' | 'production';
+	server?: "sandbox" | "production";
 }
 
 export interface UsageMeterContext<
@@ -18,7 +18,7 @@ export interface UsageMeterContext<
 export class UsageMeter<
 	TContext extends UsageMeterContext = UsageMeterContext,
 > extends UsageEngine<TContext> {
-	private polarClient: Polar
+	private polarClient: Polar;
 
 	constructor(config?: UsageMeterConfig) {
 		super();
@@ -30,36 +30,35 @@ export class UsageMeter<
 	}
 
 	public async ingest({
-		value,
+		metadata,
 		meter,
 		customerId,
 	}: {
-		value: number;
+		metadata: Record<string, number>;
 		meter: string;
 		customerId: string;
 	}) {
-
 		await this.polarClient.events.ingest({
 			events: [
 				{
 					customerId,
 					name: meter,
-					metadata: {
-						value,
-					},
+					metadata,
 				},
 			],
 		});
 	}
 
-	public meter(meter: string, transformer: (ctx: TContext) => number) {
+	public meter(
+		meter: string,
+		transformer: (ctx: TContext) => Record<string, number>,
+	) {
 		return this.pipe(async (ctx) => {
 			await this.ingest({
 				meter,
-				value: transformer(ctx),
+				metadata: transformer(ctx),
 				customerId: ctx.customerId,
 			});
 		});
 	}
-
 }

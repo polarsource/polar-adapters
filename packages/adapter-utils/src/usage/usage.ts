@@ -13,9 +13,16 @@ export type UsageStrategy<TRequest, TUsageContext, TStrategyClient> = (
 	getCustomerId: (req: TRequest) => Promise<string> | string | undefined,
 ) => TStrategyClient;
 
-export class Usage<TRequest, TResponse, TContext extends UsageMeterContext = UsageMeterContext, TStrategyClient = never> {
+export class Usage<
+	TRequest,
+	TResponse,
+	TContext extends UsageMeterContext = UsageMeterContext,
+	TStrategyClient = never,
+> {
 	private usageMeter: UsageMeter<TContext>;
-	private getCustomerId?: (req: TRequest) => Promise<string> | string | undefined;
+	private getCustomerId?: (
+		req: TRequest,
+	) => Promise<string> | string | undefined;
 	private strategyHandler?: UsageStrategy<TRequest, TContext, TStrategyClient>;
 
 	constructor(config?: UsageMeterConfig) {
@@ -34,17 +41,22 @@ export class Usage<TRequest, TResponse, TContext extends UsageMeterContext = Usa
 		return this;
 	}
 
-	public strategy<TStrategyContext extends UsageMeterContext, TNewStrategyClient>(
-		handler: UsageStrategy<TRequest, TStrategyContext, TNewStrategyClient>,
-	) {
+	public strategy<
+		TStrategyContext extends UsageMeterContext,
+		TNewStrategyClient,
+	>(handler: UsageStrategy<TRequest, TStrategyContext, TNewStrategyClient>) {
 		this.strategyHandler = handler as any;
-		return this as unknown as Usage<TRequest, TResponse, TStrategyContext, TNewStrategyClient>;
+		return this as unknown as Usage<
+			TRequest,
+			TResponse,
+			TStrategyContext,
+			TNewStrategyClient
+		>;
 	}
-
 
 	public meter(
 		meter: string,
-		transformer: (ctx: TContext) => number,
+		transformer: (ctx: TContext) => Record<string, number>,
 	) {
 		this.usageMeter.meter(meter, transformer);
 
@@ -60,17 +72,22 @@ export class Usage<TRequest, TResponse, TContext extends UsageMeterContext = Usa
 	): Handler<TRequest, TResponse> {
 		return async (req: TRequest, res: TResponse) => {
 			if (!this.strategyHandler) {
-				throw new Error('Strategy handler is not set');
+				throw new Error("Strategy handler is not set");
 			}
 
 			if (!this.getCustomerId) {
-				throw new Error('Customer ID resolver is not set');
+				throw new Error("Customer ID resolver is not set");
 			}
 
-			const meterHandler = await this.createMeterHandler();
-			const strategyClient = this.strategyHandler(req, meterHandler, this.getCustomerId);
+			const meterHandler = this.createMeterHandler();
+			const strategyClient = this.strategyHandler(
+				req,
+				meterHandler,
+				this.getCustomerId,
+			);
 
 			return callback(req, res, strategyClient);
 		};
 	}
 }
+

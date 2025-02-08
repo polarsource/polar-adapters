@@ -3,19 +3,21 @@ import type {
 	LanguageModelV1CallOptions,
 	LanguageModelV1StreamPart,
 } from "@ai-sdk/provider";
-import { UsageStrategy, UsageMeterContext } from "@polar-sh/adapter-utils";
-import { wrapLanguageModel, LanguageModelV1Middleware } from "ai";
+import type { UsageStrategy, UsageMeterContext } from "@polar-sh/adapter-utils";
+import { wrapLanguageModel, type LanguageModelV1Middleware } from "ai";
 
 type LLMStrategyContext = UsageMeterContext<{
 	promptTokens: number;
 	completionTokens: number;
-}>
+}>;
 
-export const LLMStrategy = <TRequest>(model: LanguageModelV1): UsageStrategy<TRequest, LLMStrategyContext, LanguageModelV1> => {
+export const LLMStrategy = <TRequest>(
+	model: LanguageModelV1,
+): UsageStrategy<TRequest, LLMStrategyContext, LanguageModelV1> => {
 	const middleware = (
 		req: TRequest,
 		meter: (context: LLMStrategyContext) => Promise<void>,
-		getCustomerId: (req: TRequest) => Promise<string> | string | undefined
+		getCustomerId: (req: TRequest) => Promise<string> | string | undefined,
 	): LanguageModelV1Middleware => {
 		const wrapGenerate = async (options: {
 			doGenerate: () => ReturnType<LanguageModelV1["doGenerate"]>;
@@ -34,7 +36,7 @@ export const LLMStrategy = <TRequest>(model: LanguageModelV1): UsageStrategy<TRe
 		};
 
 		const wrapStream = async ({
-			doStream
+			doStream,
 		}: {
 			doStream: () => ReturnType<LanguageModelV1["doStream"]>;
 			params: LanguageModelV1CallOptions;
@@ -78,5 +80,5 @@ export const LLMStrategy = <TRequest>(model: LanguageModelV1): UsageStrategy<TRe
 		});
 
 		return wrappedModel;
-	}
-}
+	};
+};
