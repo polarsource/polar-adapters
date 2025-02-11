@@ -12,6 +12,9 @@ importers:
         specifier: ^2.27.11
         version: 2.27.11
     devDependencies:
+      '@biomejs/biome':
+        specifier: 1.9.4
+        version: 1.9.4
       prettier:
         specifier: ^3.2.5
         version: 3.3.3
@@ -262,6 +265,9 @@ importers:
       tsup:
         specifier: ^8.3.5
         version: 8.3.5(@microsoft/api-extractor@7.43.0(@types/node@20.17.12))(jiti@2.4.2)(postcss@8.4.49)(typescript@5.7.3)(yaml@2.7.0)
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.8(@types/node@20.17.12)(terser@5.37.0)
 
   packages/polar-nuxt:
     dependencies:
@@ -373,13 +379,16 @@ importers:
       '@ai-sdk/provider':
         specifier: ^1.0.7
         version: 1.0.7
-      '@polar-sh/adapter-utils':
-        specifier: workspace:*
-        version: link:../adapter-utils
     devDependencies:
       '@ai-sdk/openai':
         specifier: ^1.1.9
         version: 1.1.9(zod@3.24.1)
+      '@polar-sh/adapter-utils':
+        specifier: workspace:*
+        version: link:../adapter-utils
+      '@polar-sh/sdk':
+        specifier: ^0.24.0
+        version: 0.24.0(zod@3.24.1)
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
         version: 7.0.0
