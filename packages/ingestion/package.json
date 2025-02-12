@@ -19,32 +19,32 @@
 		},
 		"./strategies/FetchStrategy": {
 			"import": {
-				"types": "./dist/strategies/FetchStrategy.d.ts",
-				"import": "./dist/strategies/FetchStrategy.js"
+				"types": "./dist/strategies/FetchStrategy/FetchStrategy.d.ts",
+				"import": "./dist/strategies/FetchStrategy/FetchStrategy.js"
 			},
 			"require": {
-				"types": "./dist/strategies/FetchStrategy.d.cts",
-				"require": "./dist/strategies/FetchStrategy.cjs"
+				"types": "./dist/strategies/FetchStrategy/FetchStrategy.d.cts",
+				"require": "./dist/strategies/FetchStrategy/FetchStrategy.cjs"
 			}
 		},
 		"./strategies/LLMStrategy": {
 			"import": {
-				"types": "./dist/strategies/LLMStrategy.d.ts",
-				"import": "./dist/strategies/LLMStrategy.js"
+				"types": "./dist/strategies/LLMStrategy/LLMStrategy.d.ts",
+				"import": "./dist/strategies/LLMStrategy/LLMStrategy.js"
 			},
 			"require": {
-				"types": "./dist/strategies/LLMStrategy.d.cts",
-				"require": "./dist/strategies/LLMStrategy.cjs"
+				"types": "./dist/strategies/LLMStrategy/LLMStrategy.d.cts",
+				"require": "./dist/strategies/LLMStrategy/LLMStrategy.cjs"
 			}
 		},
 		"./strategies/S3Strategy": {
 			"import": {
-				"types": "./dist/strategies/S3Strategy.d.ts",
-				"import": "./dist/strategies/S3Strategy.js"
+				"types": "./dist/strategies/S3Strategy/S3Strategy.d.ts",
+				"import": "./dist/strategies/S3Strategy/S3Strategy.js"
 			},
 			"require": {
-				"types": "./dist/strategies/S3Strategy.d.cts",
-				"require": "./dist/strategies/S3Strategy.cjs"
+				"types": "./dist/strategies/S3Strategy/S3Strategy.d.cts",
+				"require": "./dist/strategies/S3Strategy/S3Strategy.cjs"
 			}
 		}
 	},
