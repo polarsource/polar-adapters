@@ -1,5 +1,11 @@
 # @polar-sh/strategies
 
+## 0.0.3
+
+### Patch Changes
+
+- 781425c: fix ingestion lib imports
+
 ## 0.0.2
 
 ### Patch Changes
