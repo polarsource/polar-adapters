@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/remix",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "Polar integration for Remix and React Router",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

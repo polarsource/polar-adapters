@@ -1,5 +1,12 @@
 # @polar-sh/astro
 
+## 0.3.12
+
+### Patch Changes
+
+- Updated dependencies [be7db19]
+  - @polar-sh/adapter-utils@0.1.12
+
 ## 0.3.11
 
 ### Patch Changes

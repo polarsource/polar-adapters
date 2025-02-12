@@ -1,5 +1,11 @@
 # @polar-sh/strategies
 
+## 0.0.2
+
+### Patch Changes
+
+- be7db19: Move ingestion to separate package
+
 ## 0.0.3
 
 ### Patch Changes

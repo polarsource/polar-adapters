@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/nextjs",
-	"version": "0.3.19",
+	"version": "0.3.20",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -24,7 +24,9 @@
 		"check": "biome check --write ./src",
 		"test": "vitest"
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
 		"@polar-sh/sdk": "^0.24.0"
@@ -40,7 +42,9 @@
 			"ts": "module",
 			"tsx": "module"
 		},
-		"nodeArguments": ["--loader=ts-node/esm"]
+		"nodeArguments": [
+			"--loader=ts-node/esm"
+		]
 	},
 	"peerDependencies": {
 		"next": "^15.0.0 || ^15.2.0-canary.*"

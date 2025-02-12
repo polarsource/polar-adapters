@@ -1,5 +1,12 @@
 # @polar-sh/sveltekit
 
+## 0.3.18
+
+### Patch Changes
+
+- Updated dependencies [be7db19]
+  - @polar-sh/adapter-utils@0.1.12
+
 ## 0.3.17
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/ingestion",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Core package for Polar ingestion",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",

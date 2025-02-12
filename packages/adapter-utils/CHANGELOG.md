@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.12
+
+### Patch Changes
+
+- be7db19: Move ingestion to separate package
+
 ## 0.1.11
 
 ### Patch Changes

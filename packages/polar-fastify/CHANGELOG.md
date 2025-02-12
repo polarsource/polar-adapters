@@ -1,5 +1,12 @@
 # @polar-sh/elysia
 
+## 0.1.18
+
+### Patch Changes
+
+- Updated dependencies [be7db19]
+  - @polar-sh/adapter-utils@0.1.12
+
 ## 0.1.17
 
 ### Patch Changes
