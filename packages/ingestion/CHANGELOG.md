@@ -1,5 +1,11 @@
 # @polar-sh/strategies
 
+## 0.0.6
+
+### Patch Changes
+
+- 94281e7: add stream strategy
+
 ## 0.0.5
 
 ### Patch Changes
