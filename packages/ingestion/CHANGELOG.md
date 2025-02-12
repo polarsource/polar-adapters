@@ -1,5 +1,11 @@
 # @polar-sh/strategies
 
+## 0.0.4
+
+### Patch Changes
+
+- 4ac2ea7: Fix strategy exports
+
 ## 0.0.3
 
 ### Patch Changes
