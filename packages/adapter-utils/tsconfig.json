@@ -8,5 +8,9 @@
 		"moduleResolution": "bundler",
 		"allowSyntheticDefaultImports": true
 	},
-	"include": ["src"]
+	"include": [
+		"src",
+		"../ingestion/src/ingestion.ts",
+		"../ingestion/src/strategy.ts"
+	]
 }

@@ -4,16 +4,17 @@ import type {
 	LanguageModelV1StreamPart,
 } from "@ai-sdk/provider";
 import {
+	type IngestionExecutionHandler,
 	IngestionStrategy,
 	type IngestionContext,
 } from "@polar-sh/adapter-utils";
 import { wrapLanguageModel, type LanguageModelV1Middleware } from "ai";
 import type { Polar } from "@polar-sh/sdk";
 
-type LLMStrategyContext = IngestionContext & {
+type LLMStrategyContext = IngestionContext<{
 	promptTokens: number;
 	completionTokens: number;
-};
+}>;
 
 export class LLMStrategy extends IngestionStrategy<
 	LLMStrategyContext,
@@ -28,7 +29,7 @@ export class LLMStrategy extends IngestionStrategy<
 	}
 
 	private middleware(
-		meter: (context: LLMStrategyContext) => Promise<void>,
+		execute: IngestionExecutionHandler<LLMStrategyContext>,
 		customerId: string,
 	): LanguageModelV1Middleware {
 		const wrapGenerate = async (options: {
@@ -38,7 +39,7 @@ export class LLMStrategy extends IngestionStrategy<
 		}): Promise<Awaited<ReturnType<LanguageModelV1["doGenerate"]>>> => {
 			const result = await options.doGenerate();
 
-			await meter({
+			await execute({
 				...result.usage,
 				customerId,
 			});
@@ -61,7 +62,7 @@ export class LLMStrategy extends IngestionStrategy<
 			>({
 				transform: async (chunk, controller) => {
 					if (chunk.type === "finish") {
-						await meter({
+						await execute({
 							...chunk.usage,
 							customerId,
 						});
@@ -84,11 +85,11 @@ export class LLMStrategy extends IngestionStrategy<
 	}
 
 	override client(customerId: string): LanguageModelV1 {
-		const meterHandler = this.createMeterHandler();
+		const executionHandler = this.createExecutionHandler();
 
 		return wrapLanguageModel({
 			model: this.model,
-			middleware: this.middleware(meterHandler, customerId),
+			middleware: this.middleware(executionHandler, customerId),
 		});
 	}
 }

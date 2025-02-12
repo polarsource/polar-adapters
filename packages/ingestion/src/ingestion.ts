@@ -1,6 +1,8 @@
 import type { Polar } from "@polar-sh/sdk";
 
-export type IngestionContext = Record<string, number | string | boolean> & {
+export type IngestionContext<
+	TContext extends Record<string, unknown> = Record<string, unknown>,
+> = TContext & {
 	customerId: string;
 };
 

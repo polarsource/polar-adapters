@@ -1,5 +1,6 @@
 import {
 	type IngestionContext,
+	type IngestionExecutionHandler,
 	IngestionStrategy,
 } from "@polar-sh/adapter-utils";
 import type { Polar } from "@polar-sh/sdk";
@@ -8,14 +9,22 @@ type Fetch = typeof fetch;
 
 const wrapFetch = (
 	httpClient: Fetch,
-	meterHandler: (context: FetchStrategyContext) => Promise<void>,
+	execute: IngestionExecutionHandler<FetchStrategyContext>,
 	customerId: string,
 ): Fetch => {
 	return async (input, init) => {
 		const response = await httpClient(input, init);
 
-		meterHandler({
-			requests: 1,
+		const url =
+			typeof input === "string"
+				? input
+				: "url" in input
+					? input.url
+					: input.toString();
+
+		execute({
+			url,
+			method: init?.method ?? "GET",
 			customerId,
 		});
 
@@ -23,9 +32,10 @@ const wrapFetch = (
 	};
 };
 
-type FetchStrategyContext = IngestionContext & {
-	requests: number;
-};
+type FetchStrategyContext = IngestionContext<{
+	url: string;
+	method: string;
+}>;
 
 export class FetchStrategy extends IngestionStrategy<
 	FetchStrategyContext,
@@ -40,8 +50,8 @@ export class FetchStrategy extends IngestionStrategy<
 	}
 
 	override client(customerId: string): Fetch {
-		const meterHandler = this.createMeterHandler();
+		const executionHandler = this.createExecutionHandler();
 
-		return wrapFetch(this.fetchClient, meterHandler, customerId);
+		return wrapFetch(this.fetchClient, executionHandler, customerId);
 	}
 }

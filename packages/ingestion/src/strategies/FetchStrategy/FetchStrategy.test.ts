@@ -6,7 +6,10 @@ describe("FetchStrategy", () => {
 	const mockFetch = vi.fn();
 	const customerId = "test-customer-id";
 
-	const fetchStrategy = new FetchStrategy(mockFetch, new Polar());
+	const fetchStrategy = new FetchStrategy(mockFetch, new Polar()).ingest(
+		"request",
+		({ url, method }) => ({ url, method }),
+	);
 
 	it("should call the fetch client with the correct parameters", async () => {
 		const input = "https://example.com";

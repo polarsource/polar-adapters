@@ -1,10 +1,13 @@
 import { Ingestion, type IngestionContext } from "./ingestion";
 
+export type IngestionExecutionHandler<TUsageContext extends IngestionContext> =
+	(ctx: TUsageContext) => Promise<void>;
+
 export abstract class IngestionStrategy<
 	TUsageContext extends IngestionContext,
 	TStrategyClient,
 > extends Ingestion<TUsageContext> {
-	public createMeterHandler() {
+	public createExecutionHandler(): IngestionExecutionHandler<TUsageContext> {
 		return async (context: TUsageContext) => {
 			await this.execute(context);
 		};
@@ -12,7 +15,9 @@ export abstract class IngestionStrategy<
 
 	public ingest(
 		eventName: string,
-		metadataResolver: (ctx: TUsageContext) => Record<string, number>,
+		metadataResolver: (
+			ctx: TUsageContext,
+		) => Record<string, number | string | boolean>,
 	) {
 		this.schedule(eventName, metadataResolver);
 
