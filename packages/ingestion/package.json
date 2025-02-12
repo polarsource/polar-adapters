@@ -17,14 +17,14 @@
 				"require": "./dist/index.cjs"
 			}
 		},
-		"./strategies/FetchStrategy": {
+		"./strategies/StreamStrategy": {
 			"import": {
-				"types": "./dist/strategies/FetchStrategy/FetchStrategy.d.ts",
-				"import": "./dist/strategies/FetchStrategy/FetchStrategy.js"
+				"types": "./dist/strategies/StreamStrategy/StreamStrategy.d.ts",
+				"import": "./dist/strategies/StreamStrategy/StreamStrategy.js"
 			},
 			"require": {
-				"types": "./dist/strategies/FetchStrategy/FetchStrategy.d.cts",
-				"require": "./dist/strategies/FetchStrategy/FetchStrategy.cjs"
+				"types": "./dist/strategies/StreamStrategy/StreamStrategy.d.cts",
+				"require": "./dist/strategies/StreamStrategy/StreamStrategy.cjs"
 			}
 		},
 		"./strategies/LLMStrategy": {
