@@ -32,7 +32,6 @@ export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
 	}) {
 		const plugin: Parameters<S3Client["middlewareStack"]["use"]>[0] = {
 			applyToStack: (stack) => {
-				// Middleware added to mark start and end of each HTTP requests including retry.
 				stack.add(
 					(next, context) => async (args) => {
 						const result = await next(args);
