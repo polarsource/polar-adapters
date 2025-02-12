@@ -67,6 +67,7 @@
 		"@ai-sdk/provider": "^1.0.7",
 		"@aws-sdk/client-s3": "^3.744.0",
 		"@sindresorhus/tsconfig": "^7.0.0",
+		"@types/node": "^22.13.1",
 		"ai": "^4.1.17",
 		"tsup": "^8.3.5",
 		"typescript": "^5.7.3",
