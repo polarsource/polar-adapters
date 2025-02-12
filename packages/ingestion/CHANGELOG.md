@@ -1,5 +1,11 @@
 # @polar-sh/strategies
 
+## 0.0.5
+
+### Patch Changes
+
+- 6a71d7b: Adjust S3 Strategy to function properly
+
 ## 0.0.4
 
 ### Patch Changes
