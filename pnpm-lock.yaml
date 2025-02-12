@@ -80,6 +80,37 @@ importers:
         specifier: ^8.15.0
         version: 8.15.0(eslint@9.15.0(jiti@2.4.2))(typescript@5.7.3)
 
+  packages/ingestion:
+    dependencies:
+      '@polar-sh/sdk':
+        specifier: ^0.24.0
+        version: 0.24.0(zod@3.24.1)
+    devDependencies:
+      '@ai-sdk/openai':
+        specifier: ^1.1.9
+        version: 1.1.9(zod@3.24.1)
+      '@ai-sdk/provider':
+        specifier: ^1.0.7
+        version: 1.0.7
+      '@aws-sdk/client-s3':
+        specifier: ^3.744.0
+        version: 3.744.0
+      '@sindresorhus/tsconfig':
+        specifier: ^7.0.0
+        version: 7.0.0
+      ai:
+        specifier: ^4.1.17
+        version: 4.1.17(react@19.0.0)(zod@3.24.1)
+      tsup:
+        specifier: ^8.3.5
+        version: 8.3.5(@microsoft/api-extractor@7.43.0(@types/node@20.17.12))(jiti@2.4.2)(postcss@8.4.49)(typescript@5.7.3)(yaml@2.7.0)
+      typescript:
+        specifier: ^5.7.3
+        version: 5.7.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.8(@types/node@20.17.12)(terser@5.37.0)
+
   packages/polar-astro:
     dependencies:
       '@polar-sh/adapter-utils':
@@ -373,40 +404,6 @@ importers:
       vite-plugin-dts:
         specifier: ^3.0.0
         version: 3.9.1(@types/node@20.17.12)(rollup@4.30.0)(typescript@5.7.3)(vite@6.0.7(@types/node@20.17.12)(jiti@2.4.2)(terser@5.37.0)(yaml@2.7.0))
-
-  packages/strategies:
-    dependencies:
-      '@ai-sdk/provider':
-        specifier: ^1.0.7
-        version: 1.0.7
-    devDependencies:
-      '@ai-sdk/openai':
-        specifier: ^1.1.9
-        version: 1.1.9(zod@3.24.1)
-      '@aws-sdk/client-s3':
-        specifier: ^3.744.0
-        version: 3.744.0
-      '@polar-sh/adapter-utils':
-        specifier: workspace:*
-        version: link:../adapter-utils
-      '@polar-sh/sdk':
-        specifier: ^0.24.0
-        version: 0.24.0(zod@3.24.1)
-      '@sindresorhus/tsconfig':
-        specifier: ^7.0.0
-        version: 7.0.0
-      ai:
-        specifier: ^4.1.17
-        version: 4.1.17(react@19.0.0)(zod@3.24.1)
-      tsup:
-        specifier: ^8.3.5
-        version: 8.3.5(@microsoft/api-extractor@7.43.0(@types/node@20.17.12))(jiti@2.4.2)(postcss@8.4.49)(typescript@5.7.3)(yaml@2.7.0)
-      typescript:
-        specifier: ^5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: ^2.1.8
-        version: 2.1.8(@types/node@20.17.12)(terser@5.37.0)
 
   packages/typescript-config: {}
 
