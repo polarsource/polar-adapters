@@ -1,27 +1,27 @@
 {
-  "name": "@polar-sh/adapters",
-  "private": true,
-  "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check": "turbo check",
-    "ci": "turbo build && turbo check && turbo test",
-    "test": "turbo test -- run",
-    "publish-packages": "turbo run lint check build && changeset publish"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "prettier": "^3.2.5",
-    "turbo": "^2.3.3",
-    "typescript": "5.5.4"
-  },
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "@changesets/cli": "^2.27.11"
-  }
+	"name": "@polar-sh/adapters",
+	"private": true,
+	"scripts": {
+		"build": "turbo build",
+		"dev": "turbo dev",
+		"lint": "turbo lint",
+		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
+		"check": "turbo check",
+		"ci": "turbo build && turbo check && turbo test",
+		"test": "turbo test -- run",
+		"publish-packages": "turbo run lint check build && changeset publish"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"prettier": "^3.2.5",
+		"turbo": "^2.3.3",
+		"typescript": "5.5.4"
+	},
+	"packageManager": "pnpm@9.0.0",
+	"engines": {
+		"node": ">=18"
+	},
+	"dependencies": {
+		"@changesets/cli": "^2.27.11"
+	}
 }

@@ -2,22 +2,43 @@
 
 Payments and Checkouts made dead simple with Nuxt.
 
-`pnpm install @polar-sh/nuxt zod`
+## Installation
+
+### Install the package
+
+Choose your preferred package manager to install the module:
+
+`pnpm add @polar-sh/nuxt`
+
+### Register the module
+
+Add the module to your `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['@polar-sh/nuxt']
+})
+```
 
 ## Checkout
 
 Create a Checkout handler which takes care of redirections.
 
 ```typescript
-import { Checkout } from "@polar-sh/nuxt";
+// server/routes/api/checkout.post.ts
+export default defineEventHandler((event) => {
+  const {
+    private: { polarAccessToken, polarCheckoutSuccessUrl, polarServer },
+  } = useRuntimeConfig();
+  
+  const checkoutHandler = Checkout({
+    accessToken: polarAccessToken,
+    successUrl: polarCheckoutSuccessUrl,
+    server: polarServer as "sandbox" | "production",
+  });
 
-const checkout = Checkout({
-  accessToken: "xxx", // Or set an environment variable to POLAR_ACCESS_TOKEN
-  successUrl: process.env.SUCCESS_URL,
-  server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
+  return checkoutHandler(event);
 });
-
-export default defineEventHandler(checkout);
 ```
 
 ### Query Params
@@ -36,15 +57,23 @@ Pass query params to this route.
 Create a customer portal where your customer can view orders and subscriptions.
 
 ```typescript
-import { CustomerPortal } from "@polar-sh/nuxt";
+// server/routes/api/portal.get.ts
+export default defineEventHandler((event) => { 
+  const {
+    private: { polarAccessToken, polarCheckoutSuccessUrl, polarServer },
+  } = useRuntimeConfig();
 
-const customerPortal = CustomerPortal({
-  accessToken: "xxx", // Or set an environment variable to POLAR_ACCESS_TOKEN
-  getCustomerId: (event) => "", // Fuction to resolve a Polar Customer ID
-  server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
+  const customerPortalHandler = CustomerPortal({
+    accessToken: polarAccessToken,
+    server: polarServer as "sandbox" | "production",
+    getCustomerId: (event) => {
+      return Promise.resolve("9d89909b-216d-475e-8005-053dba7cff07");
+    },
+  });
+
+  return customerPortalHandler(event);
 });
 
-export default defineEventHandler(customerPortal);
 ```
 
 ## Webhooks
@@ -52,17 +81,26 @@ export default defineEventHandler(customerPortal);
 A simple utility which resolves incoming webhook payloads by signing the webhook secret properly.
 
 ```typescript
-import { Webhooks } from "@polar-sh/nuxt";
+// server/routes/webhook/polar.post.ts
+export default defineEventHandler((event) => {
+  const {
+    private: { polarWebhookSecret },
+  } = useRuntimeConfig();
 
-const webhooks = Webhooks({
-  webhookSecret: process.env.POLAR_WEBHOOK_SECRET!,
-  onPayload: async (payload) => /** Handle payload */,
-})
+  const webhooksHandler = Webhooks({
+    webhookSecret: polarWebhookSecret,
+    onPayload: async (payload: any) => {
+      // Handle the payload
+      // No need to return an acknowledge response
+    },
+  });
 
-export default defineEventHandler(webhooks)
+  return webhooksHandler(event);
+});
+
 ```
 
-#### Payload Handlers
+### Payload Handlers
 
 The Webhook handler also supports granular handlers for easy integration.
 

@@ -1,19 +1,22 @@
-import { fileURLToPath } from "node:url";
-import { createResolver, defineNuxtModule } from "@nuxt/kit";
+import {
+	addServerImportsDir,
+	createResolver,
+	defineNuxtModule,
+} from "@nuxt/kit";
 
-export type ModuleOptions = Record<string, unknown>;
+// Module options TypeScript interface definition
+export type ModuleOptions = {};
 
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: "@polar-sh/nuxt",
 		configKey: "polar",
 	},
+	// Default configuration options of the Nuxt module
 	defaults: {},
-	setup(options, nuxt) {
-		const { resolve } = createResolver(import.meta.url);
-		const runtimeDir = fileURLToPath(new URL("./runtime", import.meta.url));
+	setup(_options, _nuxt) {
+		const resolver = createResolver(import.meta.url);
 
-		// Add runtime directory to Nuxt for proper TypeScript resolution
-		nuxt.options.build.transpile.push(runtimeDir);
+		addServerImportsDir(resolver.resolve("./runtime/server"));
 	},
 });
