@@ -8,12 +8,6 @@ import {
 } from "@polar-sh/sdk/webhooks";
 import { type H3Event, createError, getHeader, readBody } from "h3";
 
-export interface CustomerPortalConfig {
-	accessToken: string;
-	server?: "sandbox" | "production";
-	getCustomerId: (event: H3Event) => Promise<string>;
-}
-
 export const Webhooks = ({
 	webhookSecret,
 	onPayload,
