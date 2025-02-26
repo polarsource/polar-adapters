@@ -1,5 +1,11 @@
 # @polar-sh/nuxt
 
+## 0.2.1
+
+### Patch Changes
+
+- 9391943: Init Nuxt module package
+
 ## 0.1.20
 
 ### Patch Changes
