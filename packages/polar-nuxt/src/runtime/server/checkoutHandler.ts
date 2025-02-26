@@ -1,6 +1,6 @@
-import { z } from "zod";
 import { Polar } from "@polar-sh/sdk";
 import { type H3Event, createError, getValidatedQuery, sendRedirect } from "h3";
+import { z } from "zod";
 
 export interface CheckoutConfig {
 	accessToken?: string;
