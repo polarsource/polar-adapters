@@ -23,9 +23,6 @@ export const CustomerPortal = ({
 		}
 
 		try {
-			console.log("Creating customer session for customer ID:", {
-				accessToken,
-			});
 			const polar = new Polar({
 				accessToken,
 				server,
