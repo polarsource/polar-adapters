@@ -1,141 +1,45 @@
 import type { Session, User } from "better-auth";
 import type { Polar } from "@polar-sh/sdk";
-import type { Customer as PolarCustomer } from "@polar-sh/sdk/models/components/customer";
+import type { Customer } from "@polar-sh/sdk/models/components/customer";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload.js";
 import type { WebhookSubscriptionCanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptioncanceledpayload.js";
 import type { CustomerCancellationReason } from "@polar-sh/sdk/models/components/customercancellationreason.js";
-import type { Subscription as PolarSubscription } from "@polar-sh/sdk/models/components/subscription.js";
+import type { Subscription } from "@polar-sh/sdk/models/components/subscription.js";
 import type { WebhookSubscriptionRevokedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionrevokedpayload.js";
 import type { CheckoutCreate } from "@polar-sh/sdk/models/components/checkoutcreate.js";
 import type { validateEvent } from "@polar-sh/sdk/webhooks.js";
 import type { WebhookSubscriptionCreatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptioncreatedpayload.js";
-export type SubscriptionPlan = {
-	/**
-	 * Monthly price id
-	 */
-	priceId?: string;
-	/**
-	 * To use lookup key instead of price id
-	 *
-	 * https://docs.polar.com/products-prices/
-	 * manage-prices#lookup-keys
-	 */
-	lookupKey?: string;
-	/**
-	 * A yearly discount price id
-	 *
-	 * useful when you want to offer a discount for
-	 * yearly subscription
-	 */
-	annualDiscountPriceId?: string;
-	/**
-	 * Plan name
-	 */
-	name: string;
-	/**
-	 * Limits for the plan
-	 */
-	limits?: Record<string, number>;
-	/**
-	 * Plan group name
-	 *
-	 * useful when you want to group plans or
-	 * when a user can subscribe to multiple plans.
-	 */
-	group?: string;
-};
 
-export interface Subscription {
+export type SubscriptionProduct = {
 	/**
-	 * Database identifier
+	 * Subscription Product Id
 	 */
-	id: string;
-	/**
-	 * The plan name
-	 */
-	plan: string;
-	/**
-	 * Polar customer id
-	 */
-	polarCustomerId?: string;
-	/**
-	 * Polar subscription id
-	 */
-	polarSubscriptionId?: string;
-	/**
-	 * Price Id for the subscription
-	 */
-	priceId?: string;
-	/**
-	 * To what reference id the subscription belongs to
-	 * @example
-	 * - userId for a user
-	 * - workspace id for a saas platform
-	 * - website id for a hosting platform
-	 *
-	 * @default - userId
-	 */
-	referenceId: string;
-	/**
-	 * Subscription status
-	 */
-	status:
-		| "active"
-		| "canceled"
-		| "incomplete"
-		| "incomplete_expired"
-		| "past_due"
-		| "paused"
-		| "trialing"
-		| "unpaid";
-	/**
-	 * The billing cycle start date
-	 */
-	periodStart?: Date;
-	/**
-	 * The billing cycle end date
-	 */
-	periodEnd?: Date;
-	/**
-	 * Cancel at period end
-	 */
-	cancelAtPeriodEnd?: boolean;
-	/**
-	 * A field to group subscriptions so you can have multiple subscriptions
-	 * for one reference id
-	 */
-	groupId?: string;
-	/**
-	 * Number of seats for the subscription (useful for team plans)
-	 */
-	seats?: number;
-}
+	productId: string;
+};
 
 export interface PolarOptions {
 	/**
 	 * Polar Client
 	 */
-	polarClient: Polar;
+	client: Polar;
 	/**
 	 * Polar Webhook Secret
 	 *
 	 * @description Polar webhook secret key
 	 */
-	polarWebhookSecret: string;
+	webhookSecret: string;
 	/**
 	 * Enable customer creation when a user signs up
 	 */
 	createCustomerOnSignUp?: boolean;
 	/**
 	 * A callback to run after a customer has been created
-	 * @param customer - Customer Data
-	 * @param polarCustomer - Polar Customer Data
+	 * @param customer - Polar Customer
 	 * @returns
 	 */
 	onCustomerCreate?: (
 		data: {
 			customer: Customer;
-			polarCustomer: PolarCustomer;
 			user: User;
 		},
 		request?: Request,
@@ -152,7 +56,9 @@ export interface PolarOptions {
 			session: Session;
 		},
 		request?: Request,
-	) => Promise<{}>;
+	) => Promise<{
+		metadata?: Record<string, string>;
+	}>;
 	/**
 	 * Subscriptions
 	 */
@@ -162,9 +68,9 @@ export interface PolarOptions {
 		 * Subscription Configuration
 		 */
 		/**
-		 * List of plan
+		 * List of products
 		 */
-		plans: SubscriptionPlan[] | (() => Promise<SubscriptionPlan[]>);
+		products: SubscriptionProduct[] | (() => Promise<SubscriptionProduct[]>);
 		/**
 		 * Require email verification before a user is allowed to upgrade
 		 * their subscriptions
@@ -181,9 +87,7 @@ export interface PolarOptions {
 		onSubscriptionComplete?: (
 			data: {
 				event: WebhookSubscriptionCreatedPayload;
-				polarSubscription: PolarSubscription;
 				subscription: Subscription;
-				plan: SubscriptionPlan;
 			},
 			request?: Request,
 		) => Promise<void>;
@@ -202,7 +106,6 @@ export interface PolarOptions {
 		onSubscriptionCancel?: (data: {
 			event?: WebhookSubscriptionCanceledPayload;
 			subscription: Subscription;
-			polarSubscription: PolarSubscription;
 			cancellationDetails?: CustomerCancellationReason | null;
 		}) => Promise<void>;
 		/**
@@ -215,8 +118,8 @@ export interface PolarOptions {
 		 */
 		authorizeReference?: (
 			data: {
-				user: User & Record<string, any>;
-				session: Session & Record<string, any>;
+				user: User & Record<string, unknown>;
+				session: Session & Record<string, unknown>;
 				referenceId: string;
 				action:
 					| "upgrade-subscription"
@@ -231,7 +134,6 @@ export interface PolarOptions {
 		 */
 		onSubscriptionDeleted?: (data: {
 			event: WebhookSubscriptionRevokedPayload;
-			polarSubscription: PolarSubscription;
 			subscription: Subscription;
 		}) => Promise<void>;
 		/**
@@ -242,9 +144,9 @@ export interface PolarOptions {
 		 */
 		getCheckoutSessionParams?: (
 			data: {
-				user: User & Record<string, any>;
-				session: Session & Record<string, any>;
-				plan: SubscriptionPlan;
+				user: User & Record<string, unknown>;
+				session: Session & Record<string, unknown>;
+				product: SubscriptionProduct;
 				subscription: Subscription;
 			},
 			request?: Request,
@@ -264,14 +166,3 @@ export interface PolarOptions {
 	};
 	onEvent?: (event: ReturnType<typeof validateEvent>) => Promise<void>;
 }
-
-export interface Customer {
-	id: string;
-	polarCustomerId?: string;
-	userId: string;
-	createdAt: Date;
-	updatedAt: Date;
-}
-
-export interface InputSubscription extends Omit<Subscription, "id"> {}
-export interface InputCustomer extends Omit<Customer, "id"> {}
