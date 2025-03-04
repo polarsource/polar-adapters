@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.2
+
+### Patch Changes
+
+- 4407e6c: Init Better Auth plugin
+
 ## 0.2.18
 
 ### Patch Changes
