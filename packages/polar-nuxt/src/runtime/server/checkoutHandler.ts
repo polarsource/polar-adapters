@@ -13,6 +13,7 @@ const checkoutQuerySchema = z.object({
 	productId: z.string().nonempty().optional(),
 	productPriceId: z.string().nonempty().optional(),
 	customerId: z.string().nonempty().optional(),
+	customerExternalId: z.string().nonempty().optional(),
 	customerEmail: z.string().email().optional(),
 	customerName: z.string().nonempty().optional(),
 	customerBillingAddress: z.string().nonempty().optional(),
@@ -42,6 +43,7 @@ export const Checkout = ({
 			customerId,
 			customerEmail,
 			customerName,
+			customerExternalId,
 			customerBillingAddress,
 			customerTaxId,
 			customerIpAddress,
@@ -74,6 +76,7 @@ export const Checkout = ({
 				successUrl: success ? decodeURI(success.toString()) : undefined,
 				customerId,
 				customerEmail,
+				customerExternalId,
 				customerName,
 				customerBillingAddress: customerBillingAddress
 					? JSON.parse(customerBillingAddress)
