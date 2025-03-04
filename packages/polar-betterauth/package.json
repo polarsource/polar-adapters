@@ -40,7 +40,7 @@
 		"@types/node": "^20.0.0",
 		"better-auth": "^1.2.0",
 		"tsup": "^8.3.5",
-		"vitest": "^2.1.8"
+		"vitest": "^2.1.9"
 	},
 	"dependencies": {
 		"@polar-sh/sdk": "^0.28.0",
