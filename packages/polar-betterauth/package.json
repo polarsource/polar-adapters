@@ -25,15 +25,8 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"better-auth",
-		"payments",
-		"subscriptions"
-	],
+	"files": ["dist"],
+	"keywords": ["polar", "better-auth", "payments", "subscriptions"],
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
