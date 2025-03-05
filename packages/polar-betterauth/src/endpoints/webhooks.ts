@@ -45,6 +45,10 @@ export const webhooks = (options: PolarOptions) =>
 				onBenefitGrantCreated,
 				onBenefitGrantUpdated,
 				onBenefitGrantRevoked,
+				onCustomerCreated,
+				onCustomerUpdated,
+				onCustomerDeleted,
+				onCustomerStateChanged,
 			} = webhooks;
 
 			if (!ctx.request?.body) {
@@ -185,6 +189,26 @@ export const webhooks = (options: PolarOptions) =>
 					case "refund.updated":
 						if (onRefundUpdated) {
 							onRefundUpdated(event);
+						}
+						break;
+					case "customer.created":
+						if (onCustomerCreated) {
+							onCustomerCreated(event);
+						}
+						break;
+					case "customer.updated":
+						if (onCustomerUpdated) {
+							onCustomerUpdated(event);
+						}
+						break;
+					case "customer.deleted":
+						if (onCustomerDeleted) {
+							onCustomerDeleted(event);
+						}
+						break;
+					case "customer.state_changed":
+						if (onCustomerStateChanged) {
+							onCustomerStateChanged(event);
 						}
 						break;
 				}

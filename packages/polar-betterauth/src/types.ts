@@ -6,6 +6,10 @@ import type { WebhookBenefitGrantUpdatedPayload } from "@polar-sh/sdk/models/com
 import type { WebhookBenefitUpdatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitupdatedpayload.js";
 import type { WebhookCheckoutCreatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutcreatedpayload.js";
 import type { WebhookCheckoutUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutupdatedpayload.js";
+import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload.js";
+import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload.js";
+import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload.js";
+import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload.js";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload.js";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload.js";
 import type { WebhookOrganizationUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorganizationupdatedpayload.js";
@@ -193,6 +197,30 @@ export interface PolarOptions {
 		 */
 		onBenefitGrantRevoked?: (
 			payload: WebhookBenefitGrantRevokedPayload,
+		) => Promise<void>;
+		/**
+		 * Webhook for customer created
+		 */
+		onCustomerCreated?: (
+			payload: WebhookCustomerCreatedPayload,
+		) => Promise<void>;
+		/**
+		 * Webhook for customer updated
+		 */
+		onCustomerUpdated?: (
+			payload: WebhookCustomerUpdatedPayload,
+		) => Promise<void>;
+		/**
+		 * Webhook for customer deleted
+		 */
+		onCustomerDeleted?: (
+			payload: WebhookCustomerDeletedPayload,
+		) => Promise<void>;
+		/**
+		 * Webhook for customer state changed
+		 */
+		onCustomerStateChanged?: (
+			payload: WebhookCustomerStateChangedPayload,
 		) => Promise<void>;
 	};
 }
