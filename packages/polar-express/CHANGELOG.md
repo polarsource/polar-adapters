@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.2.19
+
+### Patch Changes
+
+- 0f1ca22: Add customer state support
+- Updated dependencies [0f1ca22]
+  - @polar-sh/adapter-utils@0.1.13
+
 ## 0.2.18
 
 ### Patch Changes
