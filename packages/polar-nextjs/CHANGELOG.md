@@ -1,5 +1,13 @@
 # polar-nextjs
 
+## 0.3.21
+
+### Patch Changes
+
+- 0f1ca22: Add customer state support
+- Updated dependencies [0f1ca22]
+  - @polar-sh/adapter-utils@0.1.13
+
 ## 0.3.20
 
 ### Patch Changes

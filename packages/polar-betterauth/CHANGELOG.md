@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.4
+
+### Patch Changes
+
+- 0f1ca22: Add customer state support
+
 ## 0.0.3
 
 ### Patch Changes
