@@ -4,6 +4,7 @@ This repository hosts a wide array of Polar adapters for your TypeScript framewo
 
 ### Adapters
 
+- [BetterAuth](./packages/polar-betterauth)
 - [Astro](./packages/polar-astro)
 - [Elysia](./packages/polar-elysia)
 - [Express](./packages/polar-express)
