@@ -2,9 +2,9 @@ import { APIError, sessionMiddleware } from "better-auth/api";
 import { createAuthEndpoint } from "better-auth/plugins";
 import type { PolarOptions } from "../types";
 
-export const subscriptions = (options: PolarOptions) =>
+export const customerState = (options: PolarOptions) =>
 	createAuthEndpoint(
-		"/subscriptions/list",
+		"/state",
 		{
 			method: "GET",
 			use: [sessionMiddleware],
@@ -17,21 +17,11 @@ export const subscriptions = (options: PolarOptions) =>
 			}
 
 			try {
-				const { token } = await options.client.customerSessions.create({
-					customerExternalId: ctx.context.session?.user.id,
+				const state = await options.client.customers.getStateExternal({
+					externalId: ctx.context.session?.user.id,
 				});
 
-				const subscriptions =
-					await options.client.customerPortal.subscriptions.list(
-						{
-							customerSession: token,
-						},
-						{
-							active: true,
-						},
-					);
-
-				return ctx.json(subscriptions);
+				return ctx.json(state);
 			} catch (e: unknown) {
 				if (e instanceof Error) {
 					ctx.context.logger.error(
