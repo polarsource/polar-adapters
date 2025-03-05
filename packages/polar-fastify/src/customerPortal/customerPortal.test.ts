@@ -46,7 +46,6 @@ describe("CustomerPortal middleware", () => {
 		});
 
 		expect(response.statusCode).toBe(302);
-		// biome-ignore lint/complexity/useLiteralKeys: fix ci
 		expect(response.headers["location"]).toBe(mockCustomerPortalUrl);
 	});
 
