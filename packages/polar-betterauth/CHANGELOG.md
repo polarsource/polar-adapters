@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.3
+
+### Patch Changes
+
+- e806c01: Add support for Customer State
+
 ## 0.0.2
 
 ### Patch Changes
