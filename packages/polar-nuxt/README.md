@@ -16,8 +16,8 @@ Add the module to your `nuxt.config.ts`:
 
 ```typescript
 export default defineNuxtConfig({
-  modules: ['@polar-sh/nuxt']
-})
+  modules: ["@polar-sh/nuxt"],
+});
 ```
 
 ## Checkout
@@ -30,7 +30,7 @@ export default defineEventHandler((event) => {
   const {
     private: { polarAccessToken, polarCheckoutSuccessUrl, polarServer },
   } = useRuntimeConfig();
-  
+
   const checkoutHandler = Checkout({
     accessToken: polarAccessToken,
     successUrl: polarCheckoutSuccessUrl,
@@ -48,6 +48,7 @@ Pass query params to this route.
 - productId (or productPriceId) `?productId=xxx`
 - productPriceId (or productId) `?productPriceId=xxx`
 - customerId (optional) `?productId=xxx&customerId=xxx`
+- customerExternalId (optional) `?productdId=xxx&customerExternalId=xxx`
 - customerEmail (optional) `?productId=xxx&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?productId=xxx&customerName=Jane`
 - metadata (optional) `URL-Encoded JSON string`
@@ -58,7 +59,7 @@ Create a customer portal where your customer can view orders and subscriptions.
 
 ```typescript
 // server/routes/api/portal.get.ts
-export default defineEventHandler((event) => { 
+export default defineEventHandler((event) => {
   const {
     private: { polarAccessToken, polarCheckoutSuccessUrl, polarServer },
   } = useRuntimeConfig();
@@ -73,7 +74,6 @@ export default defineEventHandler((event) => {
 
   return customerPortalHandler(event);
 });
-
 ```
 
 ## Webhooks
@@ -97,7 +97,6 @@ export default defineEventHandler((event) => {
 
   return webhooksHandler(event);
 });
-
 ```
 
 ### Payload Handlers
@@ -120,3 +119,7 @@ The Webhook handler also supports granular handlers for easy integration.
 - onBenefitGrantCreated: (payload) =>
 - onBenefitGrantUpdated: (payload) =>
 - onBenefitGrantRevoked: (payload) =>
+- onCustomerCreated: (payload) =>
+- onCustomerUpdated: (payload) =>
+- onCustomerDeleted: (payload) =>
+- onCustomerStateChanged: (payload) =>

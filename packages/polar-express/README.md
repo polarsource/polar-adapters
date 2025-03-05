@@ -31,6 +31,7 @@ Pass query params to this route.
 - productId (or productPriceId) `?productId=xxx`
 - productPriceId (or productId) `?productPriceId=xxx`
 - customerId (optional) `?productId=xxx&customerId=xxx`
+- customerExternalId (optional) `?productdId=xxx&customerExternalId=xxx`
 - customerEmail (optional) `?productId=xxx&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?productId=xxx&customerName=Jane`
 - metadata (optional) `URL-Encoded JSON string`
@@ -93,3 +94,7 @@ The Webhook handler also supports granular handlers for easy integration.
 - onBenefitGrantCreated: (payload) =>
 - onBenefitGrantUpdated: (payload) =>
 - onBenefitGrantRevoked: (payload) =>
+- onCustomerCreated: (payload) =>
+- onCustomerUpdated: (payload) =>
+- onCustomerDeleted: (payload) =>
+- onCustomerStateChanged: (payload) =>

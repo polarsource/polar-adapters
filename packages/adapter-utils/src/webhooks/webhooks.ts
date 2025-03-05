@@ -1,4 +1,4 @@
-import { validateEvent } from "@polar-sh/sdk/webhooks";
+import type { validateEvent } from "@polar-sh/sdk/webhooks";
 import type { WebhookBenefitCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitcreatedpayload";
 import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload";
 import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload";
@@ -19,7 +19,11 @@ import type { WebhookSubscriptionCreatedPayload } from "@polar-sh/sdk/models/com
 import type { WebhookSubscriptionRevokedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionrevokedpayload";
 import type { WebhookSubscriptionUncanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionuncanceledpayload";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload";
-import { Entitlements } from "../entitlement/entitlement";
+import type { Entitlements } from "../entitlement/entitlement";
+import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload.js";
+import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload.js";
+import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload.js";
+import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload.js";
 
 export interface WebhooksConfig {
   webhookSecret: string;
@@ -64,6 +68,12 @@ export interface WebhooksConfig {
   ) => Promise<void>;
   onBenefitGrantRevoked?: (
     payload: WebhookBenefitGrantRevokedPayload,
+  ) => Promise<void>;
+  onCustomerCreated?: (payload: WebhookCustomerCreatedPayload) => Promise<void>;
+  onCustomerUpdated?: (payload: WebhookCustomerUpdatedPayload) => Promise<void>;
+  onCustomerDeleted?: (payload: WebhookCustomerDeletedPayload) => Promise<void>;
+  onCustomerStateChanged?: (
+    payload: WebhookCustomerStateChangedPayload,
   ) => Promise<void>;
 }
 
@@ -157,6 +167,27 @@ export const handleWebhookPayload = async (
       if (eventHandlers.onBenefitGrantRevoked) {
         promises.push(eventHandlers.onBenefitGrantRevoked(payload));
       }
+      break;
+    case "customer.created":
+      if (eventHandlers.onCustomerCreated) {
+        promises.push(eventHandlers.onCustomerCreated(payload));
+      }
+      break;
+    case "customer.updated":
+      if (eventHandlers.onCustomerUpdated) {
+        promises.push(eventHandlers.onCustomerUpdated(payload));
+      }
+      break;
+    case "customer.deleted":
+      if (eventHandlers.onCustomerDeleted) {
+        promises.push(eventHandlers.onCustomerDeleted(payload));
+      }
+      break;
+    case "customer.state_changed":
+      if (eventHandlers.onCustomerStateChanged) {
+        promises.push(eventHandlers.onCustomerStateChanged(payload));
+      }
+      break;
   }
 
   switch (payload.type) {

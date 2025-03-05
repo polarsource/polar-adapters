@@ -31,10 +31,10 @@ import { Polar } from "@polar-sh/sdk";
 
 const client = new Polar({
     accessToken: process.env.POLAR_ACCESS_TOKEN,
-    // Use 'sandbox' if you're using the Polar Sandbox environment 
-    // Remember that access tokens, products, etc. are completely separated between environments. 
+    // Use 'sandbox' if you're using the Polar Sandbox environment
+    // Remember that access tokens, products, etc. are completely separated between environments.
     // Access tokens obtained in Production are for instance not usable in the Sandbox environment.
-    server: 'production' 
+    server: 'production'
 });
 
 const auth = betterAuth({
@@ -130,7 +130,6 @@ The plugin adds the following API routes:
 - `GET /customer-portal` - Redirects to Polar Customer Portal for authenticated user
 - `POST /polar/webhooks` - Incoming webhooks are automatically parsed & validated
 
-
 ## Customers
 
 When `createCustomerOnSignUp` is enabled, a new Polar Customer is automatically created when a new User is added in the Better-Auth Database.
@@ -139,7 +138,7 @@ All new customers are created with an associated `externalId`, which is the ID o
 
 ## Checkouts
 
-When checkouts are enabled, you're able to initialize Checkout Sessions on the `/checkout/:slug` route. 
+When checkouts are enabled, you're able to initialize Checkout Sessions on the `/checkout/:slug` route.
 
 ### Checkouts with slug
 

@@ -15,7 +15,6 @@ export const Checkout = ({
 	includeCheckoutId = true,
 }: CheckoutConfig): RouteHandler => {
 	const polar = new Polar({
-		/** biome-ignore lint/complexity/useLiteralKeys: fix ci */
 		accessToken: accessToken ?? process.env["POLAR_ACCESS_TOKEN"],
 		server,
 	});
@@ -46,6 +45,8 @@ export const Checkout = ({
 					: { productPriceId: productPriceId ?? "" }),
 				successUrl: success ? decodeURI(success.toString()) : undefined,
 				customerId: url.searchParams.get("customerId") ?? undefined,
+				customerExternalId:
+					url.searchParams.get("customerExternalId") ?? undefined,
 				customerEmail: url.searchParams.get("customerEmail") ?? undefined,
 				customerName: url.searchParams.get("customerName") ?? undefined,
 				customerBillingAddress: url.searchParams.has("customerBillingAddress")
