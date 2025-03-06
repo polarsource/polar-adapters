@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.14
+
+### Patch Changes
+
+- c9daadf: Bump SDK version
+
 ## 0.1.13
 
 ### Patch Changes

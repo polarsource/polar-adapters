@@ -1,5 +1,13 @@
 # @polar-sh/sveltekit
 
+## 0.3.20
+
+### Patch Changes
+
+- c9daadf: Bump SDK version
+- Updated dependencies [c9daadf]
+  - @polar-sh/adapter-utils@0.1.14
+
 ## 0.3.19
 
 ### Patch Changes
