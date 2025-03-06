@@ -28,8 +28,8 @@ importers:
   packages/adapter-utils:
     dependencies:
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
@@ -86,8 +86,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
       astro:
         specifier: ^5.0.0
         version: 5.1.5(@types/node@20.17.12)(db0@0.2.1(better-sqlite3@11.8.1))(ioredis@5.4.2)(jiti@2.4.2)(lightningcss@1.29.1)(rollup@4.34.8)(terser@5.37.0)(typescript@5.7.3)(yaml@2.7.0)
@@ -121,8 +121,8 @@ importers:
         specifier: 1.9.4
         version: 1.9.4
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
         version: 7.0.0
@@ -145,8 +145,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -176,8 +176,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -216,8 +216,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -247,8 +247,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -278,8 +278,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
       next:
         specifier: ^15.0.0 || ^15.2.0-canary.*
         version: 15.1.0(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -306,8 +306,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -358,8 +358,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -386,8 +386,8 @@ importers:
         specifier: workspace:*
         version: link:../adapter-utils
       '@polar-sh/sdk':
-        specifier: ^0.29.2
-        version: 0.29.2(zod@3.24.2)
+        specifier: ^0.29.3
+        version: 0.29.3(zod@3.24.2)
     devDependencies:
       '@playwright/test':
         specifier: ^1.28.1
@@ -1913,8 +1913,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@polar-sh/sdk@0.29.2':
-    resolution: {integrity: sha512-EM8mOtsuwz6AWLAphEbWzBpfpoiQh5nx9e/SQ8vzoOtf8uFd3YLcv9dgnKwghL/yjnzWCf8GNgTTBo46ZEK+JQ==}
+  '@polar-sh/sdk@0.29.3':
+    resolution: {integrity: sha512-Tia7lAvp/8iULspCmO8ZzjbJlb06X3FAjk+fNp/fqRSmgrH1BC0Cy5q6qsEOX9lhsGZy0b+5AFJRUbYz4m1y3g==}
     hasBin: true
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.5.0
@@ -9349,7 +9349,7 @@ snapshots:
     dependencies:
       playwright: 1.49.1
 
-  '@polar-sh/sdk@0.29.2(zod@3.24.2)':
+  '@polar-sh/sdk@0.29.3(zod@3.24.2)':
     dependencies:
       standardwebhooks: 1.0.0
       zod: 3.24.2
