@@ -41,7 +41,7 @@
 		"elysia": "^1.2.10",
 		"prettier": "^3.2.5",
 		"tsup": "^8.3.5",
-		"vitest": "^2.1.8"
+		"vitest": "^2.1.9"
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",

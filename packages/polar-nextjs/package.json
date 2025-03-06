@@ -34,7 +34,7 @@
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"tsup": "^8.3.5",
-		"vitest": "^2.1.8"
+		"vitest": "^2.1.9"
 	},
 	"ava": {
 		"extensions": {
