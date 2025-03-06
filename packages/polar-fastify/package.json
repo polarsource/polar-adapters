@@ -25,15 +25,8 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"fastify",
-		"payments",
-		"subscriptions"
-	],
+	"files": ["dist"],
+	"keywords": ["polar", "fastify", "payments", "subscriptions"],
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
@@ -45,7 +38,7 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.29.2"
+		"@polar-sh/sdk": "^0.29.3"
 	},
 	"peerDependencies": {
 		"fastify": "^5.2.1"
