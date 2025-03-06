@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.5
+
+### Patch Changes
+
+- e49adbe: Add polar sdk as peer dep
+
 ## 0.0.4
 
 ### Patch Changes
