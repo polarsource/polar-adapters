@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.7
+
+### Patch Changes
+
+- 32f64b5: graceful customer creation
+
 ## 0.0.6
 
 ### Patch Changes
