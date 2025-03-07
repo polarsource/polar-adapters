@@ -3,41 +3,41 @@ import { createAuthEndpoint } from "better-auth/plugins";
 import type { PolarOptions } from "../types";
 
 export const customerPortal = (options: PolarOptions) =>
-  createAuthEndpoint(
-    "/portal",
-    {
-      method: "GET",
-      use: [sessionMiddleware],
-    },
-    async (ctx) => {
-      if (!options.enableCustomerPortal) {
-        throw new APIError("BAD_REQUEST", {
-          message: "Customer portal is not enabled",
-        });
-      }
+	createAuthEndpoint(
+		"/portal",
+		{
+			method: "GET",
+			use: [sessionMiddleware],
+		},
+		async (ctx) => {
+			if (!options.enableCustomerPortal) {
+				throw new APIError("BAD_REQUEST", {
+					message: "Customer portal is not enabled",
+				});
+			}
 
-      if (!ctx.context.session?.user.id) {
-        throw new APIError("BAD_REQUEST", {
-          message: "User not found",
-        });
-      }
+			if (!ctx.context.session?.user.id) {
+				throw new APIError("BAD_REQUEST", {
+					message: "User not found",
+				});
+			}
 
-      try {
-        const customerSession = await options.client.customerSessions.create({
-          customerExternalId: ctx.context.session?.user.id,
-        });
+			try {
+				const customerSession = await options.client.customerSessions.create({
+					customerExternalId: ctx.context.session?.user.id,
+				});
 
-        return ctx.redirect(customerSession.customerPortalUrl);
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          ctx.context.logger.error(
-            `Polar customer portal creation failed. Error: ${e.message}`,
-          );
-        }
+				return ctx.redirect(customerSession.customerPortalUrl);
+			} catch (e: unknown) {
+				if (e instanceof Error) {
+					ctx.context.logger.error(
+						`Polar customer portal creation failed. Error: ${e.message}`,
+					);
+				}
 
-        throw new APIError("INTERNAL_SERVER_ERROR", {
-          message: "Customer portal creation failed",
-        });
-      }
-    },
-  );
+				throw new APIError("INTERNAL_SERVER_ERROR", {
+					message: "Customer portal creation failed",
+				});
+			}
+		},
+	);
