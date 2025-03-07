@@ -7,29 +7,29 @@ import { onUserCreate, onUserUpdate } from "./hooks/customer";
 import type { PolarOptions } from "./types";
 
 export const polar = <O extends PolarOptions>(options: O) => {
-  return {
-    id: "polar",
-    endpoints: {
-      polarCheckout: checkout(options),
-      polarWebhooks: webhooks(options),
-      polarCustomerPortal: customerPortal(options),
-      polarCustomerState: customerState(options),
-    },
-    init() {
-      return {
-        options: {
-          databaseHooks: {
-            user: {
-              create: {
-                after: onUserCreate(options),
-              },
-              update: {
-                after: onUserUpdate(options),
-              },
-            },
-          },
-        },
-      };
-    },
-  } satisfies BetterAuthPlugin;
+	return {
+		id: "polar",
+		endpoints: {
+			polarCheckout: checkout(options),
+			polarWebhooks: webhooks(options),
+			polarCustomerPortal: customerPortal(options),
+			polarCustomerState: customerState(options),
+		},
+		init() {
+			return {
+				options: {
+					databaseHooks: {
+						user: {
+							create: {
+								after: onUserCreate(options),
+							},
+							update: {
+								after: onUserUpdate(options),
+							},
+						},
+					},
+				},
+			};
+		},
+	} satisfies BetterAuthPlugin;
 };
