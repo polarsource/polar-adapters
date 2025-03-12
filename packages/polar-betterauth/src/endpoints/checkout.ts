@@ -4,61 +4,61 @@ import { z } from "zod";
 import type { PolarOptions } from "../types";
 
 export const checkout = (options: PolarOptions) =>
-	createAuthEndpoint(
-		"/checkout/:slug",
-		{
-			method: "GET",
-			query: z.object({
-				productId: z.string().optional(),
-			}),
-		},
-		async (ctx) => {
-			if (!options.checkout?.enabled) {
-				throw new APIError("BAD_REQUEST", {
-					message: "Checkout is not enabled",
-				});
-			}
+  createAuthEndpoint(
+    "/checkout/:slug",
+    {
+      method: "GET",
+      query: z.object({
+        productId: z.string().optional(),
+      }),
+    },
+    async (ctx) => {
+      if (!options.checkout?.enabled) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Checkout is not enabled",
+        });
+      }
 
-			let productId = ctx.query?.productId;
+      let productId = ctx.query?.productId;
 
-			if (ctx.params.slug) {
-				const products = await (typeof options.checkout.products === "function"
-					? options.checkout.products()
-					: options.checkout.products);
+      if (ctx.params.slug) {
+        const products = await (typeof options.checkout.products === "function"
+          ? options.checkout.products()
+          : options.checkout.products);
 
-				productId = products.find(
-					(product) => product.slug === ctx.params.slug,
-				)?.productId;
-			}
+        productId = products.find(
+          (product) => product.slug === ctx.params.slug,
+        )?.productId;
+      }
 
-			if (!productId) {
-				throw new APIError("BAD_REQUEST", {
-					message: "Product Id not found",
-				});
-			}
+      if (!productId) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Product Id not found",
+        });
+      }
 
-			const session = await getSessionFromCtx(ctx);
+      const session = await getSessionFromCtx(ctx);
 
-			try {
-				const checkout = await options.client.checkouts.create({
-					customerExternalId: session?.user.id,
-					productId,
-					successUrl: options.checkout.successUrl
-						? new URL(options.checkout.successUrl, ctx.request?.url).toString()
-						: undefined,
-				});
+      try {
+        const checkout = await options.client.checkouts.create({
+          customerExternalId: session?.user.id,
+          productId,
+          successUrl: options.checkout.successUrl
+            ? new URL(options.checkout.successUrl, ctx.request?.url).toString()
+            : undefined,
+        });
 
-				return ctx.redirect(checkout.url);
-			} catch (e: unknown) {
-				if (e instanceof Error) {
-					ctx.context.logger.error(
-						`Polar checkout creation failed. Error: ${e.message}`,
-					);
-				}
+        return ctx.redirect(checkout.url);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          ctx.context.logger.error(
+            `Polar checkout creation failed. Error: ${e.message}`,
+          );
+        }
 
-				throw new APIError("INTERNAL_SERVER_ERROR", {
-					message: "Checkout creation failed",
-				});
-			}
-		},
-	);
+        throw new APIError("INTERNAL_SERVER_ERROR", {
+          message: "Checkout creation failed",
+        });
+      }
+    },
+  );
