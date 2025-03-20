@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.8
+
+### Patch Changes
+
+- e5bb5e9: Fix checkout route
+
 ## 0.0.7
 
 ### Patch Changes

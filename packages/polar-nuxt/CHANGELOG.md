@@ -1,5 +1,11 @@
 # @polar-sh/nuxt
 
+## 0.2.4
+
+### Patch Changes
+
+- 37be31a: Improve error messaging
+
 ## 0.2.3
 
 ### Patch Changes
