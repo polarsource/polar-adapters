@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.1.15
+
+### Patch Changes
+
+- ff2ce69: Add new order webhook support
+
 ## 0.1.14
 
 ### Patch Changes
