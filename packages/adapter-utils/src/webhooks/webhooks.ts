@@ -7,7 +7,9 @@ import type { WebhookBenefitUpdatedPayload } from "@polar-sh/sdk/models/componen
 import type { WebhookCheckoutCreatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutcreatedpayload";
 import type { WebhookCheckoutUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutupdatedpayload";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload";
+import type { WebhookOrderPaidPayload } from "@polar-sh/sdk/models/components/webhookorderpaidpayload";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload";
+import type { WebhookOrderUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorderupdatedpayload";
 import type { WebhookOrganizationUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorganizationupdatedpayload";
 import type { WebhookProductCreatedPayload } from "@polar-sh/sdk/models/components/webhookproductcreatedpayload";
 import type { WebhookProductUpdatedPayload } from "@polar-sh/sdk/models/components/webhookproductupdatedpayload";
@@ -32,6 +34,8 @@ export interface WebhooksConfig {
   onCheckoutCreated?: (payload: WebhookCheckoutCreatedPayload) => Promise<void>;
   onCheckoutUpdated?: (payload: WebhookCheckoutUpdatedPayload) => Promise<void>;
   onOrderCreated?: (payload: WebhookOrderCreatedPayload) => Promise<void>;
+  onOrderUpdated?: (payload: WebhookOrderUpdatedPayload) => Promise<void>;
+  onOrderPaid?: (payload: WebhookOrderPaidPayload) => Promise<void>;
   onOrderRefunded?: (payload: WebhookOrderRefundedPayload) => Promise<void>;
   onRefundCreated?: (payload: WebhookRefundCreatedPayload) => Promise<void>;
   onRefundUpdated?: (payload: WebhookRefundUpdatedPayload) => Promise<void>;
@@ -101,6 +105,16 @@ export const handleWebhookPayload = async (
     case "order.created":
       if (eventHandlers.onOrderCreated) {
         promises.push(eventHandlers.onOrderCreated(payload));
+      }
+      break;
+    case "order.updated":
+      if (eventHandlers.onOrderUpdated) {
+        promises.push(eventHandlers.onOrderUpdated(payload));
+      }
+      break;
+    case "order.paid":
+      if (eventHandlers.onOrderPaid) {
+        promises.push(eventHandlers.onOrderPaid(payload));
       }
       break;
     case "subscription.created":

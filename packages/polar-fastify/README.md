@@ -73,6 +73,8 @@ The Webhook handler also supports granular handlers for easy integration.
 - onCheckoutCreated: (payload) =>
 - onCheckoutUpdated: (payload) =>
 - onOrderCreated: (payload) =>
+- onOrderUpdated: (payload) =>
+- onOrderPaid: (payload) =>
 - onSubscriptionCreated: (payload) =>
 - onSubscriptionUpdated: (payload) =>
 - onSubscriptionActive: (payload) =>
