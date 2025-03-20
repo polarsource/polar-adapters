@@ -28,6 +28,8 @@ export const webhooks = (options: PolarOptions) =>
 				onCheckoutCreated,
 				onCheckoutUpdated,
 				onOrderCreated,
+				onOrderPaid,
+				onOrderUpdated,
 				onOrderRefunded,
 				onRefundCreated,
 				onRefundUpdated,
@@ -104,6 +106,16 @@ export const webhooks = (options: PolarOptions) =>
 					case "order.created":
 						if (onOrderCreated) {
 							onOrderCreated(event);
+						}
+						break;
+					case "order.paid":
+						if (onOrderPaid) {
+							onOrderPaid(event);
+						}
+						break;
+					case "order.updated":
+						if (onOrderUpdated) {
+							onOrderUpdated(event);
 						}
 						break;
 					case "subscription.created":
