@@ -1,5 +1,5 @@
 import { betterAuth, logger } from "better-auth";
-import { polar, polarAuth } from "@polar-sh/better-auth";
+import { polar } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 import Database from "better-sqlite3";
 
