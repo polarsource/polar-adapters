@@ -1,5 +1,13 @@
 # @polar-sh/astro
 
+## 0.3.15
+
+### Patch Changes
+
+- ff2ce69: Add new order webhook support
+- Updated dependencies [ff2ce69]
+  - @polar-sh/adapter-utils@0.1.15
+
 ## 0.3.14
 
 ### Patch Changes

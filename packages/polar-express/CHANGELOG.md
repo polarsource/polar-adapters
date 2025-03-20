@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.2.21
+
+### Patch Changes
+
+- ff2ce69: Add new order webhook support
+- Updated dependencies [ff2ce69]
+  - @polar-sh/adapter-utils@0.1.15
+
 ## 0.2.20
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.9
+
+### Patch Changes
+
+- ff2ce69: Add new order webhook support
+
 ## 0.0.8
 
 ### Patch Changes
