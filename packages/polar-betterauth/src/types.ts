@@ -11,7 +11,9 @@ import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload.js";
 import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload.js";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload.js";
+import type { WebhookOrderPaidPayload } from "@polar-sh/sdk/models/components/webhookorderpaidpayload.js";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload.js";
+import type { WebhookOrderUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorderupdatedpayload.js";
 import type { WebhookOrganizationUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorganizationupdatedpayload.js";
 import type { WebhookProductCreatedPayload } from "@polar-sh/sdk/models/components/webhookproductcreatedpayload.js";
 import type { WebhookProductUpdatedPayload } from "@polar-sh/sdk/models/components/webhookproductupdatedpayload.js";
@@ -110,6 +112,14 @@ export interface PolarOptions {
 		 * Webhook for order created
 		 */
 		onOrderCreated?: (payload: WebhookOrderCreatedPayload) => Promise<void>;
+		/**
+		 * Webhook for order paid
+		 */
+		onOrderPaid?: (payload: WebhookOrderPaidPayload) => Promise<void>;
+		/**
+		 * Webhook for order updated
+		 */
+		onOrderUpdated?: (payload: WebhookOrderUpdatedPayload) => Promise<void>;
 		/**
 		 * Webhook for order refunded
 		 */
