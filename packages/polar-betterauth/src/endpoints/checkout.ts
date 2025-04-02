@@ -29,6 +29,12 @@ export const checkout = (options: PolarOptions) =>
 
 			const session = await getSessionFromCtx(ctx);
 
+			if (options.checkout?.onlyAuthenticated && !session?.user.id) {
+				throw new APIError("UNAUTHORIZED", {
+					message: "User not authenticated",
+				});
+			}
+
 			try {
 				const checkout = await options.client.checkouts.create({
 					customerExternalId: session?.user.id,
@@ -84,6 +90,12 @@ export const checkoutWithSlug = (options: PolarOptions) =>
 			}
 
 			const session = await getSessionFromCtx(ctx);
+
+			if (options.checkout?.onlyAuthenticated && !session?.user.id) {
+				throw new APIError("UNAUTHORIZED", {
+					message: "User not authenticated",
+				});
+			}
 
 			try {
 				const checkout = await options.client.checkouts.create({
