@@ -1,4 +1,4 @@
-import { validateEvent } from "@polar-sh/sdk/webhooks.js";
+import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { APIError } from "better-auth/api";
 import { createAuthEndpoint } from "better-auth/plugins";
 import type { PolarOptions } from "../types";
