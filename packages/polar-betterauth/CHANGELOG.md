@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.10
+
+### Patch Changes
+
+- f2433b0: fix webhooks imports
+
 ## 0.0.9
 
 ### Patch Changes
