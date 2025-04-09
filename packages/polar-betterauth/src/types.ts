@@ -74,6 +74,12 @@ export interface PolarOptions {
 		 */
 		enabled: boolean;
 		/**
+		 * Restrict checkout to authenticated users
+		 *
+		 * @default false
+		 */
+		onlyAuthenticated?: boolean;
+		/**
 		 * List of products
 		 */
 		products: Product[] | (() => Promise<Product[]>);
