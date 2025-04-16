@@ -1,4 +1,5 @@
 import type { GenericEndpointContext, User } from "better-auth";
+import { APIError } from "better-auth/api";
 import type { PolarOptions } from "../types";
 
 export const onUserCreate =
@@ -36,15 +37,16 @@ export const onUserCreate =
 					});
 				}
 			} catch (e: unknown) {
+				// Throw a better auth ApiError to ensure the user isn't created
 				if (e instanceof Error) {
-					ctx.context.logger.error(
-						`Polar customer creation failed. Error: ${e.message}`,
-					);
-				} else {
-					ctx.context.logger.error(
-						`Polar customer creation failed. Error: ${e}`,
-					);
+					throw new APIError("INTERNAL_SERVER_ERROR", {
+						message: `Polar customer creation failed. Error: ${e.message}`,
+					});
 				}
+
+				throw new APIError("INTERNAL_SERVER_ERROR", {
+					message: `Polar customer creation failed. Error: ${e}`,
+				});
 			}
 		}
 	};
