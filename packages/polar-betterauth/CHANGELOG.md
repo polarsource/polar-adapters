@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.0.11
+
+### Patch Changes
+
+- fc6c8a6: Throw API error when customer creation fails
+
 ## 0.0.10
 
 ### Patch Changes
