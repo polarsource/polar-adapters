@@ -1,6 +1,6 @@
 # @polar-sh/tanstack-start
 
-Payments and Checkouts made dead simple with [Tanstack Start](https://tanstack.com/start)
+Payments and Checkouts made dead simple with [TanStack Start](https://tanstack.com/start)
 
 `pnpm install @polar-sh/tanstack-start zod`
 
