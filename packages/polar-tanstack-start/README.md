@@ -1,6 +1,6 @@
 # @polar-sh/tanstack-start
 
-Payments and Checkouts made dead simple with [TanStack Start](https://tanstack.com/start)
+Payments and Checkouts made dead simple with [Tanstack Start](https://tanstack.com/start)
 
 `pnpm install @polar-sh/tanstack-start zod`
 
@@ -14,11 +14,11 @@ import { Checkout } from '@polar-sh/tanstack-start'
 import { createAPIFileRoute } from '@tanstack/react-start/api'
 
 export const APIRoute = createAPIFileRoute('/api/checkout')({
-  GET: Checkout({
-    accessToken: process.env.POLAR_ACCESS_TOKEN,
-    successUrl: process.env.SUCCESS_URL,
+    GET: Checkout({
+        accessToken: process.env.POLAR_ACCESS_TOKEN,
+        successUrl: process.env.SUCCESS_URL,
 		server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
-  })
+    })
 })
 ```
 
@@ -42,10 +42,11 @@ Create a customer portal where your customer can view orders and subscriptions.
 // routes/api/portal.ts
 import { CustomerPortal } from '@polar-sh/tanstack-start';
 import { createAPIFileRoute } from '@tanstack/react-start/api';
+import { getSupabaseServerClient } from '~/servers/supabase-server';
 
 export const APIRoute = createAPIFileRoute('/api/portal')({
-  GET: CustomerPortal({
-    accessToken: process.env.POLAR_ACCESS_TOKEN,
+    GET: CustomerPortal({
+      	accessToken: process.env.POLAR_ACCESS_TOKEN,
 		getCustomerId: async (request: Request) => "", // Fuction to resolve a Polar Customer ID
 		server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
 	})
