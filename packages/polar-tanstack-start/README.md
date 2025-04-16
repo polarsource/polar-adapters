@@ -42,7 +42,6 @@ Create a customer portal where your customer can view orders and subscriptions.
 // routes/api/portal.ts
 import { CustomerPortal } from '@polar-sh/tanstack-start';
 import { createAPIFileRoute } from '@tanstack/react-start/api';
-import { getSupabaseServerClient } from '~/servers/supabase-server';
 
 export const APIRoute = createAPIFileRoute('/api/portal')({
     GET: CustomerPortal({
