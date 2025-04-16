@@ -14,11 +14,11 @@ import { Checkout } from '@polar-sh/tanstack-start'
 import { createAPIFileRoute } from '@tanstack/react-start/api'
 
 export const APIRoute = createAPIFileRoute('/api/checkout')({
-    GET: Checkout({
-        accessToken: process.env.POLAR_ACCESS_TOKEN,
-        successUrl: process.env.SUCCESS_URL,
+  GET: Checkout({
+    accessToken: process.env.POLAR_ACCESS_TOKEN,
+    successUrl: process.env.SUCCESS_URL,
 		server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
-    })
+  })
 })
 ```
 
@@ -44,8 +44,8 @@ import { CustomerPortal } from '@polar-sh/tanstack-start';
 import { createAPIFileRoute } from '@tanstack/react-start/api';
 
 export const APIRoute = createAPIFileRoute('/api/portal')({
-    GET: CustomerPortal({
-      	accessToken: process.env.POLAR_ACCESS_TOKEN,
+  GET: CustomerPortal({
+    accessToken: process.env.POLAR_ACCESS_TOKEN,
 		getCustomerId: async (request: Request) => "", // Fuction to resolve a Polar Customer ID
 		server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
 	})
