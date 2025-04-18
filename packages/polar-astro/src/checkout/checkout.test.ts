@@ -29,29 +29,13 @@ import { describe, expect, it, vi } from "vitest";
 import { Checkout } from "./checkout";
 
 describe("Checkout middleware", () => {
-	it("should redirect to checkout when productId is valid", async () => {
-		const response = await Checkout({
-			accessToken: "mock-access-token",
-		})({
-			url: new URL(
-				new Request("http://localhost:3000/?productId=mock-product-id").url,
-			),
-		} as APIContext);
-
-		expect(response).toBeInstanceOf(Response);
-		expect((response as Response).status).toBe(302);
-		expect((response as Response).headers.get("Location")).toBe(
-			mockCheckoutUrl,
-		);
-	});
-
-	it("should redirect to checkout when productPriceId is valid", async () => {
+	it("should redirect to checkout when products is valid", async () => {
 		const response = await Checkout({
 			accessToken: "mock-access-token",
 		})({
 			url: new URL(
 				new Request(
-					"http://localhost:3000/?productPriceId=mock-product-price-id",
+					"http://localhost:3000/?products=product-1&products=product-2",
 				).url,
 			),
 		} as APIContext);
@@ -63,7 +47,7 @@ describe("Checkout middleware", () => {
 		);
 	});
 
-	it("should return 400 when productId and productPriceId are not defined", async () => {
+	it("should return 400 when products is not defined", async () => {
 		const response = await Checkout({
 			accessToken: "mock-access-token",
 		})({
@@ -73,7 +57,7 @@ describe("Checkout middleware", () => {
 		expect(response).toBeInstanceOf(Response);
 		expect((response as Response).status).toBe(400);
 		expect(await (response as Response).json()).toEqual({
-			error: "Missing productId or productPriceId in query params",
+			error: "Missing products in query params",
 		});
 	});
 });

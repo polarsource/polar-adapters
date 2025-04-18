@@ -30,7 +30,7 @@ import { describe, it, vi } from "vitest";
 import { Checkout } from "./checkout";
 
 describe("Checkout middleware", () => {
-	it("should redirect to checkout when productId is valid", async () => {
+	it("should redirect to checkout when products is valid", async () => {
 		const app = express();
 		app.get(
 			"/",
@@ -40,7 +40,7 @@ describe("Checkout middleware", () => {
 		);
 
 		supertest(app)
-			.get("/?productId=mock-product-id")
+			.get("/?products=mock-product-id")
 			.expect(302)
 			.expect("location", mockCheckoutUrl)
 			.end((err) => {
@@ -50,27 +50,7 @@ describe("Checkout middleware", () => {
 			});
 	});
 
-	it("should redirect to checkout when productPriceId is valid", async () => {
-		const app = express();
-		app.get(
-			"/",
-			Checkout({
-				accessToken: "mock-access-token",
-			}),
-		);
-
-		supertest(app)
-			.get("/?productPriceId=mock-product-price-id")
-			.expect(302)
-			.expect("location", mockCheckoutUrl)
-			.end((err) => {
-				if (err) {
-					throw err;
-				}
-			});
-	});
-
-	it("should return 400 when productId and productPriceId are not defined", async () => {
+	it("should return 400 when products is not defined", async () => {
 		const app = express();
 		app.get(
 			"/",
@@ -83,7 +63,7 @@ describe("Checkout middleware", () => {
 			.get("/")
 			.expect(400)
 			.expect({
-				error: "Missing productId or productPriceId in query params",
+				error: "Missing products in query params",
 			})
 			.end((err) => {
 				if (err) {

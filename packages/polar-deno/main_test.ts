@@ -8,19 +8,19 @@ import { describe, it } from "https://deno.land/std/testing/bdd.ts";
 import { Checkout, CustomerPortal, Webhooks } from "./main.ts";
 
 describe("Checkout", () => {
-  it("should return 400 if productId is missing", async () => {
+  it("should return 400 if products is missing", async () => {
     const checkout = Checkout({ accessToken: "test-token" });
     const request = new Request("https://example.com");
     const response = await checkout(request);
 
     assertEquals(response.status, 400);
     const body = await response.json();
-    assertEquals(body.error, "Missing productId in query params");
+    assertEquals(body.error, "Missing products in query params");
   });
 
   it("should redirect to checkout URL on successful creation", async () => {
     const checkout = Checkout({ accessToken: "test-token" });
-    const request = new Request("https://example.com?productId=123");
+    const request = new Request("https://example.com?products=123");
     const response = await checkout(request);
 
     const url = new URL(response.headers.get("location") ?? "");

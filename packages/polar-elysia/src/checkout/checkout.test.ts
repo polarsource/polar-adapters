@@ -29,7 +29,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Checkout } from "./checkout";
 
 describe("Checkout middleware", () => {
-	it("should redirect to checkout when productId is valid", async () => {
+	it("should redirect to checkout when products is valid", async () => {
 		const app = new Elysia();
 		app.get(
 			"/",
@@ -39,31 +39,14 @@ describe("Checkout middleware", () => {
 		);
 
 		const response = await app.handle(
-			new Request("http://localhost/?productId=mock-product-id"),
+			new Request("http://localhost/?products=mock-product-id"),
 		);
 
 		expect(response.status).toBe(302);
 		expect(response.headers.get("location")).toBe(mockCheckoutUrl);
 	});
 
-	it("should redirect to checkout when productPriceId is valid", async () => {
-		const app = new Elysia();
-		app.get(
-			"/",
-			Checkout({
-				accessToken: "mock-access-token",
-			}),
-		);
-
-		const response = await app.handle(
-			new Request("http://localhost/?productPriceId=mock-product-price-id"),
-		);
-
-		expect(response.status).toBe(302);
-		expect(response.headers.get("location")).toBe(mockCheckoutUrl);
-	});
-
-	it("should return 400 when productId and productPriceId are not defined", async () => {
+	it("should return 400 when products are not defined", async () => {
 		const app = new Elysia();
 		app.get(
 			"/",
@@ -76,7 +59,7 @@ describe("Checkout middleware", () => {
 
 		expect(response.status).toBe(400);
 		expect(await response.json()).toEqual({
-			error: "Missing productId or productPriceId in query params",
+			error: "Missing products in query params",
 		});
 	});
 
@@ -94,7 +77,7 @@ describe("Checkout middleware", () => {
 		};
 
 		const url = new URL("http://localhost/");
-		url.searchParams.set("productId", "mock-product-id");
+		url.searchParams.set("products", "mock-product-id");
 		url.searchParams.set("metadata", JSON.stringify(metadata));
 
 		const response = await app.handle(new Request(url.toString()));
@@ -102,7 +85,7 @@ describe("Checkout middleware", () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.get("location")).toBe(mockCheckoutUrl);
 		expect(mockCheckoutCreate).toHaveBeenCalledWith({
-			productId: "mock-product-id",
+			products: ["mock-product-id"],
 			metadata,
 		});
 	});
