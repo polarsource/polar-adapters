@@ -1,53 +1,53 @@
 {
-	"name": "@polar-sh/fastify",
-	"version": "0.1.21",
-	"description": "Polar integration for Fastify",
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		"import": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		},
-		"require": {
-			"types": "./dist/index.d.cts",
-			"require": "./dist/index.cjs"
-		}
-	},
-	"engines": {
-		"node": ">=18"
-	},
-	"type": "module",
-	"scripts": {
-		"test": "vitest",
-		"build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
-		"dev": "tsc --watch",
-		"check": "biome check --write ./src"
-	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"fastify",
-		"payments",
-		"subscriptions"
-	],
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@sindresorhus/tsconfig": "^7.0.0",
-		"@types/node": "^20.0.0",
-		"fastify": "^5.2.1",
-		"prettier": "^3.2.5",
-		"tsup": "^8.3.5",
-		"vitest": "^2.1.8"
-	},
-	"dependencies": {
-		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.32.0"
-	},
-	"peerDependencies": {
-		"fastify": "^5.2.1"
-	}
+  "name": "@polar-sh/fastify",
+  "version": "0.1.21",
+  "description": "Polar integration for Fastify",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
+    "dev": "tsc --watch",
+    "check": "biome check --write ./src"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "polar",
+    "fastify",
+    "payments",
+    "subscriptions"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@sindresorhus/tsconfig": "^7.0.0",
+    "@types/node": "^20.0.0",
+    "fastify": "^5.2.1",
+    "prettier": "^3.2.5",
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@polar-sh/adapter-utils": "workspace:*",
+    "@polar-sh/sdk": "^0.32.11"
+  },
+  "peerDependencies": {
+    "fastify": "^5.2.1"
+  }
 }

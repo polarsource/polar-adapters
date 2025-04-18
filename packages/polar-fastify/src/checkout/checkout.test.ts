@@ -29,7 +29,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Checkout } from "./checkout";
 
 describe("Checkout middleware", () => {
-	it("should redirect to checkout when productId is valid", async () => {
+	it("should redirect to checkout when products is valid", async () => {
 		const app = fastify();
 		app.get(
 			"/",
@@ -39,7 +39,7 @@ describe("Checkout middleware", () => {
 		);
 
 		const response = await app.inject({
-			url: "http://localhost/?productId=mock-product-id",
+			url: "http://localhost/?products=mock-product-id",
 			method: "GET",
 		});
 
@@ -47,25 +47,7 @@ describe("Checkout middleware", () => {
 		expect(response.headers["location"]).toBe(mockCheckoutUrl);
 	});
 
-	it("should redirect to checkout when productPriceId is valid", async () => {
-		const app = fastify();
-		app.get(
-			"/",
-			Checkout({
-				accessToken: "mock-access-token",
-			}),
-		);
-
-		const response = await app.inject({
-			url: "http://localhost/?productPriceId=mock-product-price-id",
-			method: "GET",
-		});
-
-		expect(response.statusCode).toBe(302);
-		expect(response.headers["location"]).toBe(mockCheckoutUrl);
-	});
-
-	it("should return 400 when productId and productPriceId are not defined", async () => {
+	it("should return 400 when products is not defined", async () => {
 		const app = fastify();
 		app.get(
 			"/",
@@ -81,7 +63,7 @@ describe("Checkout middleware", () => {
 
 		expect(response.statusCode).toBe(400);
 		expect(response.json()).toEqual({
-			error: "Missing productId or productPriceId in query params",
+			error: "Missing products in query params",
 		});
 	});
 });

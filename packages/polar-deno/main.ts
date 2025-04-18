@@ -36,11 +36,11 @@ export const Checkout = ({
 
   return async (request: Request) => {
     const url = new URL(request.url);
-    const productId = url.searchParams.get("productId");
+    const products = url.searchParams.getAll("products");
 
-    if (!productId) {
+    if (products.length === 0) {
       return new Response(
-        JSON.stringify({ error: "Missing productId in query params" }),
+        JSON.stringify({ error: "Missing products in query params" }),
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -56,7 +56,7 @@ export const Checkout = ({
 
     try {
       const result = await polar.checkouts.create({
-        productId,
+        products,
         successUrl: success ? decodeURI(success.toString()) : undefined,
         customerId: url.searchParams.get("customerId") ?? undefined,
         customerExternalId:
