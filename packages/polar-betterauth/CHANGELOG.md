@@ -1,5 +1,17 @@
 # @polar-sh/hono
 
+## 0.1.0
+
+### Minor Changes
+
+- 70362f0: ## Breaking changes
+
+  Checkout endpoints no longer support `productId` and `productPriceId` parameter to pass the product. Use `products` instead.
+
+  ## Added
+
+  Checkout endpoints now support the `products` parameter. You can repeat it to pass several products to the Checkout session.
+
 ## 0.0.11
 
 ### Patch Changes

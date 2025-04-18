@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/astro",
-  "version": "0.3.15",
+  "version": "0.4.0",
   "description": "Polar integration for Astro",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

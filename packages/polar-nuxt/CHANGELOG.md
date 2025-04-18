@@ -1,5 +1,22 @@
 # @polar-sh/nuxt
 
+## 0.3.0
+
+### Minor Changes
+
+- 70362f0: ## Breaking changes
+
+  Checkout endpoints no longer support `productId` and `productPriceId` parameter to pass the product. Use `products` instead.
+
+  ## Added
+
+  Checkout endpoints now support the `products` parameter. You can repeat it to pass several products to the Checkout session.
+
+### Patch Changes
+
+- Updated dependencies [70362f0]
+  - @polar-sh/adapter-utils@0.2.0
+
 ## 0.2.5
 
 ### Patch Changes
