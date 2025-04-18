@@ -9,7 +9,7 @@ export const checkout = (options: PolarOptions) =>
 		{
 			method: "GET",
 			query: z.object({
-				productId: z.string(),
+				products: z.array(z.string()),
 			}),
 		},
 		async (ctx) => {
@@ -19,20 +19,13 @@ export const checkout = (options: PolarOptions) =>
 				});
 			}
 
-			const productId = ctx.query?.productId;
-
-			if (!productId) {
-				throw new APIError("BAD_REQUEST", {
-					message: "Product Id not found",
-				});
-			}
-
+			const products = ctx.query.products;
 			const session = await getSessionFromCtx(ctx);
 
 			try {
 				const checkout = await options.client.checkouts.create({
 					customerExternalId: session?.user.id,
-					productId,
+					products,
 					successUrl: options.checkout.successUrl
 						? new URL(options.checkout.successUrl, ctx.request?.url).toString()
 						: undefined,
@@ -88,7 +81,7 @@ export const checkoutWithSlug = (options: PolarOptions) =>
 			try {
 				const checkout = await options.client.checkouts.create({
 					customerExternalId: session?.user.id,
-					productId,
+					products: [productId],
 					successUrl: options.checkout.successUrl
 						? new URL(options.checkout.successUrl, ctx.request?.url).toString()
 						: undefined,

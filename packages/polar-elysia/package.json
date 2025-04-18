@@ -1,53 +1,53 @@
 {
-	"name": "@polar-sh/elysia",
-	"version": "0.1.23",
-	"description": "Polar integration for Elysia",
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		"import": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		},
-		"require": {
-			"types": "./dist/index.d.cts",
-			"require": "./dist/index.cjs"
-		}
-	},
-	"engines": {
-		"node": ">=18"
-	},
-	"type": "module",
-	"scripts": {
-		"test": "vitest",
-		"build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
-		"dev": "tsc --watch",
-		"check": "biome check --write ./src"
-	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"elysia",
-		"payments",
-		"subscriptions"
-	],
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@sindresorhus/tsconfig": "^7.0.0",
-		"@types/node": "^20.0.0",
-		"elysia": "^1.2.10",
-		"prettier": "^3.2.5",
-		"tsup": "^8.3.5",
-		"vitest": "^2.1.8"
-	},
-	"dependencies": {
-		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.32.0"
-	},
-	"peerDependencies": {
-		"elysia": "^1.2.10"
-	}
+  "name": "@polar-sh/elysia",
+  "version": "0.1.23",
+  "description": "Polar integration for Elysia",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
+    "dev": "tsc --watch",
+    "check": "biome check --write ./src"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "polar",
+    "elysia",
+    "payments",
+    "subscriptions"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@sindresorhus/tsconfig": "^7.0.0",
+    "@types/node": "^20.0.0",
+    "elysia": "^1.2.10",
+    "prettier": "^3.2.5",
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@polar-sh/adapter-utils": "workspace:*",
+    "@polar-sh/sdk": "^0.32.11"
+  },
+  "peerDependencies": {
+    "elysia": "^1.2.10"
+  }
 }

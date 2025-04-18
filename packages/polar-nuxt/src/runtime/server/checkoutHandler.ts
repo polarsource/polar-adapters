@@ -10,8 +10,7 @@ export interface CheckoutConfig {
 }
 
 const checkoutQuerySchema = z.object({
-	productId: z.string().nonempty().optional(),
-	productPriceId: z.string().nonempty().optional(),
+	products: z.array(z.string().nonempty()),
 	customerId: z.string().nonempty().optional(),
 	customerExternalId: z.string().nonempty().optional(),
 	customerEmail: z.string().email().optional(),
@@ -38,8 +37,7 @@ export const Checkout = ({
 }: CheckoutConfig) => {
 	return async (event: H3Event) => {
 		const {
-			productId,
-			productPriceId,
+			products,
 			customerId,
 			customerExternalId,
 			customerEmail,
@@ -53,16 +51,6 @@ export const Checkout = ({
 			metadata,
 		} = await getValidatedQuery(event, checkoutQuerySchema.parse);
 
-		if (!productId && !productPriceId) {
-			console.error(
-				"Failed to checkout, missing productId or productPriceId in query params",
-			);
-			throw createError({
-				statusCode: 400,
-				message: "Missing productId or productPriceId in query params",
-			});
-		}
-
 		try {
 			const success = successUrl ? new URL(successUrl) : undefined;
 
@@ -73,9 +61,7 @@ export const Checkout = ({
 			const polar = new Polar({ accessToken, server });
 
 			const result = await polar.checkouts.create({
-				...(productId
-					? { productId }
-					: { productPriceId: productPriceId ?? "" }),
+				products,
 				successUrl: success ? decodeURI(success.toString()) : undefined,
 				customerId,
 				customerExternalId,
