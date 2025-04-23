@@ -6,13 +6,14 @@ import {
 	WebhookVerificationError,
 	validateEvent,
 } from "@polar-sh/sdk/webhooks";
-import { StartAPIMethodCallback } from "@tanstack/react-start/api";
+import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 
 export {
 	EntitlementStrategy,
-	Entitlements, type EntitlementContext,
+	Entitlements,
+	type EntitlementContext,
 	type EntitlementHandler,
-	type EntitlementProperties
+	type EntitlementProperties,
 } from "@polar-sh/adapter-utils";
 
 export const Webhooks = <TPath extends string = string>({

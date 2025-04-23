@@ -1,5 +1,5 @@
 import { Polar } from "@polar-sh/sdk";
-import { StartAPIMethodCallback } from "@tanstack/react-start/api";
+import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 
 export interface CustomerPortalConfig {
 	accessToken: string;
