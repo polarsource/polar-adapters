@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 0.1.1
+
+### Patch Changes
+
+- 313b572: Fix query param parser in products endpoint
+
 ## 0.1.0
 
 ### Minor Changes
