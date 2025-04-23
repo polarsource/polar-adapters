@@ -9,7 +9,7 @@ export const checkout = (options: PolarOptions) =>
 		{
 			method: "GET",
 			query: z.object({
-				products: z.array(z.string()),
+				products: z.union([z.array(z.string()), z.string()]),
 			}),
 		},
 		async (ctx) => {
@@ -25,7 +25,7 @@ export const checkout = (options: PolarOptions) =>
 			try {
 				const checkout = await options.client.checkouts.create({
 					customerExternalId: session?.user.id,
-					products,
+					products: Array.isArray(products) ? products : [products],
 					successUrl: options.checkout.successUrl
 						? new URL(options.checkout.successUrl, ctx.request?.url).toString()
 						: undefined,
