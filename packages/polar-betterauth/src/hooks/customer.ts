@@ -37,7 +37,6 @@ export const onUserCreate =
 					});
 				}
 			} catch (e: unknown) {
-				// Throw a better auth ApiError to ensure the user isn't created
 				if (e instanceof Error) {
 					throw new APIError("INTERNAL_SERVER_ERROR", {
 						message: `Polar customer creation failed. Error: ${e.message}`,

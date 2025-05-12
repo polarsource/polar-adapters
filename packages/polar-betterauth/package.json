@@ -36,7 +36,7 @@
   ],
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@polar-sh/sdk": "^0.32.11",
+    "@polar-sh/sdk": "^0.32.13",
     "@sindresorhus/tsconfig": "^7.0.0",
     "@types/node": "^20.0.0",
     "better-auth": "^1.2.0",
@@ -47,7 +47,7 @@
     "zod": "^3.24.2"
   },
   "peerDependencies": {
-    "@polar-sh/sdk": "^0.32.11",
+    "@polar-sh/sdk": "^0.32.13",
     "better-auth": "^1.2.0"
   }
 }

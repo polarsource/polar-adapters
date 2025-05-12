@@ -22,6 +22,12 @@ export const checkout = (options: PolarOptions) =>
 			const products = ctx.query.products;
 			const session = await getSessionFromCtx(ctx);
 
+			if (options.checkout.authenticatedUsersOnly && !session?.user.id) {
+				throw new APIError("UNAUTHORIZED", {
+					message: "You must be logged in to checkout",
+				});
+			}
+
 			try {
 				const checkout = await options.client.checkouts.create({
 					customerExternalId: session?.user.id,
