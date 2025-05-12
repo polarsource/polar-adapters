@@ -1,5 +1,12 @@
 # @polar-sh/hono
 
+## 0.1.2
+
+### Patch Changes
+
+- ef8e777: Add authenticatedUsersOnly option and onOrderPaid hook
+- 1754b38: add authcheck to slugcheckout
+
 ## 0.1.1
 
 ### Patch Changes
