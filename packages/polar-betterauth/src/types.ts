@@ -11,6 +11,7 @@ import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload.js";
 import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload.js";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload.js";
+import type { WebhookOrderPaidPayload } from "@polar-sh/sdk/models/components/webhookorderpaidpayload.js";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload.js";
 import type { WebhookOrganizationUpdatedPayload } from "@polar-sh/sdk/models/components/webhookorganizationupdatedpayload.js";
 import type { WebhookProductCreatedPayload } from "@polar-sh/sdk/models/components/webhookproductcreatedpayload.js";
@@ -81,6 +82,10 @@ export interface PolarOptions {
 		 * Checkout Success URL
 		 */
 		successUrl?: string;
+		/**
+		 * Only allow authenticated customers to checkout
+		 */
+		authenticatedUsersOnly?: boolean;
 	};
 	/**
 	 * Webhooks
@@ -114,6 +119,10 @@ export interface PolarOptions {
 		 * Webhook for order refunded
 		 */
 		onOrderRefunded?: (payload: WebhookOrderRefundedPayload) => Promise<void>;
+		/**
+		 * Webhook for order paid
+		 */
+		onOrderPaid?: (payload: WebhookOrderPaidPayload) => Promise<void>;
 		/**
 		 * Webhook for refund created
 		 */
