@@ -38,15 +38,6 @@ export const subscriptions = {
 	},
 } satisfies AuthPluginSchema;
 
-export const getSchema = (options: PolarOptions) => {
-	if (options.subscriptions?.schema && !options.subscriptions?.enabled) {
-		options.subscriptions.schema.subscription = undefined;
-	}
-
-	return mergeSchema(
-		{
-			...(options.subscriptions?.enabled ? subscriptions : {}),
-		},
-		options.subscriptions?.schema,
-	);
+export const getSchema = (_options: PolarOptions) => {
+	return mergeSchema({}, {});
 };
