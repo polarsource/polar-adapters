@@ -10,7 +10,9 @@ export interface CheckoutConfig {
 }
 
 const checkoutQuerySchema = z.object({
-	products: z.array(z.string().nonempty()),
+	products: z.string()
+     .transform((value) => value.split(","))
+     .pipe( z.string().array() ),
 	customerId: z.string().nonempty().optional(),
 	customerExternalId: z.string().nonempty().optional(),
 	customerEmail: z.string().email().optional(),
