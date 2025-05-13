@@ -4,7 +4,7 @@ import type { PolarOptions } from "../types";
 
 export const customerState = (options: PolarOptions) =>
 	createAuthEndpoint(
-		"/state",
+		"/customer/state",
 		{
 			method: "GET",
 			use: [sessionMiddleware],

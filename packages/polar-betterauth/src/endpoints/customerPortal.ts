@@ -4,13 +4,13 @@ import type { PolarOptions } from "../types";
 
 export const customerPortal = (options: PolarOptions) =>
 	createAuthEndpoint(
-		"/portal",
+		"/customer/portal",
 		{
 			method: "GET",
 			use: [sessionMiddleware],
 		},
 		async (ctx) => {
-			if (!options.enableCustomerPortal) {
+			if (!options.customerPortal?.enabled) {
 				throw new APIError("BAD_REQUEST", {
 					message: "Customer portal is not enabled",
 				});
@@ -27,7 +27,10 @@ export const customerPortal = (options: PolarOptions) =>
 					customerExternalId: ctx.context.session?.user.id,
 				});
 
-				return ctx.redirect(customerSession.customerPortalUrl);
+				return ctx.json({
+					url: customerSession.customerPortalUrl,
+					redirect: true,
+				});
 			} catch (e: unknown) {
 				if (e instanceof Error) {
 					ctx.context.logger.error(
