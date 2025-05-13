@@ -8,7 +8,7 @@ import { authClient } from "@/lib/auth-client";
 export default function Home() {
 	const onClickCheckout = async () => {
 		const { data: state } = await authClient.checkout({
-			slug: "pro",
+			products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
 			referenceId: (await authClient.organization.list())?.data?.[0]?.id,
 		});
 	};
@@ -27,8 +27,22 @@ export default function Home() {
 			name: "My Organization",
 			slug: "my-organization",
 		});
+	};
 
-		console.log(state);
+	const onClickIngest = async () => {
+		const { data: ingestion } = await authClient.usage.ingest({
+			event: "user.created",
+			metadata: {
+				email: "test@test.com",
+			},
+		});
+
+		console.log(ingestion);
+	};
+
+	const onClickBenefits = async () => {
+		const { data: benefits } = await authClient.customer.benefits.list();
+		console.log(benefits);
 	};
 
 	return (
@@ -48,6 +62,12 @@ export default function Home() {
 				</button>
 				<button onClick={onClickOrganization} type="button">
 					Organization
+				</button>
+				<button onClick={onClickIngest} type="button">
+					Ingest
+				</button>
+				<button onClick={onClickBenefits} type="button">
+					Benefits
 				</button>
 			</div>
 		</div>
