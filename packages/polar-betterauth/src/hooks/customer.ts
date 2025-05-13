@@ -57,7 +57,7 @@ export const onUserUpdate =
 			try {
 				await options.client.customers.updateExternal({
 					externalId: user.id,
-					customerUpdate: {
+					customerUpdateExternalID: {
 						email: user.email,
 						name: user.name,
 					},

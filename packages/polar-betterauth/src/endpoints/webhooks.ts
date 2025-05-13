@@ -1,7 +1,7 @@
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { APIError } from "better-auth/api";
 import { createAuthEndpoint } from "better-auth/plugins";
-import type { PolarOptions } from "../types";
+import type { PolarOptions, Subscription } from "../types";
 
 export const webhooks = (options: PolarOptions) =>
 	createAuthEndpoint(
@@ -113,11 +113,40 @@ export const webhooks = (options: PolarOptions) =>
 						}
 						break;
 					case "subscription.created":
+						await ctx.context.adapter.create<Subscription>({
+							model: "subscription",
+							data: {
+								userId: event.data.customer.externalId ?? "",
+								subscriptionId: event.data.id,
+								referenceId: event.data.metadata["referenceId"] as string,
+								status: event.data.status,
+								periodStart: event.data.currentPeriodStart.toISOString(),
+								periodEnd: event.data.currentPeriodEnd?.toISOString(),
+								cancelAtPeriodEnd: event.data.cancelAtPeriodEnd,
+							},
+						});
+
 						if (onSubscriptionCreated) {
 							onSubscriptionCreated(event);
 						}
 						break;
 					case "subscription.updated":
+						await ctx.context.adapter.update<Subscription>({
+							model: "subscription",
+							where: [
+								{
+									field: "subscriptionId",
+									value: event.data.id,
+								},
+							],
+							update: {
+								status: event.data.status,
+								periodStart: event.data.currentPeriodStart.toISOString(),
+								periodEnd: event.data.currentPeriodEnd?.toISOString(),
+								cancelAtPeriodEnd: event.data.cancelAtPeriodEnd,
+							},
+						});
+
 						if (onSubscriptionUpdated) {
 							onSubscriptionUpdated(event);
 						}

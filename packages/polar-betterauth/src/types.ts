@@ -25,7 +25,8 @@ import type { WebhookSubscriptionRevokedPayload } from "@polar-sh/sdk/models/com
 import type { WebhookSubscriptionUncanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionuncanceledpayload.js";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload.js";
 import type { validateEvent } from "@polar-sh/sdk/webhooks.js";
-import type { Session, User } from "better-auth";
+import type { InferOptionSchema, Session, User } from "better-auth";
+import type { subscriptions } from "./schema";
 
 export type Product = {
 	/**
@@ -63,9 +64,14 @@ export interface PolarOptions {
 		metadata?: Record<string, string>;
 	}>;
 	/**
-	 * Enable customer portal
+	 * Customer Portal
 	 */
-	enableCustomerPortal?: boolean;
+	customerPortal?: {
+		/**
+		 * Enable customer portal
+		 */
+		enabled: boolean;
+	};
 	/**
 	 * Subscriptions
 	 */
@@ -75,7 +81,7 @@ export interface PolarOptions {
 		 */
 		enabled: boolean;
 		/**
-		 * List of products
+		 * Optional list of slug -> productId mappings for easy slug checkouts
 		 */
 		products: Product[] | (() => Promise<Product[]>);
 		/**
@@ -86,6 +92,16 @@ export interface PolarOptions {
 		 * Only allow authenticated customers to checkout
 		 */
 		authenticatedUsersOnly?: boolean;
+	};
+	subscriptions?: {
+		/**
+		 * Enable subscriptions
+		 */
+		enabled: boolean;
+		/**
+		 * Optional setting to sync Polar subscriptions data in your database
+		 */
+		schema?: InferOptionSchema<typeof subscriptions>;
 	};
 	/**
 	 * Webhooks
@@ -233,3 +249,20 @@ export interface PolarOptions {
 		) => Promise<void>;
 	};
 }
+
+export type Subscription = {
+	userId: string;
+	subscriptionId: string;
+	referenceId?: string;
+	status:
+		| "incomplete"
+		| "incomplete_expired"
+		| "trialing"
+		| "active"
+		| "past_due"
+		| "canceled"
+		| "unpaid";
+	periodStart?: string;
+	periodEnd?: string;
+	cancelAtPeriodEnd?: boolean;
+};
