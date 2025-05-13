@@ -20,9 +20,7 @@ export const auth = betterAuth({
 			client: polarSDK,
 			createCustomerOnSignUp: true,
 			use: [
-				checkout({
-					successUrl: "/?checkout_id={CHECKOUT_ID}",
-				}),
+				checkout(),
 				portal(),
 				credits(),
 				webhooks({
