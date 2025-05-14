@@ -1,5 +1,11 @@
 # @polar-sh/nuxt
 
+## 0.3.1
+
+### Patch Changes
+
+- ea09a2e: fix products as param
+
 ## 0.3.0
 
 ### Minor Changes
