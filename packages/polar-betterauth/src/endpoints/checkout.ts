@@ -10,6 +10,7 @@ export const checkout = (options: PolarOptions) =>
 			method: "GET",
 			query: z.object({
 				products: z.union([z.array(z.string()), z.string()]),
+				customerEmail: z.string().email().optional(),
 			}),
 		},
 		async (ctx) => {
@@ -30,6 +31,7 @@ export const checkout = (options: PolarOptions) =>
 
 			try {
 				const checkout = await options.client.checkouts.create({
+					customerEmail: ctx.query.customerEmail ?? session?.user.email,
 					customerExternalId: session?.user.id,
 					products: Array.isArray(products) ? products : [products],
 					successUrl: options.checkout.successUrl
@@ -60,8 +62,12 @@ export const checkoutWithSlug = (options: PolarOptions) =>
 			params: z.object({
 				slug: z.string(),
 			}),
+			query: z.object({
+				customerEmail: z.string().email().optional(),
+			}),
 		},
 		async (ctx) => {
+
 			if (!options.checkout?.enabled) {
 				throw new APIError("BAD_REQUEST", {
 					message: "Checkout is not enabled",
@@ -92,6 +98,7 @@ export const checkoutWithSlug = (options: PolarOptions) =>
 
 			try {
 				const checkout = await options.client.checkouts.create({
+					customerEmail: ctx.query.customerEmail ?? session?.user.email,
 					customerExternalId: session?.user.id,
 					products: [productId],
 					successUrl: options.checkout.successUrl
