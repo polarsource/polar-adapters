@@ -31,6 +31,18 @@ export const checkout =
 						products: z.union([z.array(z.string()), z.string()]).optional(),
 						slug: z.string().optional(),
 						referenceId: z.string().optional(),
+						customFieldData: z
+							.record(
+								z.string(),
+								z.union([z.string(), z.number(), z.boolean()]),
+							)
+							.optional(),
+						metadata: z
+							.record(
+								z.string(),
+								z.union([z.string(), z.number(), z.boolean()]),
+							)
+							.optional(),
 					}),
 				},
 				async (ctx) => {
@@ -80,8 +92,10 @@ export const checkout =
 							metadata: ctx.body.referenceId
 								? {
 										referenceId: ctx.body.referenceId,
+										...ctx.body.metadata,
 									}
-								: undefined,
+								: ctx.body.metadata,
+							customFieldData: ctx.body.customFieldData,
 						});
 
 						return ctx.json({

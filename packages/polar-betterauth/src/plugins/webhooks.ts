@@ -1,6 +1,5 @@
 import type { Polar } from "@polar-sh/sdk";
 import { APIError, createAuthEndpoint } from "better-auth/api";
-import type { Subscription } from "../types";
 import type { WebhookBenefitCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitcreatedpayload.js";
 import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload.js";
 import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload.js";
@@ -264,40 +263,11 @@ export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
 							}
 							break;
 						case "subscription.created":
-							await ctx.context.adapter.create<Subscription>({
-								model: "subscription",
-								data: {
-									userId: event.data.customer.externalId ?? "",
-									subscriptionId: event.data.id,
-									referenceId: event.data.metadata["referenceId"] as string,
-									status: event.data.status,
-									periodStart: event.data.currentPeriodStart.toISOString(),
-									periodEnd: event.data.currentPeriodEnd?.toISOString(),
-									cancelAtPeriodEnd: event.data.cancelAtPeriodEnd,
-								},
-							});
-
 							if (onSubscriptionCreated) {
 								onSubscriptionCreated(event);
 							}
 							break;
 						case "subscription.updated":
-							await ctx.context.adapter.update<Subscription>({
-								model: "subscription",
-								where: [
-									{
-										field: "subscriptionId",
-										value: event.data.id,
-									},
-								],
-								update: {
-									status: event.data.status,
-									periodStart: event.data.currentPeriodStart.toISOString(),
-									periodEnd: event.data.currentPeriodEnd?.toISOString(),
-									cancelAtPeriodEnd: event.data.cancelAtPeriodEnd,
-								},
-							});
-
 							if (onSubscriptionUpdated) {
 								onSubscriptionUpdated(event);
 							}

@@ -1,7 +1,9 @@
 import type { Polar } from "@polar-sh/sdk";
 
-import type { Endpoint, InferOptionSchema, Session, User } from "better-auth";
-import type { subscriptions } from "./schema";
+import type { Session, UnionToIntersection, User } from "better-auth";
+import type { checkout } from "./plugins/checkout";
+import type { webhooks } from "./plugins/webhooks";
+import type { usage } from "./plugins/usage";
 
 export type Product = {
 	/**
@@ -14,12 +16,14 @@ export type Product = {
 	slug: string;
 };
 
-export interface SubscriptionOptions {
-	/**
-	 * Optional setting to sync Polar subscriptions data in your database
-	 */
-	schema?: InferOptionSchema<typeof subscriptions>;
-}
+export type PolarPlugin =
+	| ReturnType<typeof checkout>
+	| ReturnType<typeof usage>
+	| ReturnType<typeof webhooks>;
+
+export type PolarPlugins = [PolarPlugin, ...PolarPlugin[]];
+
+export type PolarEndpoints = UnionToIntersection<ReturnType<PolarPlugin>>;
 
 export interface PolarOptions {
 	/**
@@ -48,22 +52,5 @@ export interface PolarOptions {
 	/**
 	 * Use Polar plugins
 	 */
-	use: ((polar: Polar) => Record<string, Endpoint>)[];
+	use: PolarPlugins;
 }
-
-export type Subscription = {
-	userId: string;
-	subscriptionId: string;
-	referenceId?: string;
-	status:
-		| "incomplete"
-		| "incomplete_expired"
-		| "trialing"
-		| "active"
-		| "past_due"
-		| "canceled"
-		| "unpaid";
-	periodStart?: string;
-	periodEnd?: string;
-	cancelAtPeriodEnd?: boolean;
-};
