@@ -1,11 +1,5 @@
 import { betterAuth, logger } from "better-auth";
-import {
-	polar,
-	checkout,
-	portal,
-	webhooks,
-	usage as credits,
-} from "@polar-sh/better-auth";
+import { polar, checkout, webhooks, usage } from "@polar-sh/better-auth";
 import Database from "better-sqlite3";
 import { polarSDK } from "./polar";
 import { organization } from "better-auth/plugins";
@@ -21,8 +15,7 @@ export const auth = betterAuth({
 			createCustomerOnSignUp: true,
 			use: [
 				checkout(),
-				portal(),
-				credits(),
+				usage(),
 				webhooks({
 					secret: process.env["POLAR_WEBHOOK_SECRET"] as string,
 				}),

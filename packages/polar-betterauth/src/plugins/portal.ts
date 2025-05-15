@@ -119,6 +119,54 @@ export const portal = () => (polar: Polar) => {
 				}
 			},
 		),
+		subscriptions: createAuthEndpoint(
+			"/customer/subscriptions/list",
+			{
+				method: "GET",
+				query: z
+					.object({
+						page: z.number().optional(),
+						limit: z.number().optional(),
+						active: z.boolean().optional(),
+					})
+					.optional(),
+				use: [sessionMiddleware],
+			},
+			async (ctx) => {
+				if (!ctx.context.session.user.id) {
+					throw new APIError("BAD_REQUEST", {
+						message: "User not found",
+					});
+				}
+
+				try {
+					const customerSession = await polar.customerSessions.create({
+						customerExternalId: ctx.context.session?.user.id,
+					});
+
+					const subscriptions = await polar.customerPortal.subscriptions.list(
+						{ customerSession: customerSession.token },
+						{
+							page: ctx.query?.page,
+							limit: ctx.query?.limit,
+							active: ctx.query?.active,
+						},
+					);
+
+					return ctx.json(subscriptions);
+				} catch (e: unknown) {
+					if (e instanceof Error) {
+						ctx.context.logger.error(
+							`Polar subscriptions list failed. Error: ${e.message}`,
+						);
+					}
+
+					throw new APIError("INTERNAL_SERVER_ERROR", {
+						message: "Polar subscriptions list failed",
+					});
+				}
+			},
+		),
 		orders: createAuthEndpoint(
 			"/customer/orders/list",
 			{

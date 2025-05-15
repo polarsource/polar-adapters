@@ -1,11 +1,6 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { onUserCreate, onUserUpdate } from "./hooks/customer";
-import type { PolarOptions } from "./types";
-import { getSchema } from "./schema";
-import type { checkout } from "./plugins/checkout";
-import type { portal } from "./plugins/portal";
-import type { webhooks } from "./plugins/webhooks";
-import type { usage } from "./plugins/usage";
+import type { PolarOptions, PolarEndpoints } from "./types";
 
 export { polarClient } from "./client";
 
@@ -14,20 +9,18 @@ export * from "./plugins/checkout";
 export * from "./plugins/usage";
 export * from "./plugins/webhooks";
 
-type PolarEndpoints = ReturnType<ReturnType<typeof checkout>> &
-	ReturnType<ReturnType<typeof usage>> &
-	ReturnType<ReturnType<typeof portal>> &
-	ReturnType<ReturnType<typeof webhooks>>;
-
 export const polar = <O extends PolarOptions>(options: O) => {
+	const plugins = options.use
+		.map((use) => use(options.client))
+		.reduce((acc, plugin) => {
+			Object.assign(acc, plugin);
+			return acc;
+		}, {} as PolarEndpoints);
+
 	return {
 		id: "polar",
 		endpoints: {
-			...(options.use.reduce((acc, use) => {
-				const endpoints = use(options.client);
-				Object.assign(acc, endpoints);
-				return acc;
-			}, {}) as PolarEndpoints),
+			...plugins,
 		},
 		init() {
 			return {
@@ -45,6 +38,5 @@ export const polar = <O extends PolarOptions>(options: O) => {
 				},
 			};
 		},
-		schema: getSchema(options),
 	} satisfies BetterAuthPlugin;
 };

@@ -66,7 +66,10 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 				method: "POST",
 				body: z.object({
 					event: z.string(),
-					metadata: z.record(z.any()),
+					metadata: z.record(
+						z.string(),
+						z.union([z.string(), z.number(), z.boolean()]),
+					),
 				}),
 				use: [sessionMiddleware],
 			},
