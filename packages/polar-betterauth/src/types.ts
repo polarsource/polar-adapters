@@ -2,8 +2,9 @@ import type { Polar } from "@polar-sh/sdk";
 
 import type { Session, UnionToIntersection, User } from "better-auth";
 import type { checkout } from "./plugins/checkout";
-import type { webhooks } from "./plugins/webhooks";
+import type { portal } from "./plugins/portal";
 import type { usage } from "./plugins/usage";
+import type { webhooks } from "./plugins/webhooks";
 
 export type Product = {
 	/**
@@ -19,6 +20,7 @@ export type Product = {
 export type PolarPlugin =
 	| ReturnType<typeof checkout>
 	| ReturnType<typeof usage>
+	| ReturnType<typeof portal>
 	| ReturnType<typeof webhooks>;
 
 export type PolarPlugins = [PolarPlugin, ...PolarPlugin[]];

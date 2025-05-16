@@ -1,6 +1,6 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { onUserCreate, onUserUpdate } from "./hooks/customer";
-import type { PolarOptions, PolarEndpoints } from "./types";
+import type { PolarEndpoints, PolarOptions } from "./types";
 
 export { polarClient } from "./client";
 

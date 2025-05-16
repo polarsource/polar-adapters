@@ -121,8 +121,8 @@ importers:
         specifier: 1.9.4
         version: 1.9.4
       '@polar-sh/sdk':
-        specifier: ^0.32.13
-        version: 0.32.13(zod@3.24.3)
+        specifier: ^0.32.15
+        version: 0.32.15(zod@3.24.3)
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
         version: 7.0.0
@@ -144,6 +144,9 @@ importers:
       '@polar-sh/better-auth':
         specifier: workspace:*
         version: link:..
+      '@polar-sh/sdk':
+        specifier: ^0.32.15
+        version: 0.32.15(zod@3.24.3)
       better-auth:
         specifier: 1.2.7
         version: 1.2.7
@@ -2534,8 +2537,8 @@ packages:
       '@modelcontextprotocol/sdk':
         optional: true
 
-  '@polar-sh/sdk@0.32.13':
-    resolution: {integrity: sha512-xBjcKRPWV2v5lX0DDIcF6pjItinBooPbUd0SynpmV7SNe0ibFgcNwyr85J68eG2QBU/U6SaHLxp09QgoA/gnEw==}
+  '@polar-sh/sdk@0.32.15':
+    resolution: {integrity: sha512-LUpV5z8+8QYiZ8kSYYhq8mtdr97l0NVHQhw8y4b+2ajW8halYQ761lLJ1bRMgmemWyHqpKuBnnfIqgCKv10jwg==}
     hasBin: true
     peerDependencies:
       '@modelcontextprotocol/sdk': '>=1.5.0 <1.10.0'
@@ -11078,7 +11081,7 @@ snapshots:
       standardwebhooks: 1.0.0
       zod: 3.24.3
 
-  '@polar-sh/sdk@0.32.13(zod@3.24.3)':
+  '@polar-sh/sdk@0.32.15(zod@3.24.3)':
     dependencies:
       standardwebhooks: 1.0.0
       zod: 3.24.3

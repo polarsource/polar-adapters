@@ -79,8 +79,8 @@ export const portal = () => (polar: Polar) => {
 				method: "GET",
 				query: z
 					.object({
-						page: z.number().optional(),
-						limit: z.number().optional(),
+						page: z.coerce.number().optional(),
+						limit: z.coerce.number().optional(),
 					})
 					.optional(),
 				use: [sessionMiddleware],
@@ -125,8 +125,9 @@ export const portal = () => (polar: Polar) => {
 				method: "GET",
 				query: z
 					.object({
-						page: z.number().optional(),
-						limit: z.number().optional(),
+						referenceId: z.string().optional(),
+						page: z.coerce.number().optional(),
+						limit: z.coerce.number().optional(),
 						active: z.boolean().optional(),
 					})
 					.optional(),
@@ -137,6 +138,32 @@ export const portal = () => (polar: Polar) => {
 					throw new APIError("BAD_REQUEST", {
 						message: "User not found",
 					});
+				}
+
+				if (ctx.query?.referenceId) {
+					try {
+						const subscriptions = await polar.subscriptions.list({
+							page: ctx.query?.page,
+							limit: ctx.query?.limit,
+							active: ctx.query?.active,
+							metadata: {
+								referenceId: ctx.query?.referenceId,
+							},
+						});
+
+						return ctx.json(subscriptions);
+					} catch (e: unknown) {
+						console.log(e);
+						if (e instanceof Error) {
+							ctx.context.logger.error(
+								`Polar subscriptions list with referenceId failed. Error: ${e.message}`,
+							);
+						}
+
+						throw new APIError("INTERNAL_SERVER_ERROR", {
+							message: "Subscriptions list with referenceId failed",
+						});
+					}
 				}
 
 				try {
@@ -173,8 +200,8 @@ export const portal = () => (polar: Polar) => {
 				method: "GET",
 				query: z
 					.object({
-						page: z.number().optional(),
-						limit: z.number().optional(),
+						page: z.coerce.number().optional(),
+						limit: z.coerce.number().optional(),
 						productBillingType: z.enum(["recurring", "one_time"]).optional(),
 					})
 					.optional(),

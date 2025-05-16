@@ -1,11 +1,11 @@
 import type { Polar } from "@polar-sh/sdk";
-import type { Product } from "../types";
 import {
 	APIError,
 	createAuthEndpoint,
 	sessionMiddleware,
 } from "better-auth/api";
 import { z } from "zod";
+import type { Product } from "../types";
 
 export interface UsageOptions {
 	/**
@@ -22,8 +22,8 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 				method: "GET",
 				use: [sessionMiddleware],
 				query: z.object({
-					page: z.number().optional(),
-					limit: z.number().optional(),
+					page: z.coerce.number().optional(),
+					limit: z.coerce.number().optional(),
 				}),
 			},
 			async (ctx) => {
