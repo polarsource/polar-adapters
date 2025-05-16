@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.0
+
+### Major Changes
+
+- 04e6c50: Add proper BetterAuth plugin with org support, client support, portal, etc.
+
 ## 0.1.2
 
 ### Patch Changes
