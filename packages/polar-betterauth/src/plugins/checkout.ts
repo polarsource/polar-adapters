@@ -1,7 +1,7 @@
+import type { Polar } from "@polar-sh/sdk";
 import { APIError, getSessionFromCtx } from "better-auth/api";
 import { createAuthEndpoint } from "better-auth/plugins";
 import { z } from "zod";
-import type { Polar } from "@polar-sh/sdk";
 import type { Product } from "../types";
 
 export interface CheckoutOptions {

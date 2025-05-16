@@ -1,5 +1,4 @@
 import type { Polar } from "@polar-sh/sdk";
-import { APIError, createAuthEndpoint } from "better-auth/api";
 import type { WebhookBenefitCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitcreatedpayload.js";
 import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload.js";
 import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload.js";
@@ -26,6 +25,7 @@ import type { WebhookSubscriptionRevokedPayload } from "@polar-sh/sdk/models/com
 import type { WebhookSubscriptionUncanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionuncanceledpayload.js";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload.js";
 import { validateEvent } from "@polar-sh/sdk/webhooks.js";
+import { APIError, createAuthEndpoint } from "better-auth/api";
 
 export interface WebhooksOptions {
 	/**

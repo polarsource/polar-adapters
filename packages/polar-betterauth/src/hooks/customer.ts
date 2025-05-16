@@ -25,6 +25,7 @@ export const onUserCreate =
 							id: existingCustomer.id,
 							customerUpdate: {
 								externalId: user.id,
+								...params,
 							},
 						});
 					}
