@@ -291,7 +291,7 @@ const { data: orders } = await authClient.customer.orders.list({
 This method lists the subscriptions associated with authenticated user/customer.
 
 ```typescript
-const { data: subscriptions } = await authClient.customer.orders.list({
+const { data: subscriptions } = await authClient.customer.subscriptions.list({
   query: {
     page: 1,
     limit: 10,
