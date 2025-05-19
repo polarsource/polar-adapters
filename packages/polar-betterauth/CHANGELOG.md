@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.1
+
+### Patch Changes
+
+- 2211b0a: Fix issue with getCustomerCreateParams option
+
 ## 1.0.0
 
 ### Major Changes
