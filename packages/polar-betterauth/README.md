@@ -117,8 +117,10 @@ const auth = betterAuth({
         polar({
             client: polarClient,
             createCustomerOnSignUp: true,
-            getCustomerCreateParams?: ({ user, session }, request) => ({
-                myCustomProperty: 123
+            getCustomerCreateParams?: ({ user }, request) => ({
+                metadata: {
+                    myCustomProperty: 123
+                }
             }),
             use: [
                 // This is where you add Polar plugins
@@ -196,7 +198,7 @@ await authClient.checkout({
     // Any Polar Product ID can be passed here
     products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
     // Or, if you setup "products" in the Checkout Config, you can pass the slug
-    slug: 'my-pro-product',
+    slug: 'pro',
     // Reference ID will be saved as `referenceId` in the metadata of the checkout, order & subscription object
     referenceId: organizationId
 });
@@ -291,7 +293,7 @@ const { data: orders } = await authClient.customer.orders.list({
 This method lists the subscriptions associated with authenticated user/customer.
 
 ```typescript
-const { data: subscriptions } = await authClient.customer.orders.list({
+const { data: subscriptions } = await authClient.customer.subscriptions.list({
   query: {
     page: 1,
     limit: 10,

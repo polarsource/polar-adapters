@@ -1,6 +1,6 @@
 import type { Polar } from "@polar-sh/sdk";
 
-import type { Session, UnionToIntersection, User } from "better-auth";
+import type { UnionToIntersection, User } from "better-auth";
 import type { checkout } from "./plugins/checkout";
 import type { portal } from "./plugins/portal";
 import type { usage } from "./plugins/usage";
@@ -45,7 +45,6 @@ export interface PolarOptions {
 	getCustomerCreateParams?: (
 		data: {
 			user: User;
-			session: Session;
 		},
 		request?: Request,
 	) => Promise<{

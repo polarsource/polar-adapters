@@ -128,7 +128,7 @@ export const portal = () => (polar: Polar) => {
 						referenceId: z.string().optional(),
 						page: z.coerce.number().optional(),
 						limit: z.coerce.number().optional(),
-						active: z.boolean().optional(),
+						active: z.coerce.boolean().optional(),
 					})
 					.optional(),
 				use: [sessionMiddleware],
