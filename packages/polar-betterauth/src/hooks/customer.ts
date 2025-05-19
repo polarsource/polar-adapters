@@ -7,13 +7,11 @@ export const onUserCreate =
 	async (user: User, ctx?: GenericEndpointContext) => {
 		if (ctx && options.createCustomerOnSignUp) {
 			try {
-				const params =
-					options.getCustomerCreateParams && ctx.context.session
-						? await options.getCustomerCreateParams({
-								user,
-								session: ctx.context.session.session,
-							})
-						: {};
+				const params = options.getCustomerCreateParams
+					? await options.getCustomerCreateParams({
+							user,
+						})
+					: {};
 
 				const { result: existingCustomers } =
 					await options.client.customers.list({ email: user.email });
@@ -30,12 +28,14 @@ export const onUserCreate =
 						});
 					}
 				} else {
-					await options.client.customers.create({
+					const customer = await options.client.customers.create({
 						...params,
 						email: user.email,
 						name: user.name,
 						externalId: user.id,
 					});
+
+					console.log(customer);
 				}
 			} catch (e: unknown) {
 				if (e instanceof Error) {
