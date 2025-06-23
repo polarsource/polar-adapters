@@ -21,7 +21,7 @@ export const portal = () => (polar: Polar) => {
 
 				try {
 					const customerSession = await polar.customerSessions.create({
-						customerExternalId: ctx.context.session?.user.id,
+						externalCustomerId: ctx.context.session?.user.id,
 					});
 
 					return ctx.json({
@@ -94,7 +94,7 @@ export const portal = () => (polar: Polar) => {
 
 				try {
 					const customerSession = await polar.customerSessions.create({
-						customerExternalId: ctx.context.session?.user.id,
+						externalCustomerId: ctx.context.session?.user.id,
 					});
 
 					const benefits = await polar.customerPortal.benefitGrants.list(
@@ -168,7 +168,7 @@ export const portal = () => (polar: Polar) => {
 
 				try {
 					const customerSession = await polar.customerSessions.create({
-						customerExternalId: ctx.context.session?.user.id,
+						externalCustomerId: ctx.context.session?.user.id,
 					});
 
 					const subscriptions = await polar.customerPortal.subscriptions.list(
@@ -216,7 +216,7 @@ export const portal = () => (polar: Polar) => {
 
 				try {
 					const customerSession = await polar.customerSessions.create({
-						customerExternalId: ctx.context.session?.user.id,
+						externalCustomerId: ctx.context.session?.user.id,
 					});
 
 					const orders = await polar.customerPortal.orders.list(
