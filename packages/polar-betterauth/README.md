@@ -315,9 +315,9 @@ const organizationId = (await authClient.organization.list())?.data?.[0]?.id,
 
 const { data: subscriptions } = await authClient.customer.subscriptions.list({
     query: {
-     page: 1,
-  limit: 10,
-  active: true,
+	    page: 1,
+		limit: 10,
+		active: true,
         referenceId: organizationId
     },
 });
