@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.2
+
+### Patch Changes
+
+- 87de0c5: Bump Polar SDK
+
 ## 1.0.1
 
 ### Patch Changes
