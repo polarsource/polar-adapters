@@ -35,7 +35,7 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 
 				try {
 					const customerSession = await polar.customerSessions.create({
-						customerExternalId: ctx.context.session.user.id,
+						externalCustomerId: ctx.context.session.user.id,
 					});
 
 					const customerMeters = await polar.customerPortal.customerMeters.list(

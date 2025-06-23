@@ -42,7 +42,7 @@ export const Checkout = ({
 				products,
 				successUrl: success ? decodeURI(success.toString()) : undefined,
 				customerId: url.searchParams.get("customerId") ?? undefined,
-				customerExternalId:
+				externalCustomerId:
 					url.searchParams.get("customerExternalId") ?? undefined,
 				customerEmail: url.searchParams.get("customerEmail") ?? undefined,
 				customerName: url.searchParams.get("customerName") ?? undefined,

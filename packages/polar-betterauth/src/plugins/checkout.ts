@@ -81,7 +81,7 @@ export const checkout =
 
 					try {
 						const checkout = await polar.checkouts.create({
-							customerExternalId: session?.user.id,
+							externalCustomerId: session?.user.id,
 							products: productIds,
 							successUrl: checkoutOptions.successUrl
 								? new URL(

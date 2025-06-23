@@ -67,7 +67,7 @@ export const Checkout = ({
 				products,
 				successUrl: success ? decodeURI(success.toString()) : undefined,
 				customerId,
-				customerExternalId,
+				externalCustomerId: customerExternalId,
 				customerEmail,
 				customerName,
 				customerBillingAddress: customerBillingAddress
