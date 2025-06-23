@@ -24,7 +24,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polar-sh/sdk": "^0.32.11"
+    "@polar-sh/sdk": "^0.34.2"
   },
   "devDependencies": {
     "@sindresorhus/tsconfig": "^7.0.0",
