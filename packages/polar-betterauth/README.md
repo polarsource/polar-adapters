@@ -313,11 +313,11 @@ So in order to figure out if a user should have access, pass the user's organiza
 ```typescript
 const organizationId = (await authClient.organization.list())?.data?.[0]?.id,
 
-const { data: subscriptions } = await authClient.customer.orders.list({
+const { data: subscriptions } = await authClient.customer.subscriptions.list({
     query: {
-	    page: 1,
-		limit: 10,
-		active: true,
+     page: 1,
+  limit: 10,
+  active: true,
         referenceId: organizationId
     },
 });
