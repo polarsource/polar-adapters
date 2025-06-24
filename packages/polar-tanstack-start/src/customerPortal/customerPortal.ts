@@ -2,40 +2,40 @@ import { Polar } from "@polar-sh/sdk";
 import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 
 export interface CustomerPortalConfig {
-  accessToken: string;
-  getCustomerId: (req: Request) => Promise<string>;
-  server: "sandbox" | "production";
+	accessToken: string;
+	getCustomerId: (req: Request) => Promise<string>;
+	server: "sandbox" | "production";
 }
 
 export const CustomerPortal = <TPath extends string = string>({
-  accessToken,
-  server,
-  getCustomerId,
+	accessToken,
+	server,
+	getCustomerId,
 }: CustomerPortalConfig): StartAPIMethodCallback<TPath> => {
-  const polar = new Polar({
-    accessToken,
-    server,
-  });
+	const polar = new Polar({
+		accessToken,
+		server,
+	});
 
-  return async ({ request }) => {
-    const customerId = await getCustomerId(request);
+	return async ({ request }) => {
+		const customerId = await getCustomerId(request);
 
-    if (!customerId) {
-      return Response.json(
-        { error: "customerId not defined" },
-        { status: 400 },
-      );
-    }
+		if (!customerId) {
+			return Response.json(
+				{ error: "customerId not defined" },
+				{ status: 400 },
+			);
+		}
 
-    try {
-      const result = await polar.customerSessions.create({
-        customerId,
-      });
+		try {
+			const result = await polar.customerSessions.create({
+				customerId,
+			});
 
-      return Response.redirect(result.customerPortalUrl);
-    } catch (error) {
-      console.error(error);
-      return Response.error();
-    }
-  };
+			return Response.redirect(result.customerPortalUrl);
+		} catch (error) {
+			console.error(error);
+			return Response.error();
+		}
+	};
 };
