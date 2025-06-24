@@ -7,51 +7,51 @@ import type { usage } from "./plugins/usage";
 import type { webhooks } from "./plugins/webhooks";
 
 export type Product = {
-  /**
-   * Product Id from Polar Product
-   */
-  productId: string;
-  /**
-   * Easily identifiable slug for the product
-   */
-  slug: string;
+	/**
+	 * Product Id from Polar Product
+	 */
+	productId: string;
+	/**
+	 * Easily identifiable slug for the product
+	 */
+	slug: string;
 };
 
 export type PolarPlugin =
-  | ReturnType<typeof checkout>
-  | ReturnType<typeof usage>
-  | ReturnType<typeof portal>
-  | ReturnType<typeof webhooks>;
+	| ReturnType<typeof checkout>
+	| ReturnType<typeof usage>
+	| ReturnType<typeof portal>
+	| ReturnType<typeof webhooks>;
 
 export type PolarPlugins = [PolarPlugin, ...PolarPlugin[]];
 
 export type PolarEndpoints = UnionToIntersection<ReturnType<PolarPlugin>>;
 
 export interface PolarOptions {
-  /**
-   * Polar Client
-   */
-  client: Polar;
-  /**
-   * Enable customer creation when a user signs up
-   */
-  createCustomerOnSignUp?: boolean;
-  /**
-   * A custom function to get the customer create
-   * params
-   * @param data - data containing user and session
-   * @returns
-   */
-  getCustomerCreateParams?: (
-    data: {
-      user: User;
-    },
-    request?: Request,
-  ) => Promise<{
-    metadata?: Record<string, string>;
-  }>;
-  /**
-   * Use Polar plugins
-   */
-  use: PolarPlugins;
+	/**
+	 * Polar Client
+	 */
+	client: Polar;
+	/**
+	 * Enable customer creation when a user signs up
+	 */
+	createCustomerOnSignUp?: boolean;
+	/**
+	 * A custom function to get the customer create
+	 * params
+	 * @param data - data containing user and session
+	 * @returns
+	 */
+	getCustomerCreateParams?: (
+		data: {
+			user: User;
+		},
+		request?: Request,
+	) => Promise<{
+		metadata?: Record<string, string>;
+	}>;
+	/**
+	 * Use Polar plugins
+	 */
+	use: PolarPlugins;
 }
