@@ -1,11 +1,11 @@
 type Params<Key extends string = string> = {
-  readonly [key in Key]: string | undefined;
+	readonly [key in Key]: string | undefined;
 };
 
 type DataFunctionArgs = {
-  request: Request;
-  context: unknown;
-  params: Params;
+	request: Request;
+	context: unknown;
+	params: Params;
 };
 
 export type LoaderFunction = (args: DataFunctionArgs) => Promise<Response>;

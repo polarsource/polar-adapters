@@ -13,10 +13,8 @@
 		"dev": "pnpm watch",
 		"preview": "vite preview",
 		"prepublishOnly": "pnpm run package",
-		"lint": "prettier --check .",
 		"build": "pnpm run package",
 		"package": "svelte-kit sync && svelte-package",
-		"format": "prettier --write .",
 		"watch": "svelte-package --watch"
 	},
 	"exports": {
