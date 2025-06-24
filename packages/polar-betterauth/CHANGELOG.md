@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.3
+
+### Patch Changes
+
+- b098cbe: Fix async issue with webhook handler
+
 ## 1.0.2
 
 ### Patch Changes
