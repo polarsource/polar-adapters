@@ -100,34 +100,40 @@ export const authClient = createAuthClient({
 
 ```typescript
 import { betterAuth } from "better-auth";
-import { polar, checkout, portal, usage, webhooks } from "@polar-sh/better-auth";
+import {
+  polar,
+  checkout,
+  portal,
+  usage,
+  webhooks,
+} from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 
 const polarClient = new Polar({
-    accessToken: process.env.POLAR_ACCESS_TOKEN,
-    // Use 'sandbox' if you're using the Polar Sandbox environment
-    // Remember that access tokens, products, etc. are completely separated between environments.
-    // Access tokens obtained in Production are for instance not usable in the Sandbox environment.
-    server: 'sandbox'
+  accessToken: process.env.POLAR_ACCESS_TOKEN,
+  // Use 'sandbox' if you're using the Polar Sandbox environment
+  // Remember that access tokens, products, etc. are completely separated between environments.
+  // Access tokens obtained in Production are for instance not usable in the Sandbox environment.
+  server: "sandbox",
 });
 
 const auth = betterAuth({
-    // ... Better Auth config
-    plugins: [
-        polar({
-            client: polarClient,
-            createCustomerOnSignUp: true,
-            getCustomerCreateParams?: ({ user }, request) => ({
-                metadata: {
-                    myCustomProperty: 123
-                }
-            }),
-            use: [
-                // This is where you add Polar plugins
-            ]
-        })
-    ]
-})
+  // ... Better Auth config
+  plugins: [
+    polar({
+      client: polarClient,
+      createCustomerOnSignUp: true,
+      getCustomerCreateParams: ({ user }, request) => ({
+        metadata: {
+          myCustomProperty: 123,
+        },
+      }),
+      use: [
+        // This is where you add Polar plugins
+      ],
+    }),
+  ],
+});
 ```
 
 ### Required Options

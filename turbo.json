@@ -1,30 +1,33 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
-  "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
-    },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "check": {
-      "dependsOn": ["lint", "check-types"]
-    },
-    "ci": {
-      "dependsOn": ["check", "build"]
-    },
-    "test": {
-      "dependsOn": ["check"]
-    }
-  }
+	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["$TURBO_DEFAULT$", ".env*"],
+			"outputs": [".next/**", "!.next/cache/**", "dist/**"]
+		},
+		"lint": {
+			"dependsOn": ["^lint"]
+		},
+		"check-types": {
+			"dependsOn": ["^check-types"]
+		},
+		"format": {
+			"dependsOn": ["lint", "check-types"]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"check": {
+			"dependsOn": ["lint", "check-types"]
+		},
+		"ci": {
+			"dependsOn": ["check", "build"]
+		},
+		"test": {
+			"dependsOn": ["check"]
+		}
+	}
 }
