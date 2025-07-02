@@ -1,5 +1,11 @@
 # @polar-sh/elysia
 
+## 0.2.2
+
+### Patch Changes
+
+- 1b25168: Add theme-support to Checkout configs
+
 ## 0.2.1
 
 ### Patch Changes

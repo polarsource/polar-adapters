@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.4
+
+### Patch Changes
+
+- 1b25168: Add theme-support to Checkout configs
+
 ## 1.0.3
 
 ### Patch Changes

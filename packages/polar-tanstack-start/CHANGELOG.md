@@ -1,5 +1,11 @@
 # @polar-sh/tanstack-start
 
+## 0.1.3
+
+### Patch Changes
+
+- 1b25168: Add theme-support to Checkout configs
+
 ## 0.1.2
 
 ### Patch Changes

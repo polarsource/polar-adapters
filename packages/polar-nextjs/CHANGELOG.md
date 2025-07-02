@@ -1,5 +1,11 @@
 # polar-nextjs
 
+## 0.4.2
+
+### Patch Changes
+
+- 1b25168: Add theme-support to Checkout configs
+
 ## 0.4.1
 
 ### Patch Changes
