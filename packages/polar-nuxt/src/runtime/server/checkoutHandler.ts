@@ -7,6 +7,7 @@ export interface CheckoutConfig {
 	successUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
+	theme?: "light" | "dark";
 }
 
 const checkoutQuerySchema = z.object({
@@ -36,6 +37,7 @@ export const Checkout = ({
 	accessToken,
 	successUrl,
 	server,
+	theme,
 	includeCheckoutId = true,
 }: CheckoutConfig) => {
 	return async (event: H3Event) => {
@@ -83,7 +85,13 @@ export const Checkout = ({
 				metadata: metadata ? JSON.parse(metadata) : undefined,
 			});
 
-			return sendRedirect(event, result.url);
+			const redirectUrl = new URL(result.url);
+
+			if (theme) {
+				redirectUrl.searchParams.set("theme", theme);
+			}
+
+			return sendRedirect(event, redirectUrl.toString());
 		} catch (error) {
 			console.error("Failed to checkout:", error);
 			throw createError({

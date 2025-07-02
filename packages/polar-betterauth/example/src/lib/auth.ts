@@ -27,7 +27,9 @@ export const auth = betterAuth({
 				};
 			},
 			use: [
-				checkout(),
+				checkout({
+					theme: "light",
+				}),
 				usage(),
 				portal(),
 				webhooks({
