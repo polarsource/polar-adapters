@@ -6,12 +6,14 @@ export interface CheckoutConfig {
 	successUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
+	theme?: "light" | "dark";
 }
 
 export const Checkout = <TPath extends string = string>({
 	accessToken,
 	successUrl,
 	server,
+	theme,
 	includeCheckoutId = true,
 }: CheckoutConfig): StartAPIMethodCallback<TPath> => {
 	const polar = new Polar({
@@ -63,7 +65,13 @@ export const Checkout = <TPath extends string = string>({
 					: undefined,
 			});
 
-			return Response.redirect(result.url);
+			const redirectUrl = new URL(result.url);
+
+			if (theme) {
+				redirectUrl.searchParams.set("theme", theme);
+			}
+
+			return Response.redirect(redirectUrl.toString());
 		} catch (error) {
 			console.error(error);
 			return Response.error();

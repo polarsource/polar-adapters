@@ -6,12 +6,14 @@ export interface CheckoutConfig {
 	successUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
+	theme?: "light" | "dark";
 }
 
 export const Checkout = ({
 	accessToken,
 	successUrl,
 	server,
+	theme,
 	includeCheckoutId = true,
 }: CheckoutConfig): RouteHandler => {
 	const polar = new Polar({
@@ -64,7 +66,13 @@ export const Checkout = ({
 					: undefined,
 			});
 
-			return reply.redirect(result.url);
+			const redirectUrl = new URL(result.url);
+
+			if (theme) {
+				redirectUrl.searchParams.set("theme", theme);
+			}
+
+			return reply.redirect(redirectUrl.toString());
 		} catch (error) {
 			console.error(error);
 			return reply.status(500).send({ error: "Internal server error" });

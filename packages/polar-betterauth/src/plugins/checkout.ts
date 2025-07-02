@@ -17,6 +17,10 @@ export interface CheckoutOptions {
 	 * Only allow authenticated customers to checkout
 	 */
 	authenticatedUsersOnly?: boolean;
+	/**
+	 * Checkout theme
+	 */
+	theme?: "light" | "dark";
 }
 
 export const checkout =
@@ -98,8 +102,14 @@ export const checkout =
 							customFieldData: ctx.body.customFieldData,
 						});
 
+						const redirectUrl = new URL(checkout.url);
+
+						if (checkoutOptions.theme) {
+							redirectUrl.searchParams.set("theme", checkoutOptions.theme);
+						}
+
 						return ctx.json({
-							url: checkout.url,
+							url: redirectUrl.toString(),
 							redirect: true,
 						});
 					} catch (e: unknown) {

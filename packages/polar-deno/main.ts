@@ -1,182 +1,190 @@
 import {
-  type WebhooksConfig,
-  handleWebhookPayload,
+	type WebhooksConfig,
+	handleWebhookPayload,
 } from "npm:@polar-sh/adapter-utils";
 import { Polar } from "npm:@polar-sh/sdk";
 import {
-  WebhookVerificationError,
-  validateEvent,
+	WebhookVerificationError,
+	validateEvent,
 } from "npm:@polar-sh/sdk/webhooks.js";
 
 export {
-  type EntitlementContext,
-  type EntitlementHandler,
-  type EntitlementProperties,
-  EntitlementStrategy,
-  Entitlements,
+	type EntitlementContext,
+	type EntitlementHandler,
+	type EntitlementProperties,
+	EntitlementStrategy,
+	Entitlements,
 } from "npm:@polar-sh/adapter-utils/index.js";
 
 export interface CheckoutConfig {
-  accessToken?: string;
-  successUrl?: string;
-  includeCheckoutId?: boolean;
-  server?: "sandbox" | "production";
+	accessToken?: string;
+	successUrl?: string;
+	includeCheckoutId?: boolean;
+	server?: "sandbox" | "production";
+	theme?: "light" | "dark";
 }
 
 export const Checkout = ({
-  accessToken,
-  successUrl,
-  server,
-  includeCheckoutId = true,
+	accessToken,
+	successUrl,
+	server,
+	theme,
+	includeCheckoutId = true,
 }: CheckoutConfig) => {
-  const polar = new Polar({
-    accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
-    server,
-  });
+	const polar = new Polar({
+		accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
+		server,
+	});
 
-  return async (request: Request) => {
-    const url = new URL(request.url);
-    const products = url.searchParams.getAll("products");
+	return async (request: Request) => {
+		const url = new URL(request.url);
+		const products = url.searchParams.getAll("products");
 
-    if (products.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Missing products in query params" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
+		if (products.length === 0) {
+			return new Response(
+				JSON.stringify({ error: "Missing products in query params" }),
+				{
+					status: 400,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
+		}
 
-    const success = successUrl ? new URL(successUrl) : undefined;
+		const success = successUrl ? new URL(successUrl) : undefined;
 
-    if (success && includeCheckoutId) {
-      success.searchParams.set("checkoutId", "{CHECKOUT_ID}");
-    }
+		if (success && includeCheckoutId) {
+			success.searchParams.set("checkoutId", "{CHECKOUT_ID}");
+		}
 
-    try {
-      const result = await polar.checkouts.create({
-        products,
-        successUrl: success ? decodeURI(success.toString()) : undefined,
-        customerId: url.searchParams.get("customerId") ?? undefined,
-        externalCustomerId:
-          url.searchParams.get("customerExternalId") ?? undefined,
-        customerEmail: url.searchParams.get("customerEmail") ?? undefined,
-        customerName: url.searchParams.get("customerName") ?? undefined,
-        customerBillingAddress: url.searchParams.has("customerBillingAddress")
-          ? JSON.parse(url.searchParams.get("customerBillingAddress") ?? "{}")
-          : undefined,
-        customerTaxId: url.searchParams.get("customerTaxId") ?? undefined,
-        customerIpAddress:
-          url.searchParams.get("customerIpAddress") ?? undefined,
-        customerMetadata: url.searchParams.has("customerMetadata")
-          ? JSON.parse(url.searchParams.get("customerMetadata") ?? "{}")
-          : undefined,
-        allowDiscountCodes: url.searchParams.has("allowDiscountCodes")
-          ? url.searchParams.get("allowDiscountCodes") === "true"
-          : undefined,
-        discountId: url.searchParams.get("discountId") ?? undefined,
-        metadata: url.searchParams.has("metadata")
-          ? JSON.parse(url.searchParams.get("metadata") ?? "{}")
-          : undefined,
-      });
+		try {
+			const result = await polar.checkouts.create({
+				products,
+				successUrl: success ? decodeURI(success.toString()) : undefined,
+				customerId: url.searchParams.get("customerId") ?? undefined,
+				externalCustomerId:
+					url.searchParams.get("customerExternalId") ?? undefined,
+				customerEmail: url.searchParams.get("customerEmail") ?? undefined,
+				customerName: url.searchParams.get("customerName") ?? undefined,
+				customerBillingAddress: url.searchParams.has("customerBillingAddress")
+					? JSON.parse(url.searchParams.get("customerBillingAddress") ?? "{}")
+					: undefined,
+				customerTaxId: url.searchParams.get("customerTaxId") ?? undefined,
+				customerIpAddress:
+					url.searchParams.get("customerIpAddress") ?? undefined,
+				customerMetadata: url.searchParams.has("customerMetadata")
+					? JSON.parse(url.searchParams.get("customerMetadata") ?? "{}")
+					: undefined,
+				allowDiscountCodes: url.searchParams.has("allowDiscountCodes")
+					? url.searchParams.get("allowDiscountCodes") === "true"
+					: undefined,
+				discountId: url.searchParams.get("discountId") ?? undefined,
+				metadata: url.searchParams.has("metadata")
+					? JSON.parse(url.searchParams.get("metadata") ?? "{}")
+					: undefined,
+			});
 
-      return Response.redirect(result.url);
-    } catch (error) {
-      console.error(error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  };
+			const redirectUrl = new URL(result.url);
+
+			if (theme) {
+				redirectUrl.searchParams.set("theme", theme);
+			}
+
+			return Response.redirect(redirectUrl.toString());
+		} catch (error) {
+			console.error(error);
+			return new Response(JSON.stringify({ error: "Internal server error" }), {
+				status: 500,
+				headers: { "Content-Type": "application/json" },
+			});
+		}
+	};
 };
 
 export interface CustomerPortalConfig {
-  accessToken?: string;
-  getCustomerId: (request: Request) => Promise<string>;
-  server?: "sandbox" | "production";
+	accessToken?: string;
+	getCustomerId: (request: Request) => Promise<string>;
+	server?: "sandbox" | "production";
 }
 
 export const CustomerPortal = ({
-  accessToken,
-  server,
-  getCustomerId,
+	accessToken,
+	server,
+	getCustomerId,
 }: CustomerPortalConfig) => {
-  const polar = new Polar({
-    accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
-    server,
-  });
+	const polar = new Polar({
+		accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
+		server,
+	});
 
-  return async (request: Request) => {
-    const customerId = await getCustomerId(request);
+	return async (request: Request) => {
+		const customerId = await getCustomerId(request);
 
-    if (!customerId) {
-      return new Response(JSON.stringify({ error: "customerId not defined" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+		if (!customerId) {
+			return new Response(JSON.stringify({ error: "customerId not defined" }), {
+				status: 400,
+				headers: { "Content-Type": "application/json" },
+			});
+		}
 
-    try {
-      const result = await polar.customerSessions.create({
-        customerId,
-      });
+		try {
+			const result = await polar.customerSessions.create({
+				customerId,
+			});
 
-      return Response.redirect(result.customerPortalUrl);
-    } catch (error) {
-      console.error(error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  };
+			return Response.redirect(result.customerPortalUrl);
+		} catch (error) {
+			console.error(error);
+			return new Response(JSON.stringify({ error: "Internal server error" }), {
+				status: 500,
+				headers: { "Content-Type": "application/json" },
+			});
+		}
+	};
 };
 
 export const Webhooks = ({
-  webhookSecret,
-  onPayload,
-  entitlements,
-  ...eventHandlers
+	webhookSecret,
+	onPayload,
+	entitlements,
+	...eventHandlers
 }: WebhooksConfig) => {
-  return async (request: Request) => {
-    const requestBody = await request.text();
+	return async (request: Request) => {
+		const requestBody = await request.text();
 
-    const webhookHeaders = {
-      "webhook-id": request.headers.get("webhook-id") ?? "",
-      "webhook-timestamp": request.headers.get("webhook-timestamp") ?? "",
-      "webhook-signature": request.headers.get("webhook-signature") ?? "",
-    };
+		const webhookHeaders = {
+			"webhook-id": request.headers.get("webhook-id") ?? "",
+			"webhook-timestamp": request.headers.get("webhook-timestamp") ?? "",
+			"webhook-signature": request.headers.get("webhook-signature") ?? "",
+		};
 
-    let webhookPayload: ReturnType<typeof validateEvent>;
-    try {
-      webhookPayload = validateEvent(
-        requestBody,
-        webhookHeaders,
-        webhookSecret,
-      );
-    } catch (error) {
-      console.log(error);
-      if (error instanceof WebhookVerificationError) {
-        return new Response(JSON.stringify({ received: false }), {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+		let webhookPayload: ReturnType<typeof validateEvent>;
+		try {
+			webhookPayload = validateEvent(
+				requestBody,
+				webhookHeaders,
+				webhookSecret,
+			);
+		} catch (error) {
+			console.log(error);
+			if (error instanceof WebhookVerificationError) {
+				return new Response(JSON.stringify({ received: false }), {
+					status: 403,
+					headers: { "Content-Type": "application/json" },
+				});
+			}
 
-      throw error;
-    }
+			throw error;
+		}
 
-    await handleWebhookPayload(webhookPayload, {
-      webhookSecret,
-      entitlements,
-      onPayload,
-      ...eventHandlers,
-    });
+		await handleWebhookPayload(webhookPayload, {
+			webhookSecret,
+			entitlements,
+			onPayload,
+			...eventHandlers,
+		});
 
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  };
+		return new Response(JSON.stringify({ received: true }), {
+			headers: { "Content-Type": "application/json" },
+		});
+	};
 };

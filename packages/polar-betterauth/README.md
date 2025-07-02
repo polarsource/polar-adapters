@@ -170,7 +170,9 @@ const auth = betterAuth({
                     // Relative URL to return to when checkout is successfully completed
                     successUrl: "/success?checkout_id={CHECKOUT_ID}",
                     // Wheather you want to allow unauthenticated checkout sessions or not
-                    authenticatedUsersOnly: true
+                    authenticatedUsersOnly: true,
+                    // Enforces the theme - System-preferred theme will be set if left omitted
+                    theme: "dark"
                 })
             ],
         })
