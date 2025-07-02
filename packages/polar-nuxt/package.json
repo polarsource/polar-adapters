@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/nuxt",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Polar.sh integration for Nuxt",
   "repository": {
     "type": "git",
