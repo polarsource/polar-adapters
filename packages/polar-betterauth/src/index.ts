@@ -1,5 +1,5 @@
 import type { BetterAuthPlugin } from "better-auth";
-import { onUserCreate, onUserUpdate } from "./hooks/customer";
+import { beforeUserCreate, onUserCreate, onUserUpdate } from "./hooks/customer";
 import type { PolarEndpoints, PolarOptions } from "./types";
 
 export { polarClient } from "./client";
@@ -28,6 +28,7 @@ export const polar = <O extends PolarOptions>(options: O) => {
 					databaseHooks: {
 						user: {
 							create: {
+								before: beforeUserCreate(options),
 								after: onUserCreate(options),
 							},
 							update: {
