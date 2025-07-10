@@ -74,3 +74,19 @@ export const onUserUpdate =
 			}
 		}
 	};
+
+export const beforeUserCreate =
+	(options: PolarOptions) =>
+	async (user: User, ctx?: GenericEndpointContext) => {
+		if (ctx && options.skipUserOnExternalIDConflict) {
+			const { result: existingCustomers } = await options.client.customers.list(
+				{ email: user.email },
+			);
+			const existingCustomer = existingCustomers.items[0];
+			if (existingCustomer && existingCustomer.externalId !== user.id) {
+				throw new APIError("CONFLICT", {
+					message: `Customer with email ${user.email} already exists with a different external ID.`,
+				});
+			}
+		}
+	};
