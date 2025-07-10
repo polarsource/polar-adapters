@@ -3,7 +3,9 @@
   "specifiers": {
     "jsr:@std/assert@1": "1.0.10",
     "jsr:@std/internal@^1.0.5": "1.0.5",
-    "npm:@polar-sh/adapter-utils@*": "0.1.1"
+    "npm:@polar-sh/adapter-utils@*": "0.1.1",
+    "npm:@polar-sh/adapter-utils@0.2.1": "0.2.1",
+    "npm:@polar-sh/sdk@0.34.3": "0.34.3_zod@3.24.1"
   },
   "jsr": {
     "@std/assert@1.0.10": {
@@ -20,11 +22,24 @@
     "@polar-sh/adapter-utils@0.1.1": {
       "integrity": "sha512-aN7eVGxIBR6K8TgVD5UH3NQubTDFF19Wt9w4CQjPeZtRBvRK2hqR3CiMsV1UUMMsWzAaPnj7kq5DWhv2A+TSHw==",
       "dependencies": [
-        "@polar-sh/sdk"
+        "@polar-sh/sdk@0.20.2_zod@3.24.1"
+      ]
+    },
+    "@polar-sh/adapter-utils@0.2.1": {
+      "integrity": "sha512-qcfTi6es9j4DRodYoPN1w5OHlVIjmPuTwV8CF1B09ghwI3gkI0s2wyCK0anTafcOSK5/astCTCbvUbgtRdw6yg==",
+      "dependencies": [
+        "@polar-sh/sdk@0.34.3_zod@3.24.1"
       ]
     },
     "@polar-sh/sdk@0.20.2_zod@3.24.1": {
       "integrity": "sha512-Rrqt2jyg1VhO9Gfy3WpLF9bST5yxXGnNJ1a/vHw/N4CXWZNbafKjKVGI2f7t1emCosvzkT2BpIBf+b19CpUTiw==",
+      "dependencies": [
+        "standardwebhooks",
+        "zod"
+      ]
+    },
+    "@polar-sh/sdk@0.34.3_zod@3.24.1": {
+      "integrity": "sha512-D6887BO+ogK1idUVYJo2J5OvDKK8u+kzYNtUGfdfn2CiV24I8wgCyr/mUCMTJa1KZD2yhcUjgrxVUcufQABE6g==",
       "dependencies": [
         "standardwebhooks",
         "zod"
@@ -95,7 +110,9 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/assert@1"
+      "jsr:@std/assert@1",
+      "npm:@polar-sh/adapter-utils@0.2.1",
+      "npm:@polar-sh/sdk@0.34.3"
     ]
   }
 }

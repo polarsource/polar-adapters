@@ -1,20 +1,12 @@
 import {
 	type WebhooksConfig,
 	handleWebhookPayload,
-} from "npm:@polar-sh/adapter-utils";
-import { Polar } from "npm:@polar-sh/sdk";
+} from "npm:@polar-sh/adapter-utils@0.2.1";
+import { Polar } from "npm:@polar-sh/sdk@0.34.3";
 import {
 	WebhookVerificationError,
 	validateEvent,
-} from "npm:@polar-sh/sdk/webhooks.js";
-
-export {
-	type EntitlementContext,
-	type EntitlementHandler,
-	type EntitlementProperties,
-	EntitlementStrategy,
-	Entitlements,
-} from "npm:@polar-sh/adapter-utils/index.js";
+} from "npm:@polar-sh/sdk@0.34.3/webhooks.js";
 
 export interface CheckoutConfig {
 	accessToken?: string;
@@ -30,7 +22,7 @@ export const Checkout = ({
 	server,
 	theme,
 	includeCheckoutId = true,
-}: CheckoutConfig) => {
+}: CheckoutConfig): ((request: Request) => Promise<Response>) => {
 	const polar = new Polar({
 		accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
 		server,
@@ -83,7 +75,7 @@ export const Checkout = ({
 					: undefined,
 			});
 
-			const redirectUrl = new URL(result.url);
+			const redirectUrl = new URL(result.url ?? "");
 
 			if (theme) {
 				redirectUrl.searchParams.set("theme", theme);
@@ -106,11 +98,12 @@ export interface CustomerPortalConfig {
 	server?: "sandbox" | "production";
 }
 
+// deno-lint-ignore explicit-function-return-type
 export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
-}: CustomerPortalConfig) => {
+}: CustomerPortalConfig): ((request: Request) => Promise<Response>) => {
 	const polar = new Polar({
 		accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
 		server,
@@ -147,7 +140,7 @@ export const Webhooks = ({
 	onPayload,
 	entitlements,
 	...eventHandlers
-}: WebhooksConfig) => {
+}: WebhooksConfig): ((request: Request) => Promise<Response>) => {
 	return async (request: Request) => {
 		const requestBody = await request.text();
 
@@ -178,8 +171,8 @@ export const Webhooks = ({
 
 		await handleWebhookPayload(webhookPayload, {
 			webhookSecret,
-			entitlements,
 			onPayload,
+			entitlements,
 			...eventHandlers,
 		});
 
