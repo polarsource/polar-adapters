@@ -46,6 +46,6 @@
 		]
 	},
 	"peerDependencies": {
-		"next": "^15.0.0 || ^15.2.0-canary.*"
+		"next": "^15.0.0 || >=15.0.0-canary"
 	}
 }
