@@ -45,7 +45,7 @@
 		"vitest": "^2.1.8"
 	},
 	"dependencies": {
-		"zod": "^3.24.2"
+		"zod": "^4.0.5"
 	},
 	"peerDependencies": {
 		"@polar-sh/sdk": "^0.32.15",
