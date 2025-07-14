@@ -23,15 +23,8 @@
 			"svelte": "./dist/index.js"
 		}
 	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"sveltekit",
-		"payments",
-		"subscriptions"
-	],
+	"files": ["dist"],
+	"keywords": ["polar", "sveltekit", "payments", "subscriptions"],
 	"peerDependencies": {
 		"@sveltejs/kit": "^2.0.0"
 	},
@@ -50,6 +43,6 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.34.2"
+		"@polar-sh/sdk": "^0.34.5"
 	}
 }
