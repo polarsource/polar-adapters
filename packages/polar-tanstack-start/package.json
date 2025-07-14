@@ -29,7 +29,7 @@
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
 		"@polar-sh/sdk": "^0.34.5",
-		"@tanstack/react-start": "^1.116.1"
+		"@tanstack/react-start": "^1.127.8"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
