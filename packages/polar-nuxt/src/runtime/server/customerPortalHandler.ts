@@ -1,5 +1,6 @@
 import { Polar } from "@polar-sh/sdk";
-import { type H3Event, createError, sendRedirect } from "h3";
+import { createError, sendRedirect } from "h3";
+import type { H3Event } from "h3";
 
 export interface CustomerPortalConfig {
 	accessToken: string;
@@ -40,8 +41,8 @@ export const CustomerPortal = ({
 			console.error("Failed to redirect to customer portal", error);
 			throw createError({
 				statusCode: 500,
-				statusMessage: error.statusMessage,
-				message: error.message ?? "Internal server error",
+				statusMessage: (error as Error).message,
+				message: (error as Error).message ?? "Internal server error",
 			});
 		}
 	};

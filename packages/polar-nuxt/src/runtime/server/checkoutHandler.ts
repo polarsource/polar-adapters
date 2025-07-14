@@ -1,5 +1,6 @@
 import { Polar } from "@polar-sh/sdk";
-import { type H3Event, createError, getValidatedQuery, sendRedirect } from "h3";
+import { createError, getValidatedQuery, sendRedirect } from "h3";
+import type { H3Event } from "h3";
 import { z } from "zod";
 
 export interface CheckoutConfig {
@@ -96,8 +97,8 @@ export const Checkout = ({
 			console.error("Failed to checkout:", error);
 			throw createError({
 				statusCode: 500,
-				statusMessage: error.statusMessage,
-				message: error.message ?? "Internal server error",
+				statusMessage: (error as Error).message,
+				message: (error as Error).message ?? "Internal server error",
 			});
 		}
 	};
