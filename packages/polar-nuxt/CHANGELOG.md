@@ -1,5 +1,11 @@
 # @polar-sh/nuxt
 
+## 0.3.5
+
+### Patch Changes
+
+- 2085ba9: fix imports
+
 ## 0.3.4
 
 ### Patch Changes
