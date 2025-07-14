@@ -9,7 +9,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
-		"@polar-sh/better-auth": "workspace:*",
+		"@polar-sh/nextjs": "workspace:*",
 		"@polar-sh/sdk": "^0.34.5",
 		"better-auth": "1.2.7",
 		"better-sqlite3": "^11.8.1",

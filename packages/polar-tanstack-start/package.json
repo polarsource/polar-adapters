@@ -23,12 +23,10 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.34.2",
+		"@polar-sh/sdk": "^0.34.5",
 		"@tanstack/react-start": "^1.116.1"
 	},
 	"devDependencies": {
@@ -42,8 +40,6 @@
 			"ts": "module",
 			"tsx": "module"
 		},
-		"nodeArguments": [
-			"--loader=ts-node/esm"
-		]
+		"nodeArguments": ["--loader=ts-node/esm"]
 	}
 }
