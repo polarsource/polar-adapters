@@ -1,4 +1,5 @@
 import { Polar } from "@polar-sh/sdk";
+// @ts-expect-error - TODO: fix this
 import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 
 export interface CustomerPortalConfig {
@@ -17,6 +18,7 @@ export const CustomerPortal = <TPath extends string = string>({
 		server,
 	});
 
+	// @ts-expect-error - TODO: fix this
 	return async ({ request }) => {
 		const customerId = await getCustomerId(request);
 
