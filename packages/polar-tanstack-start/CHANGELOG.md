@@ -1,5 +1,13 @@
 # @polar-sh/tanstack-start
 
+## 0.1.4
+
+### Patch Changes
+
+- bf04d3a: Fix issue with SDK mistakenly resolving Zod v4
+- Updated dependencies [bf04d3a]
+  - @polar-sh/adapter-utils@0.2.2
+
 ## 0.1.3
 
 ### Patch Changes
