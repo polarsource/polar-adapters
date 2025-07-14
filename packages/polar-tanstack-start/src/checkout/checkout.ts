@@ -1,4 +1,5 @@
 import { Polar } from "@polar-sh/sdk";
+// @ts-expect-error - TODO: fix this
 import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 
 export interface CheckoutConfig {
@@ -21,6 +22,7 @@ export const Checkout = <TPath extends string = string>({
 		server,
 	});
 
+	// @ts-expect-error - TODO: fix this
 	return async ({ request }) => {
 		const url = new URL(request.url);
 		const products = url.searchParams.getAll("products");

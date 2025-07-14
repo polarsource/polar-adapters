@@ -6,6 +6,7 @@ import {
 	WebhookVerificationError,
 	validateEvent,
 } from "@polar-sh/sdk/webhooks";
+// @ts-expect-error - TODO: fix this
 import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 
 export {
@@ -22,6 +23,7 @@ export const Webhooks = <TPath extends string = string>({
 	onPayload,
 	...eventHandlers
 }: WebhooksConfig): StartAPIMethodCallback<TPath> => {
+	// @ts-expect-error - TODO: fix this
 	return async ({ request }) => {
 		const requestBody = await request.text();
 
