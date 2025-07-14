@@ -1,18 +1,11 @@
-import {
-	type WebhooksConfig,
-	handleWebhookPayload,
-} from "@polar-sh/adapter-utils";
+import { handleWebhookPayload } from "@polar-sh/adapter-utils";
+import type { WebhooksConfig } from "@polar-sh/adapter-utils";
 import {
 	WebhookVerificationError,
 	validateEvent,
 } from "@polar-sh/sdk/webhooks";
-import {
-	type H3Event,
-	createError,
-	getHeader,
-	readBody,
-	setResponseStatus,
-} from "h3";
+import type { H3Event } from "h3";
+import { createError, getHeader, readBody, setResponseStatus } from "h3";
 
 export const Webhooks = ({
 	webhookSecret,
@@ -47,8 +40,8 @@ export const Webhooks = ({
 			console.error("Failed to validate webhook event", error);
 			throw createError({
 				statusCode: 500,
-				statusMessage: error.statusMessage,
-				message: error.message ?? "Internal server error",
+				statusMessage: (error as Error).message,
+				message: (error as Error).message ?? "Internal server error",
 			});
 		}
 
@@ -65,8 +58,8 @@ export const Webhooks = ({
 			console.error("Webhook error", error);
 			throw createError({
 				statusCode: 500,
-				statusMessage: error.statusMessage,
-				message: error.message ?? "Internal server error",
+				statusMessage: (error as Error).message,
+				message: (error as Error).message ?? "Internal server error",
 			});
 		}
 	};
