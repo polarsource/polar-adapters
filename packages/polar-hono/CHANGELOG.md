@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.3.3
+
+### Patch Changes
+
+- bf04d3a: Fix issue with SDK mistakenly resolving Zod v4
+- Updated dependencies [bf04d3a]
+  - @polar-sh/adapter-utils@0.2.2
+
 ## 0.3.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.2.2
+
+### Patch Changes
+
+- bf04d3a: Fix issue with SDK mistakenly resolving Zod v4
+
 ## 0.2.1
 
 ### Patch Changes
