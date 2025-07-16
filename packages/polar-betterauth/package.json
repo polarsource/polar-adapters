@@ -48,7 +48,7 @@
 		"zod": "^3.24.2"
 	},
 	"peerDependencies": {
-		"@polar-sh/sdk": "^0.32.15",
+		"@polar-sh/sdk": "^0.34.5",
 		"better-auth": "^1.2.7"
 	}
 }
