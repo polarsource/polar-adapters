@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.7
+
+### Patch Changes
+
+- d60f171: Update package.json
+
 ## 1.0.6
 
 ### Patch Changes
