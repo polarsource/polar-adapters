@@ -35,7 +35,7 @@
 		"subscriptions"
 	],
 	"peerDependencies": {
-		"express": "^4.21.2"
+		"express": "^5.1.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
@@ -43,7 +43,7 @@
 		"@types/express": "^5.0.0",
 		"@types/node": "^20.0.0",
 		"@types/supertest": "^6.0.2",
-		"express": "^4.21.2",
+		"express": "^5.1.0",
 		"prettier": "^3.2.5",
 		"supertest": "^7.0.0",
 		"tsup": "^8.3.5",
