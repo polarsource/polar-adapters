@@ -47,6 +47,13 @@ export const checkout =
 								z.union([z.string(), z.number(), z.boolean()]),
 							)
 							.optional(),
+						allowDiscountCodes: z
+							.string()
+							.toLowerCase()
+							.transform((x) => x === "true")
+							.pipe(z.boolean())
+							.optional(),
+						discountId: z.string().optional(),
 					}),
 				},
 				async (ctx) => {
@@ -100,6 +107,8 @@ export const checkout =
 									}
 								: ctx.body.metadata,
 							customFieldData: ctx.body.customFieldData,
+							allowDiscountCodes: ctx.body.allowDiscountCodes,
+							discountId: ctx.body.discountId
 						});
 
 						const redirectUrl = new URL(checkout.url);
