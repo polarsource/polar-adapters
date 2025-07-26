@@ -47,12 +47,7 @@ export const checkout =
 								z.union([z.string(), z.number(), z.boolean()]),
 							)
 							.optional(),
-						allowDiscountCodes: z
-							.string()
-							.toLowerCase()
-							.transform((x) => x === "true")
-							.pipe(z.boolean())
-							.optional(),
+						allowDiscountCodes: z.coerce.boolean().optional().default(true),
 						discountId: z.string().optional(),
 					}),
 				},
