@@ -21,14 +21,13 @@
 	"scripts": {
 		"build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
 		"dev": "tsc --watch",
-		"check": "biome check --write ./src"
+		"check": "biome check --write ./src",
+		"test": "vitest"
 	},
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.34.5"
+		"@polar-sh/sdk": "^0.34.8"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
@@ -41,9 +40,7 @@
 			"ts": "module",
 			"tsx": "module"
 		},
-		"nodeArguments": [
-			"--loader=ts-node/esm"
-		]
+		"nodeArguments": ["--loader=ts-node/esm"]
 	},
 	"peerDependencies": {
 		"next": "^15.0.0 || ^15.2.0-canary.*"
