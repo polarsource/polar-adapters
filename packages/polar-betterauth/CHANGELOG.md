@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.0.8
+
+### Patch Changes
+
+- bdd7635: Bump SDK Dependency
+
 ## 1.0.7
 
 ### Patch Changes

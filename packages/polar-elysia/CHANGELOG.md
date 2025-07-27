@@ -1,5 +1,13 @@
 # @polar-sh/elysia
 
+## 0.2.4
+
+### Patch Changes
+
+- bdd7635: Bump SDK Dependency
+- Updated dependencies [bdd7635]
+  - @polar-sh/adapter-utils@0.2.3
+
 ## 0.2.3
 
 ### Patch Changes

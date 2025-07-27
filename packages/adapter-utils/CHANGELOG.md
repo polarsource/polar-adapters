@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.2.3
+
+### Patch Changes
+
+- bdd7635: Bump SDK Dependency
+
 ## 0.2.2
 
 ### Patch Changes
