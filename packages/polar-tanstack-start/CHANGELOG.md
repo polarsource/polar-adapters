@@ -1,5 +1,13 @@
 # @polar-sh/tanstack-start
 
+## 0.1.5
+
+### Patch Changes
+
+- bdd7635: Bump SDK Dependency
+- Updated dependencies [bdd7635]
+  - @polar-sh/adapter-utils@0.2.3
+
 ## 0.1.4
 
 ### Patch Changes
