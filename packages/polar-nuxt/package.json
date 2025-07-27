@@ -28,7 +28,7 @@
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
 		"release": "npm run lint && npm run test && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
 		"lint": "eslint .",
-		"test": "vitest run",
+		"test": "vitest",
 		"test:watch": "vitest watch",
 		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
 		"check": "biome check --write ./src"
