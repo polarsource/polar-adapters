@@ -20,9 +20,9 @@
 		"node": ">=16"
 	},
 	"scripts": {
-		"test": "exit 0",
-		"test:watch": "exit 0",
-		"test:coverage": "exit 0",
+		"test": "vitest",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
 		"build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
 		"dev": "npm run build -- --watch",
 		"check": "biome check --write ./src"

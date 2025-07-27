@@ -1,6 +1,6 @@
 // Define mock values at the top level
-const mockCustomerPortalUrl = "https://mock-customer-portal-url.com";
-const mockCheckoutUrl = "https://mock-checkout-url.com";
+const mockCustomerPortalUrl = "https://mock-customer-portal-url.com/";
+const mockCheckoutUrl = "https://mock-checkout-url.com/";
 const mockSessionCreate = vi
 	.fn()
 	.mockResolvedValue({ customerPortalUrl: mockCustomerPortalUrl });
