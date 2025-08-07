@@ -21,6 +21,14 @@ export interface CheckoutOptions {
 	 * Checkout theme
 	 */
 	theme?: "light" | "dark";
+	/**
+	 * Allow discount codes
+	 */
+	allowDiscountCodes?: boolean;
+	/**
+	 * Discount ID
+	 */
+	discountId?: string;
 }
 
 export const checkout =
@@ -102,7 +110,7 @@ export const checkout =
 									}
 								: ctx.body.metadata,
 							customFieldData: ctx.body.customFieldData,
-							allowDiscountCodes: ctx.body.allowDiscountCodes,
+							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
 							discountId: ctx.body.discountId
 						});
 
