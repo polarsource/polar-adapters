@@ -17,7 +17,7 @@ describe("Webhooks middleware", () => {
 		const mockOnPayload = vi.fn();
 
 		app.use(express.json()).post(
-			"*",
+			"*splat",
 			Webhooks({
 				webhookSecret: "mock-secret",
 				onPayload: mockOnPayload,
@@ -41,7 +41,7 @@ describe("Webhooks middleware", () => {
 		const mockOnPayload = vi.fn();
 
 		app.use(express.json()).post(
-			"*",
+			"*splat",
 			Webhooks({
 				webhookSecret: "mock-secret",
 				onPayload: mockOnPayload,
