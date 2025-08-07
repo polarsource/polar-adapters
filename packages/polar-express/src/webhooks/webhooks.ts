@@ -23,14 +23,13 @@ export const Webhooks = ({
 	...eventHandlers
 }: WebhooksConfig): RequestHandler => {
 	return async (req: Request, res: Response) => {
-		const requestBody = JSON.stringify(req.body || {});
+		const requestBody = JSON.stringify(req.body);
 
 		const webhookHeaders: Record<string, string> = {
 			"webhook-id": req.headers["webhook-id"] as string,
 			"webhook-timestamp": req.headers["webhook-timestamp"] as string,
 			"webhook-signature": req.headers["webhook-signature"] as string,
 		};
-		console.log(webhookHeaders);
 
 		let webhookPayload: ReturnType<typeof validateEvent>;
 		try {
