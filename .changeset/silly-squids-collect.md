@@ -2,4 +2,4 @@
 "@polar-sh/express": minor
 ---
 
-Upgrades `express` to support v5
+Upgrades `@polar-sh/express` to support v5
