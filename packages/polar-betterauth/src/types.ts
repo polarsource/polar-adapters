@@ -32,10 +32,12 @@ export interface PolarOptions {
 	 * Polar Client
 	 */
 	client: Polar;
+
 	/**
 	 * Enable customer creation when a user signs up
 	 */
 	createCustomerOnSignUp?: boolean;
+
 	/**
 	 * A custom function to get the customer create
 	 * params
@@ -50,6 +52,12 @@ export interface PolarOptions {
 	) => Promise<{
 		metadata?: Record<string, string>;
 	}>;
+
+	/**
+	 * Do not create a new user if polar customer exists with different externalId
+	 */
+	skipUserOnExternalIDConflict?: boolean;
+
 	/**
 	 * Use Polar plugins
 	 */
