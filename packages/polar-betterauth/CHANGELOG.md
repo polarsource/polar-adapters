@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.0
+
+### Minor Changes
+
+- 9cd2520: Adds `discountId` and `allowDiscountCodes` to the `checkout` plugin
+
 ## 1.0.8
 
 ### Patch Changes
