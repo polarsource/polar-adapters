@@ -137,6 +137,11 @@ export const handleWebhookPayload = async (
         promises.push(eventHandlers.onSubscriptionCanceled(payload));
       }
       break;
+    case "subscription.uncanceled":
+      if (eventHandlers.onSubscriptionUncanceled) {
+        promises.push(eventHandlers.onSubscriptionUncanceled(payload));
+      }
+      break;
     case "subscription.revoked":
       if (eventHandlers.onSubscriptionRevoked) {
         promises.push(eventHandlers.onSubscriptionRevoked(payload));
