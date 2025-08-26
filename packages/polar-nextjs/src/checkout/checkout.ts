@@ -7,7 +7,7 @@ export interface CheckoutConfig {
 	successUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
-	theme?: "light" | "dark";
+	theme?: "light" | "dark" | "auto";
 }
 
 export const Checkout = ({
@@ -68,7 +68,7 @@ export const Checkout = ({
 
 			const redirectUrl = new URL(result.url);
 
-			if (theme) {
+			if (theme && theme !== "auto") {
 				redirectUrl.searchParams.set("theme", theme);
 			}
 

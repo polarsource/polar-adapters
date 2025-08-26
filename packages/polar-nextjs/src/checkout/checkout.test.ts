@@ -165,6 +165,46 @@ describe("Checkout", () => {
 			);
 		});
 
+		it("should not add theme parameter when theme is auto", async () => {
+			mockCheckoutCreate.mockResolvedValue({
+				url: "https://polar.sh/checkout/123",
+			});
+
+			const checkout = Checkout({
+				accessToken: "test-token",
+				theme: "auto",
+			});
+			const request = new NextRequest(
+				"https://example.com/checkout?products=prod_123",
+			);
+
+			const response = await checkout(request);
+
+			expect(response.headers.get("location")).toBe(
+				"https://polar.sh/checkout/123",
+			);
+		});
+
+		it("should add light theme parameter to redirect URL", async () => {
+			mockCheckoutCreate.mockResolvedValue({
+				url: "https://polar.sh/checkout/123",
+			});
+
+			const checkout = Checkout({
+				accessToken: "test-token",
+				theme: "light",
+			});
+			const request = new NextRequest(
+				"https://example.com/checkout?products=prod_123",
+			);
+
+			const response = await checkout(request);
+
+			expect(response.headers.get("location")).toBe(
+				"https://polar.sh/checkout/123?theme=light",
+			);
+		});
+
 		it("should parse customer parameters correctly", async () => {
 			mockCheckoutCreate.mockResolvedValue({
 				url: "https://polar.sh/checkout/123",

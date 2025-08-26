@@ -16,7 +16,7 @@ export const GET = Checkout({
 	accessToken: process.env.POLAR_ACCESS_TOKEN,
 	successUrl: process.env.SUCCESS_URL,
 	server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
-	theme: "dark" // Enforces the theme - System-preferred theme will be set if left omitted
+	theme: "dark" // Enforces the theme - "light", "dark", or "auto" for system theme detection
 });
 ```
 
@@ -43,6 +43,7 @@ export const GET = CustomerPortal({
 	accessToken: process.env.POLAR_ACCESS_TOKEN,
 	getCustomerId: (req: NextRequest) => "", // Fuction to resolve a Polar Customer ID
 	server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
+	theme: "dark" // Enforces the theme - "light", "dark", or "auto" for system theme detection
 });
 ```
 
