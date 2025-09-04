@@ -2,7 +2,7 @@ import type { GenericEndpointContext, User } from "better-auth";
 import { APIError } from "better-auth/api";
 import type { PolarOptions } from "../types";
 
-export const onUserCreate =
+export const onBeforeUserCreate =
 	(options: PolarOptions) =>
 	async (user: User, ctx?: GenericEndpointContext) => {
 		if (ctx && options.createCustomerOnSignUp) {
@@ -13,6 +13,30 @@ export const onUserCreate =
 						})
 					: {};
 
+				await options.client.customers.create({
+					...params,
+					email: user.email,
+					name: user.name,
+				});
+			} catch (e: unknown) {
+				if (e instanceof Error) {
+					throw new APIError("INTERNAL_SERVER_ERROR", {
+						message: `Polar customer creation failed. Error: ${e.message}`,
+					});
+				}
+
+				throw new APIError("INTERNAL_SERVER_ERROR", {
+					message: `Polar customer creation failed. Error: ${e}`,
+				});
+			}
+		}
+	};
+
+export const onAfterUserCreate =
+	(options: PolarOptions) =>
+	async (user: User, ctx?: GenericEndpointContext) => {
+		if (ctx && options.createCustomerOnSignUp) {
+			try {
 				const { result: existingCustomers } =
 					await options.client.customers.list({ email: user.email });
 				const existingCustomer = existingCustomers.items[0];
@@ -23,19 +47,9 @@ export const onUserCreate =
 							id: existingCustomer.id,
 							customerUpdate: {
 								externalId: user.id,
-								...params,
 							},
 						});
 					}
-				} else {
-					const customer = await options.client.customers.create({
-						...params,
-						email: user.email,
-						name: user.name,
-						externalId: user.id,
-					});
-
-					console.log(customer);
 				}
 			} catch (e: unknown) {
 				if (e instanceof Error) {
