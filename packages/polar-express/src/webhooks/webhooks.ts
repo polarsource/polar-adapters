@@ -56,6 +56,7 @@ export const Webhooks = ({
 			...eventHandlers,
 		});
 
-		res.json({ received: true });
+		res.status(200).json({ received: true });
+		return;
 	};
 };
