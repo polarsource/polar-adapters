@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.1
+
+### Patch Changes
+
+- a34a7c2: Make sure to interrupt user creation if Polar customer creation fails
+
 ## 1.1.0
 
 ### Minor Changes
