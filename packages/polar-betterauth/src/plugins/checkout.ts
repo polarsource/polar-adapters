@@ -100,7 +100,7 @@ export const checkout =
 							successUrl: checkoutOptions.successUrl
 								? new URL(
 										checkoutOptions.successUrl,
-										ctx.request?.url,
+                    ctx.request?.url ?? ctx.context.baseURL
 									).toString()
 								: undefined,
 							metadata: ctx.body.referenceId
