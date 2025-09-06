@@ -40,50 +40,50 @@ export interface WebhooksConfig {
   onRefundCreated?: (payload: WebhookRefundCreatedPayload) => Promise<void>;
   onRefundUpdated?: (payload: WebhookRefundUpdatedPayload) => Promise<void>;
   onSubscriptionCreated?: (
-    payload: WebhookSubscriptionCreatedPayload,
+    payload: WebhookSubscriptionCreatedPayload
   ) => Promise<void>;
   onSubscriptionUpdated?: (
-    payload: WebhookSubscriptionUpdatedPayload,
+    payload: WebhookSubscriptionUpdatedPayload
   ) => Promise<void>;
   onSubscriptionActive?: (
-    payload: WebhookSubscriptionActivePayload,
+    payload: WebhookSubscriptionActivePayload
   ) => Promise<void>;
   onSubscriptionCanceled?: (
-    payload: WebhookSubscriptionCanceledPayload,
+    payload: WebhookSubscriptionCanceledPayload
   ) => Promise<void>;
   onSubscriptionRevoked?: (
-    payload: WebhookSubscriptionRevokedPayload,
+    payload: WebhookSubscriptionRevokedPayload
   ) => Promise<void>;
   onSubscriptionUncanceled?: (
-    payload: WebhookSubscriptionUncanceledPayload,
+    payload: WebhookSubscriptionUncanceledPayload
   ) => Promise<void>;
   onProductCreated?: (payload: WebhookProductCreatedPayload) => Promise<void>;
   onProductUpdated?: (payload: WebhookProductUpdatedPayload) => Promise<void>;
   onOrganizationUpdated?: (
-    payload: WebhookOrganizationUpdatedPayload,
+    payload: WebhookOrganizationUpdatedPayload
   ) => Promise<void>;
   onBenefitCreated?: (payload: WebhookBenefitCreatedPayload) => Promise<void>;
   onBenefitUpdated?: (payload: WebhookBenefitUpdatedPayload) => Promise<void>;
   onBenefitGrantCreated?: (
-    payload: WebhookBenefitGrantCreatedPayload,
+    payload: WebhookBenefitGrantCreatedPayload
   ) => Promise<void>;
   onBenefitGrantUpdated?: (
-    payload: WebhookBenefitGrantUpdatedPayload,
+    payload: WebhookBenefitGrantUpdatedPayload
   ) => Promise<void>;
   onBenefitGrantRevoked?: (
-    payload: WebhookBenefitGrantRevokedPayload,
+    payload: WebhookBenefitGrantRevokedPayload
   ) => Promise<void>;
   onCustomerCreated?: (payload: WebhookCustomerCreatedPayload) => Promise<void>;
   onCustomerUpdated?: (payload: WebhookCustomerUpdatedPayload) => Promise<void>;
   onCustomerDeleted?: (payload: WebhookCustomerDeletedPayload) => Promise<void>;
   onCustomerStateChanged?: (
-    payload: WebhookCustomerStateChangedPayload,
+    payload: WebhookCustomerStateChangedPayload
   ) => Promise<void>;
 }
 
 export const handleWebhookPayload = async (
   payload: ReturnType<typeof validateEvent>,
-  { webhookSecret, entitlements, onPayload, ...eventHandlers }: WebhooksConfig,
+  { webhookSecret, entitlements, onPayload, ...eventHandlers }: WebhooksConfig
 ) => {
   const promises: Promise<void>[] = [];
 
@@ -115,6 +115,22 @@ export const handleWebhookPayload = async (
     case "order.paid":
       if (eventHandlers.onOrderPaid) {
         promises.push(eventHandlers.onOrderPaid(payload));
+      }
+      break;
+
+    case "order.refunded":
+      if (eventHandlers.onOrderRefunded) {
+        promises.push(eventHandlers.onOrderRefunded(payload));
+      }
+      break;
+    case "refund.created":
+      if (eventHandlers.onRefundCreated) {
+        promises.push(eventHandlers.onRefundCreated(payload));
+      }
+      break;
+    case "refund.updated":
+      if (eventHandlers.onRefundUpdated) {
+        promises.push(eventHandlers.onRefundUpdated(payload));
       }
       break;
     case "subscription.created":
