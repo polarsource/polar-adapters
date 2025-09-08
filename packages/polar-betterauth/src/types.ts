@@ -44,11 +44,11 @@ export interface PolarOptions {
 	 */
 	getCustomerCreateParams?: (
 		data: {
-			user: User;
+			user: Omit<User, "id">;
 		},
 		request?: Request,
 	) => Promise<{
-		metadata?: Record<string, string>;
+		metadata?: Record<string, string | number | boolean>;
 	}>;
 	/**
 	 * Use Polar plugins
