@@ -44,7 +44,7 @@ export interface PolarOptions {
 	 */
 	getCustomerCreateParams?: (
 		data: {
-			user: Omit<User, "id">;
+			user: Partial<User>;
 		},
 		request?: Request,
 	) => Promise<{
