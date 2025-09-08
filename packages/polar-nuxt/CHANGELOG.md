@@ -1,5 +1,14 @@
 # @polar-sh/nuxt
 
+## 0.3.8
+
+### Patch Changes
+
+- 78a922c: Add refund webhooks
+- Updated dependencies [78a922c]
+- Updated dependencies [e98e50b]
+  - @polar-sh/adapter-utils@0.2.5
+
 ## 0.3.7
 
 ### Patch Changes
