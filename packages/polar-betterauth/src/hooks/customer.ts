@@ -4,14 +4,20 @@ import type { PolarOptions } from "../types";
 
 export const onBeforeUserCreate =
 	(options: PolarOptions) =>
-	async (user: User, ctx?: GenericEndpointContext) => {
-		if (ctx && options.createCustomerOnSignUp) {
+	async (user: Partial<User>, context?: GenericEndpointContext | undefined) => {
+		if (context && options.createCustomerOnSignUp) {
 			try {
 				const params = options.getCustomerCreateParams
 					? await options.getCustomerCreateParams({
 							user,
 						})
 					: {};
+
+				if (!user.email) {
+					throw new APIError("BAD_REQUEST", {
+						message: "An associated email is required",
+					});
+				}
 
 				await options.client.customers.create({
 					...params,
@@ -34,8 +40,8 @@ export const onBeforeUserCreate =
 
 export const onAfterUserCreate =
 	(options: PolarOptions) =>
-	async (user: User, ctx?: GenericEndpointContext) => {
-		if (ctx && options.createCustomerOnSignUp) {
+	async (user: User, context?: GenericEndpointContext | undefined) => {
+		if (context && options.createCustomerOnSignUp) {
 			try {
 				const { result: existingCustomers } =
 					await options.client.customers.list({ email: user.email });
@@ -67,8 +73,8 @@ export const onAfterUserCreate =
 
 export const onUserUpdate =
 	(options: PolarOptions) =>
-	async (user: User, ctx?: GenericEndpointContext) => {
-		if (ctx && options.createCustomerOnSignUp) {
+	async (user: User, context?: GenericEndpointContext | undefined) => {
+		if (context && options.createCustomerOnSignUp) {
 			try {
 				await options.client.customers.updateExternal({
 					externalId: user.id,
@@ -79,11 +85,13 @@ export const onUserUpdate =
 				});
 			} catch (e: unknown) {
 				if (e instanceof Error) {
-					ctx.context.logger.error(
+					context.context.logger.error(
 						`Polar customer update failed. Error: ${e.message}`,
 					);
 				} else {
-					ctx.context.logger.error(`Polar customer update failed. Error: ${e}`);
+					context.context.logger.error(
+						`Polar customer update failed. Error: ${e}`,
+					);
 				}
 			}
 		}
