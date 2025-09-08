@@ -25,15 +25,8 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"hono",
-		"payments",
-		"subscriptions"
-	],
+	"files": ["dist"],
+	"keywords": ["polar", "hono", "payments", "subscriptions"],
 	"peerDependencies": {
 		"hono": "^4.6.16"
 	},
@@ -48,6 +41,6 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.34.8"
+		"@polar-sh/sdk": "^0.34.16"
 	}
 }
