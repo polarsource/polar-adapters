@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/fastify",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"description": "Polar integration for Fastify",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -25,8 +25,15 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": ["dist"],
-	"keywords": ["polar", "fastify", "payments", "subscriptions"],
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"polar",
+		"fastify",
+		"payments",
+		"subscriptions"
+	],
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",

@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.3.5
+
+### Patch Changes
+
+- 39f4d39: Update Polar SDK version
+- Updated dependencies [39f4d39]
+  - @polar-sh/adapter-utils@0.2.4
+
 ## 0.3.4
 
 ### Patch Changes

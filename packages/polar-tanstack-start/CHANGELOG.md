@@ -1,5 +1,13 @@
 # @polar-sh/tanstack-start
 
+## 0.1.6
+
+### Patch Changes
+
+- 39f4d39: Update Polar SDK version
+- Updated dependencies [39f4d39]
+  - @polar-sh/adapter-utils@0.2.4
+
 ## 0.1.5
 
 ### Patch Changes
