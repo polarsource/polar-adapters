@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.3
+
+### Patch Changes
+
+- 78a922c: Add refund webhooks
+
 ## 1.1.2
 
 ### Patch Changes

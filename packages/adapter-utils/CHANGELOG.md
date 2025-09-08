@@ -1,5 +1,12 @@
 # @polar-sh/adapter-utils
 
+## 0.2.5
+
+### Patch Changes
+
+- 78a922c: Add refund webhooks
+- e98e50b: fix: Ensure `uncanceled` webhooks are handled
+
 ## 0.2.4
 
 ### Patch Changes

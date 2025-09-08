@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/express",
-	"version": "0.3.5",
+	"version": "0.3.6",
 	"description": "Polar integration for Express",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
