@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 1.1.2
+
+### Patch Changes
+
+- 5817078: Update better auth version
+- a04c344: Fix type of User in getCustomerCreateParams
+- 39f4d39: Update Polar SDK version
+
 ## 1.1.1
 
 ### Patch Changes
