@@ -1,7 +1,8 @@
-# @polar-sh/better-auth
+# @alexdelia/polar-betterauth
 
 A [Better Auth](https://github.com/better-auth/better-auth) plugin for integrating [Polar](https://polar.sh) payments and subscriptions into your authentication flow.
 
+*Fork of [@polar-sh/better-auth](https://github.com/polarsource/polar-adapters) with custom modifications*
 ## Features
 
 - Checkout Integration
@@ -14,7 +15,7 @@ A [Better Auth](https://github.com/better-auth/better-auth) plugin for integrati
 ## Installation
 
 ```bash
-pnpm add better-auth @polar-sh/better-auth @polar-sh/sdk
+pnpm add better-auth @alexdelia/polar-betterauth @polar-sh/sdk
 ```
 
 ## Preparation
@@ -37,7 +38,7 @@ The Polar plugin comes with a handful additional plugins which adds functionalit
 
 ```typescript
 import { betterAuth } from "better-auth";
-import { polar, checkout, portal, usage, webhooks } from "@polar-sh/better-auth";
+import { polar, checkout, portal, usage, webhooks } from "@alexdelia/polar-betterauth";
 import { Polar } from "@polar-sh/sdk";
 
 const polarClient = new Polar({
@@ -86,7 +87,7 @@ You will be using the BetterAuth Client to interact with the Polar functionaliti
 
 ```typescript
 import { createAuthClient } from "better-auth/react";
-import { polarClient } from "@polar-sh/better-auth";
+import { polarClient } from "@alexdelia/polar-betterauth";
 import { organizationClient } from "better-auth/client/plugins";
 
 // This is all that is needed
@@ -106,7 +107,7 @@ import {
   portal,
   usage,
   webhooks,
-} from "@polar-sh/better-auth";
+} from "@alexdelia/polar-betterauth";
 import { Polar } from "@polar-sh/sdk";
 
 const polarClient = new Polar({
@@ -156,7 +157,7 @@ All new customers are created with an associated `externalId`, which is the ID o
 To support checkouts in your app, simply pass the Checkout plugin to the use-property.
 
 ```typescript
-import { polar, checkout } from "@polar-sh/better-auth";
+import { polar, checkout } from "@alexdelia/polar-betterauth";
 
 const auth = betterAuth({
     // ... Better Auth config
@@ -217,7 +218,7 @@ await authClient.checkout({
 A plugin which enables customer management of their purchases, orders and subscriptions.
 
 ```typescript
-import { polar, checkout, portal } from "@polar-sh/better-auth";
+import { polar, checkout, portal } from "@alexdelia/polar-betterauth";
 
 const auth = betterAuth({
     // ... Better Auth config
@@ -340,7 +341,7 @@ const userShouldHaveAccess = subscriptions.some(
 A simple plugin for Usage Based Billing.
 
 ```typescript
-import { polar, checkout, portal, usage } from "@polar-sh/better-auth";
+import { polar, checkout, portal, usage } from "@alexdelia/polar-betterauth";
 
 const auth = betterAuth({
     // ... Better Auth config
@@ -401,7 +402,7 @@ const { data: customerMeters } = await authClient.usage.meters.list({
 The Webhooks plugin can be used to capture incoming events from your Polar organization.
 
 ```typescript
-import { polar, webhooks } from "@polar-sh/better-auth";
+import { polar, webhooks } from "@alexdelia/polar-betterauth";
 
 const auth = betterAuth({
     // ... Better Auth config

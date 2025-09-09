@@ -1,4 +1,4 @@
-# @polar-sh/hono
+# @polar-sh/better-auth
 
 ## 1.1.1
 
