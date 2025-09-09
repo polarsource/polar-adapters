@@ -4,7 +4,7 @@
 	"description": "Custom Polar integration for better-auth",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/alex-delia/polar-adapters.git",
+		"url": "git+https://github.com/alex-delia/polar-adapters.git",
 		"directory": "packages/polar-betterauth"
 	},
 	"main": "./dist/index.cjs",
@@ -36,7 +36,9 @@
 		"dist"
 	],
 	"license": "Apache-2.0",
-	"publishConfig": { "access": "public" },
+	"publishConfig": {
+		"access": "public"
+	},
 	"keywords": [
 		"polar",
 		"better-auth",
