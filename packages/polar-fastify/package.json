@@ -45,7 +45,7 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.34.16"
+		"@polar-sh/sdk": "^0.34.17"
 	},
 	"peerDependencies": {
 		"fastify": "^5.2.1"
