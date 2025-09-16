@@ -103,6 +103,8 @@ export const checkout =
 										ctx.request?.url,
 									).toString()
 								: undefined,
+							customerEmail: session?.user.email,
+							customerName: session?.user.name,
 							metadata: ctx.body.referenceId
 								? {
 										referenceId: ctx.body.referenceId,
@@ -111,7 +113,7 @@ export const checkout =
 								: ctx.body.metadata,
 							customFieldData: ctx.body.customFieldData,
 							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
-							discountId: ctx.body.discountId
+							discountId: ctx.body.discountId,
 						});
 
 						const redirectUrl = new URL(checkout.url);

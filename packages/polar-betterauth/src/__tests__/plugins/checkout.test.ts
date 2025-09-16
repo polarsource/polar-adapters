@@ -94,7 +94,7 @@ describe("checkout plugin", () => {
 		it("should create checkout with product IDs", async () => {
 			const mockCheckout = createMockCheckout();
 			vi.mocked(getSessionFromCtx).mockResolvedValue({
-				user: { id: "user-123" },
+				user: { id: "user-123", email: "user@example.com", name: "Test User" },
 			});
 			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
 
@@ -108,13 +108,17 @@ describe("checkout plugin", () => {
 
 			await handler(ctx);
 
-			expect(mockClient.checkouts.create).toHaveBeenCalledWith({
-				externalCustomerId: "user-123",
-				products: ["prod-123", "prod-456"],
-				successUrl: "https://example.com/success",
-				metadata: undefined,
-				customFieldData: undefined,
-			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["prod-123", "prod-456"],
+					successUrl: "https://example.com/success",
+					metadata: undefined,
+					customFieldData: undefined,
+					customerEmail: "user@example.com",
+					customerName: "Test User",
+				}),
+			);
 
 			expect(ctx.json).toHaveBeenCalledWith({
 				url: expect.stringContaining("theme=dark"),
@@ -139,13 +143,15 @@ describe("checkout plugin", () => {
 
 			await handler(ctx);
 
-			expect(mockClient.checkouts.create).toHaveBeenCalledWith({
-				externalCustomerId: "user-123",
-				products: ["prod-123"],
-				successUrl: "https://example.com/success",
-				metadata: undefined,
-				customFieldData: undefined,
-			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["prod-123"],
+					successUrl: "https://example.com/success",
+					metadata: undefined,
+					customFieldData: undefined,
+				}),
+			);
 		});
 
 		it("should create checkout with product slug", async () => {
@@ -165,13 +171,17 @@ describe("checkout plugin", () => {
 
 			await handler(ctx);
 
-			expect(mockClient.checkouts.create).toHaveBeenCalledWith({
-				externalCustomerId: "user-123",
-				products: ["prod-123"],
-				successUrl: "https://example.com/success",
-				metadata: undefined,
-				customFieldData: undefined,
-			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["prod-123"],
+					successUrl: "https://example.com/success",
+					metadata: undefined,
+					customFieldData: undefined,
+					customerEmail: undefined,
+					customerName: undefined,
+				}),
+			);
 		});
 
 		it("should handle async product resolution", async () => {
@@ -202,13 +212,17 @@ describe("checkout plugin", () => {
 			await asyncHandler(ctx);
 
 			expect(asyncProducts).toHaveBeenCalled();
-			expect(mockClient.checkouts.create).toHaveBeenCalledWith({
-				externalCustomerId: "user-123",
-				products: ["async-prod-123"],
-				successUrl: undefined,
-				metadata: undefined,
-				customFieldData: undefined,
-			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["async-prod-123"],
+					successUrl: undefined,
+					metadata: undefined,
+					customFieldData: undefined,
+					customerEmail: undefined,
+					customerName: undefined,
+				}),
+			);
 		});
 
 		it("should throw error for unknown product slug", async () => {
@@ -246,13 +260,17 @@ describe("checkout plugin", () => {
 
 			await handler(ctx);
 
-			expect(mockClient.checkouts.create).toHaveBeenCalledWith({
-				externalCustomerId: "user-123",
-				products: ["prod-123"],
-				successUrl: "https://example.com/success",
-				metadata: { referenceId: "ref-123", key: "value" },
-				customFieldData: { field: "data" },
-			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["prod-123"],
+					successUrl: "https://example.com/success",
+					metadata: { referenceId: "ref-123", key: "value" },
+					customFieldData: { field: "data" },
+					customerEmail: undefined,
+					customerName: undefined,
+				}),
+			);
 		});
 
 		it("should handle unauthenticated users when not required", async () => {
@@ -274,13 +292,17 @@ describe("checkout plugin", () => {
 
 			await publicHandler(ctx);
 
-			expect(mockClient.checkouts.create).toHaveBeenCalledWith({
-				externalCustomerId: undefined,
-				products: ["prod-123"],
-				successUrl: undefined,
-				metadata: undefined,
-				customFieldData: undefined,
-			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: undefined,
+					products: ["prod-123"],
+					successUrl: undefined,
+					metadata: undefined,
+					customFieldData: undefined,
+					customerEmail: undefined,
+					customerName: undefined,
+				}),
+			);
 		});
 
 		it("should throw error for unauthenticated users when authentication required", async () => {
