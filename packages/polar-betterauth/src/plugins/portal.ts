@@ -11,6 +11,9 @@ export const portal = () => (polar: Polar) => {
 			{
 				method: "GET",
 				use: [sessionMiddleware],
+				query: z.object({ 
+          redirect: z.coerce.boolean().optional().default(true) 
+        }).optional(),
 			},
 			async (ctx) => {
 				if (!ctx.context.session?.user.id) {
@@ -26,7 +29,7 @@ export const portal = () => (polar: Polar) => {
 
 					return ctx.json({
 						url: customerSession.customerPortalUrl,
-						redirect: true,
+						redirect: ctx.query?.redirect ?? true,
 					});
 				} catch (e: unknown) {
 					if (e instanceof Error) {

@@ -57,6 +57,8 @@ export const checkout =
 							.optional(),
 						allowDiscountCodes: z.coerce.boolean().optional().default(true),
 						discountId: z.string().optional(),
+						redirect: z.coerce.boolean().optional().default(true),
+						successQueryParams: z.record(z.string(), z.string()).optional(),
 					}),
 				},
 				async (ctx) => {
@@ -98,11 +100,19 @@ export const checkout =
 							externalCustomerId: session?.user.id,
 							products: productIds,
 							successUrl: checkoutOptions.successUrl
-								? new URL(
+							? (() => {
+									const url = new URL(
 										checkoutOptions.successUrl,
-										ctx.request?.url,
-									).toString()
-								: undefined,
+										ctx.request?.url
+									);
+									if (ctx.body.successQueryParams) {
+										Object.entries(ctx.body.successQueryParams).forEach(([key, value]) => {
+											url.searchParams.set(key, value);
+										});
+									}
+									return url.toString();
+								})()
+							: undefined,
 							metadata: ctx.body.referenceId
 								? {
 										referenceId: ctx.body.referenceId,
@@ -122,7 +132,7 @@ export const checkout =
 
 						return ctx.json({
 							url: redirectUrl.toString(),
-							redirect: true,
+							redirect: ctx.body?.redirect ?? true,
 						});
 					} catch (e: unknown) {
 						if (e instanceof Error) {
