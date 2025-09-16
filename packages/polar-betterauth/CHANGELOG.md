@@ -1,5 +1,12 @@
 # @polar-sh/hono
 
+## 1.1.4
+
+### Patch Changes
+
+- 377e07e: Add refund webhooks
+- 54d368c: Bump SDK version
+
 ## 1.1.3
 
 ### Patch Changes

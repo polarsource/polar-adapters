@@ -1,5 +1,12 @@
 # @polar-sh/adapter-utils
 
+## 0.2.6
+
+### Patch Changes
+
+- 377e07e: Add refund webhooks
+- 54d368c: Bump SDK version
+
 ## 0.2.5
 
 ### Patch Changes
