@@ -111,7 +111,7 @@ export const checkout =
 								: ctx.body.metadata,
 							customFieldData: ctx.body.customFieldData,
 							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
-							discountId: ctx.body.discountId
+							discountId: ctx.body.discountId,
 						});
 
 						const redirectUrl = new URL(checkout.url);
