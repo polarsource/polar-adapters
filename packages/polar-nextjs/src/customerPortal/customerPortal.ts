@@ -5,12 +5,14 @@ export interface CustomerPortalConfig {
 	accessToken: string;
 	getCustomerId: (req: NextRequest) => Promise<string>;
 	server: "sandbox" | "production";
+	theme?: "light" | "dark" | "auto";
 }
 
 export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	theme,
 }: CustomerPortalConfig) => {
 	const polar = new Polar({
 		accessToken,
@@ -32,7 +34,13 @@ export const CustomerPortal = ({
 				customerId,
 			});
 
-			return NextResponse.redirect(result.customerPortalUrl);
+			const redirectUrl = new URL(result.customerPortalUrl);
+
+			if (theme && theme !== "auto") {
+				redirectUrl.searchParams.set("theme", theme);
+			}
+
+			return NextResponse.redirect(redirectUrl.toString());
 		} catch (error) {
 			console.error(error);
 			return NextResponse.error();
