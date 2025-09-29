@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.2.8
+
+### Patch Changes
+
+- bcad48d: Fix problem with imports that may have caused build issues with Vite or other bundlers
+
 ## 0.2.7
 
 ### Patch Changes
