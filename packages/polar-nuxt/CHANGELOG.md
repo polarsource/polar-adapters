@@ -1,5 +1,13 @@
 # @polar-sh/nuxt
 
+## 0.3.10
+
+### Patch Changes
+
+- 3ef623b: Bump SDK version
+- Updated dependencies [3ef623b]
+  - @polar-sh/adapter-utils@0.2.7
+
 ## 0.3.9
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @polar-sh/astro
 
+## 0.4.8
+
+### Patch Changes
+
+- 3ef623b: Bump SDK version
+- Updated dependencies [3ef623b]
+  - @polar-sh/adapter-utils@0.2.7
+
 ## 0.4.7
 
 ### Patch Changes
