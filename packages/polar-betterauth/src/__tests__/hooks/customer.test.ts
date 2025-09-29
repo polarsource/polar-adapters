@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { onUserCreate, onUserUpdate } from "../../hooks/customer";
+import { onBeforeUserCreate, onAfterUserCreate, onUserUpdate } from "../../hooks/customer";
 import { createTestPolarOptions, mockApiError } from "../utils/helpers";
 import {
 	createMockCustomer,
@@ -30,7 +30,7 @@ describe("customer hooks", () => {
 		vi.spyOn(console, "log").mockImplementation(() => {});
 	});
 
-	describe("onUserCreate", () => {
+	describe("onBeforeUserCreate", () => {
 		it("should create customer when createCustomerOnSignUp is enabled", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
@@ -45,29 +45,139 @@ describe("customer hooks", () => {
 
 			const mockCustomer = createMockCustomer();
 
-			// Mock empty customer list (no existing customer)
-			vi.mocked(mockClient.customers.list).mockResolvedValue({
-				result: { items: [], pagination: { total: 0, maxPage: 1 } },
-			});
-
 			vi.mocked(mockClient.customers.create).mockResolvedValue(mockCustomer);
 
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onBeforeUserCreate(options);
 
 			await hook(mockUser, ctx);
-
-			expect(mockClient.customers.list).toHaveBeenCalledWith({
-				email: "test@example.com",
-			});
 
 			expect(mockClient.customers.create).toHaveBeenCalledWith({
 				email: "test@example.com",
 				name: "Test User",
-				externalId: "user-123",
 			});
 		});
 
+
+		it("should use custom getCustomerCreateParams when provided", async () => {
+			const mockGetCustomerCreateParams = vi.fn().mockResolvedValue({
+				metadata: { source: "website", plan: "premium" },
+			});
+
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+				getCustomerCreateParams: mockGetCustomerCreateParams,
+			});
+
+			const mockUser = createMockUser();
+			const mockCustomer = createMockCustomer();
+
+			vi.mocked(mockClient.customers.create).mockResolvedValue(mockCustomer);
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onBeforeUserCreate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockGetCustomerCreateParams).toHaveBeenCalledWith({
+				user: mockUser,
+			});
+
+			expect(mockClient.customers.create).toHaveBeenCalledWith({
+				email: mockUser.email,
+				name: mockUser.name,
+				metadata: { source: "website", plan: "premium" },
+			});
+		});
+
+
+		it("should not create customer when createCustomerOnSignUp is disabled", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: false,
+			});
+
+			const mockUser = createMockUser();
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onBeforeUserCreate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.create).not.toHaveBeenCalled();
+		});
+
+		it("should not create customer when context is missing", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+			const hook = onBeforeUserCreate(options);
+
+			await hook(mockUser); // No context provided
+
+			expect(mockClient.customers.create).not.toHaveBeenCalled();
+		});
+
+		it("should handle API errors during customer creation", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+
+			vi.mocked(mockClient.customers.create).mockRejectedValue(
+				mockApiError(500, "Internal server error"),
+			);
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onBeforeUserCreate(options);
+
+			await expect(hook(mockUser, ctx)).rejects.toThrow(
+				"Polar customer creation failed. Error: Internal server error",
+			);
+		});
+
+		it("should handle non-Error exceptions", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+
+			vi.mocked(mockClient.customers.create).mockRejectedValue("Unknown error");
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onBeforeUserCreate(options);
+
+			await expect(hook(mockUser, ctx)).rejects.toThrow(
+				"Polar customer creation failed. Error: Unknown error",
+			);
+		});
+
+		it("should throw error when user email is missing", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({ email: undefined });
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onBeforeUserCreate(options);
+
+			await expect(hook(mockUser, ctx)).rejects.toThrow(
+				"An associated email is required",
+			);
+
+			expect(mockClient.customers.create).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("onAfterUserCreate", () => {
 		it("should update existing customer without external ID", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
@@ -99,9 +209,13 @@ describe("customer hooks", () => {
 			);
 
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.list).toHaveBeenCalledWith({
+				email: "test@example.com",
+			});
 
 			expect(mockClient.customers.update).toHaveBeenCalledWith({
 				id: "customer-456",
@@ -109,8 +223,6 @@ describe("customer hooks", () => {
 					externalId: "user-123",
 				},
 			});
-
-			expect(mockClient.customers.create).not.toHaveBeenCalled();
 		});
 
 		it("should update existing customer with different external ID", async () => {
@@ -142,7 +254,7 @@ describe("customer hooks", () => {
 			);
 
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await hook(mockUser, ctx);
 
@@ -179,90 +291,14 @@ describe("customer hooks", () => {
 			});
 
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await hook(mockUser, ctx);
 
 			expect(mockClient.customers.update).not.toHaveBeenCalled();
-			expect(mockClient.customers.create).not.toHaveBeenCalled();
 		});
 
-		it("should use custom getCustomerCreateParams when provided", async () => {
-			const mockGetCustomerCreateParams = vi.fn().mockResolvedValue({
-				metadata: { source: "website", plan: "premium" },
-			});
-
-			const options = createTestPolarOptions({
-				client: mockClient,
-				createCustomerOnSignUp: true,
-				getCustomerCreateParams: mockGetCustomerCreateParams,
-			});
-
-			const mockUser = createMockUser();
-			const mockCustomer = createMockCustomer();
-
-			vi.mocked(mockClient.customers.list).mockResolvedValue({
-				result: { items: [], pagination: { total: 0, maxPage: 1 } },
-			});
-
-			vi.mocked(mockClient.customers.create).mockResolvedValue(mockCustomer);
-
-			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
-
-			await hook(mockUser, ctx);
-
-			expect(mockGetCustomerCreateParams).toHaveBeenCalledWith({
-				user: mockUser,
-			});
-
-			expect(mockClient.customers.create).toHaveBeenCalledWith({
-				email: mockUser.email,
-				name: mockUser.name,
-				externalId: mockUser.id,
-				metadata: { source: "website", plan: "premium" },
-			});
-		});
-
-		it("should use custom params for existing customer update", async () => {
-			const mockGetCustomerCreateParams = vi.fn().mockResolvedValue({
-				metadata: { updated: "true" },
-			});
-
-			const options = createTestPolarOptions({
-				client: mockClient,
-				createCustomerOnSignUp: true,
-				getCustomerCreateParams: mockGetCustomerCreateParams,
-			});
-
-			const mockUser = createMockUser();
-			const existingCustomer = {
-				...createMockCustomer(),
-				externalId: null,
-			};
-
-			vi.mocked(mockClient.customers.list).mockResolvedValue({
-				result: {
-					items: [existingCustomer],
-					pagination: { total: 1, maxPage: 1 },
-				},
-			});
-
-			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
-
-			await hook(mockUser, ctx);
-
-			expect(mockClient.customers.update).toHaveBeenCalledWith({
-				id: existingCustomer.id,
-				customerUpdate: {
-					externalId: mockUser.id,
-					metadata: { updated: "true" },
-				},
-			});
-		});
-
-		it("should not create customer when createCustomerOnSignUp is disabled", async () => {
+		it("should not update customer when createCustomerOnSignUp is disabled", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
 				createCustomerOnSignUp: false,
@@ -270,30 +306,30 @@ describe("customer hooks", () => {
 
 			const mockUser = createMockUser();
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await hook(mockUser, ctx);
 
 			expect(mockClient.customers.list).not.toHaveBeenCalled();
-			expect(mockClient.customers.create).not.toHaveBeenCalled();
+			expect(mockClient.customers.update).not.toHaveBeenCalled();
 		});
 
-		it("should not create customer when context is missing", async () => {
+		it("should not update customer when context is missing", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
 				createCustomerOnSignUp: true,
 			});
 
 			const mockUser = createMockUser();
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await hook(mockUser); // No context provided
 
 			expect(mockClient.customers.list).not.toHaveBeenCalled();
-			expect(mockClient.customers.create).not.toHaveBeenCalled();
+			expect(mockClient.customers.update).not.toHaveBeenCalled();
 		});
 
-		it("should handle API errors during customer creation", async () => {
+		it("should handle API errors during customer linking", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
 				createCustomerOnSignUp: true,
@@ -306,14 +342,14 @@ describe("customer hooks", () => {
 			);
 
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await expect(hook(mockUser, ctx)).rejects.toThrow(
 				"Polar customer creation failed. Error: Internal server error",
 			);
 		});
 
-		it("should handle non-Error exceptions", async () => {
+		it("should handle non-Error exceptions during customer linking", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
 				createCustomerOnSignUp: true,
@@ -324,7 +360,7 @@ describe("customer hooks", () => {
 			vi.mocked(mockClient.customers.list).mockRejectedValue("Unknown error");
 
 			const ctx = { context: { logger: { error: vi.fn() } } } as any;
-			const hook = onUserCreate(options);
+			const hook = onAfterUserCreate(options);
 
 			await expect(hook(mockUser, ctx)).rejects.toThrow(
 				"Polar customer creation failed. Error: Unknown error",
