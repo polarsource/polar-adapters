@@ -120,8 +120,6 @@ export const createMockCheckout = () => ({
 	createdAt: new Date().toISOString(),
 	modifiedAt: new Date().toISOString(),
 	expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-	allowDiscountCodes: true,
-	discountId: undefined,
 });
 
 export const createMockCustomer = () => ({
