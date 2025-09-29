@@ -2,4 +2,4 @@
 "@polar-sh/better-auth": patch
 ---
 
-Fallback to the better-auth defined baseURL for checkouts created on the server
+Fall back to base URL when creating a checkout on the server outside of a request context.
