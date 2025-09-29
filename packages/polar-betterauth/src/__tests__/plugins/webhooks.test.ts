@@ -6,7 +6,7 @@ vi.mock("@polar-sh/adapter-utils", () => ({
 	handleWebhookPayload: vi.fn(),
 }));
 
-vi.mock("@polar-sh/sdk/webhooks.js", () => ({
+vi.mock("@polar-sh/sdk/webhooks", () => ({
 	validateEvent: vi.fn(),
 }));
 
@@ -30,7 +30,7 @@ const { handleWebhookPayload } = (await vi.importMock(
 	"@polar-sh/adapter-utils",
 )) as any;
 const { validateEvent } = (await vi.importMock(
-	"@polar-sh/sdk/webhooks.js",
+	"@polar-sh/sdk/webhooks",
 )) as any;
 const { APIError, createAuthEndpoint } = (await vi.importMock(
 	"better-auth/api",
