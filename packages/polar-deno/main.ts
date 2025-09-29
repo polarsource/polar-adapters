@@ -1,12 +1,12 @@
 import {
 	type WebhooksConfig,
 	handleWebhookPayload,
-} from "npm:@polar-sh/adapter-utils@0.2.1";
-import { Polar } from "npm:@polar-sh/sdk@0.34.3";
+} from "npm:@polar-sh/adapter-utils@0.2.7";
+import { Polar } from "npm:@polar-sh/sdk@0.35.3";
 import {
 	WebhookVerificationError,
 	validateEvent,
-} from "npm:@polar-sh/sdk@0.34.3/webhooks.js";
+} from "npm:@polar-sh/sdk@0.35.3/webhooks";
 
 export interface CheckoutConfig {
 	accessToken?: string;
