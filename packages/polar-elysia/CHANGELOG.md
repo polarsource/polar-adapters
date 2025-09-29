@@ -1,5 +1,12 @@
 # @polar-sh/elysia
 
+## 0.2.9
+
+### Patch Changes
+
+- Updated dependencies [bcad48d]
+  - @polar-sh/adapter-utils@0.2.8
+
 ## 0.2.8
 
 ### Patch Changes

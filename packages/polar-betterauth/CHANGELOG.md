@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 1.1.6
+
+### Patch Changes
+
+- bcad48d: Fix problem with imports that may have caused build issues with Vite or other bundlers
+- b537f07: Fall back to base URL when creating a checkout on the server outside of a request context.
+- 6f658a8: Add support for Zod v4
+
 ## 1.1.5
 
 ### Patch Changes

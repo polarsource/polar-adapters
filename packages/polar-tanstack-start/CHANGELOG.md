@@ -1,5 +1,12 @@
 # @polar-sh/tanstack-start
 
+## 0.1.10
+
+### Patch Changes
+
+- Updated dependencies [bcad48d]
+  - @polar-sh/adapter-utils@0.2.8
+
 ## 0.1.9
 
 ### Patch Changes
