@@ -195,6 +195,32 @@ Checkouts will automatically carry the authenticated User as the customer to the
 
 If `authenticatedUsersOnly` is `false` - then it will be possible to trigger checkout sessions without any associated customer.
 
+
+### Checkout Embed
+
+You can use the `checkoutEmbed` method to instead open the Checkout as an Embed on your site. 
+
+```typescript
+const embed = await authClient.checkoutEmbed({
+  products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
+});
+
+// Listen for successful completion
+checkout.addEventListener("success", (event) => {
+  console.log("Purchase successful!", event.detail);
+
+  // Call event.preventDefault() if you want to prevent the standard behavior
+  // event.preventDefault()
+  // Note: For success event, this prevents automatic redirection if redirect is true
+
+  // If redirect is false, you can show your own success message
+  if (!event.detail.redirect) {
+    showSuccessMessage();
+  }
+  // Otherwise, the user will be redirected to the success URL (unless prevented)
+});
+```
+
 ### Organization Support
 
 This plugin supports the Organization plugin. If you pass the organization ID to the Checkout referenceId, you will be able to keep track of purchases made from organization members.
