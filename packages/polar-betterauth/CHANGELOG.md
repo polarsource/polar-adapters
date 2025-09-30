@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.7
+
+### Patch Changes
+
+- 6621c94: Implement Checkout Embed
+
 ## 1.1.6
 
 ### Patch Changes
