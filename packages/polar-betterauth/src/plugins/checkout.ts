@@ -22,14 +22,28 @@ export interface CheckoutOptions {
 	 */
 	theme?: "light" | "dark";
 	/**
-	 * Allow discount codes
+	 * Redirect to checkout page
 	 */
-	allowDiscountCodes?: boolean;
-	/**
-	 * Discount ID
-	 */
-	discountId?: string;
+	redirect?: boolean;
 }
+
+export const CheckoutParams = z.object({
+	products: z.union([z.array(z.string()), z.string()]).optional(),
+	slug: z.string().optional(),
+	referenceId: z.string().optional(),
+	customFieldData: z
+		.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+		.optional(),
+	metadata: z
+		.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+		.optional(),
+	allowDiscountCodes: z.coerce.boolean().optional(),
+	discountId: z.string().optional(),
+	redirect: z.coerce.boolean().optional(),
+	embedOrigin: z.string().url().optional(),
+});
+
+export type CheckoutParams = z.infer<typeof CheckoutParams>;
 
 export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
@@ -39,25 +53,7 @@ export const checkout =
 				"/checkout",
 				{
 					method: "POST",
-					body: z.object({
-						products: z.union([z.array(z.string()), z.string()]).optional(),
-						slug: z.string().optional(),
-						referenceId: z.string().optional(),
-						customFieldData: z
-							.record(
-								z.string(),
-								z.union([z.string(), z.number(), z.boolean()]),
-							)
-							.optional(),
-						metadata: z
-							.record(
-								z.string(),
-								z.union([z.string(), z.number(), z.boolean()]),
-							)
-							.optional(),
-						allowDiscountCodes: z.coerce.boolean().optional().default(true),
-						discountId: z.string().optional(),
-					}),
+					body: CheckoutParams,
 				},
 				async (ctx) => {
 					const session = await getSessionFromCtx(ctx);
@@ -112,6 +108,7 @@ export const checkout =
 							customFieldData: ctx.body.customFieldData,
 							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
 							discountId: ctx.body.discountId,
+							embedOrigin: ctx.body.embedOrigin,
 						});
 
 						const redirectUrl = new URL(checkout.url);
@@ -122,7 +119,7 @@ export const checkout =
 
 						return ctx.json({
 							url: redirectUrl.toString(),
-							redirect: true,
+							redirect: ctx.body.redirect ?? true,
 						});
 					} catch (e: unknown) {
 						if (e instanceof Error) {

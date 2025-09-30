@@ -28,7 +28,13 @@ export const auth = betterAuth({
 			},
 			use: [
 				checkout({
-					theme: "light",
+					theme: "dark",
+					products: [
+						{
+							productId: "e651f46d-ac20-4f26-b769-ad088b123df2",
+							slug: "pro",
+						},
+					],
 				}),
 				usage(),
 				portal(),

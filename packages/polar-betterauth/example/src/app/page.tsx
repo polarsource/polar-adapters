@@ -6,76 +6,77 @@ import { Register } from "@/components/Register";
 import { authClient } from "@/lib/auth-client";
 
 export default function Home() {
-  const onClickCheckout = async () => {
-    const { data: state } = await authClient.checkout({
-      products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
-      referenceId: (await authClient.organization.list())?.data?.[0]?.id,
-    });
-  };
+	const onClickCheckout = async () => {
+		const embed = await authClient.checkoutEmbed({
+			slug: "pro",
+		});
 
-  const onClickCustomerPortal = async () => {
-    const { data: state } = await authClient.customer.portal();
-  };
+		return embed;
+	};
 
-  const onClickCustomerState = async () => {
-    const { data: state } = await authClient.customer.state();
-    console.log(state);
-  };
+	const onClickCustomerPortal = async () => {
+		const { data: state } = await authClient.customer.portal();
+	};
 
-  const onClickOrganization = async () => {
-    const { data: state } = await authClient.organization.create({
-      name: "My Organization",
-      slug: "my-organization",
-    });
-  };
+	const onClickCustomerState = async () => {
+		const { data: state } = await authClient.customer.state();
+		console.log(state);
+	};
 
-  const onClickIngest = async () => {
-    const { data: ingestion } = await authClient.usage.ingest({
-      event: "user.created",
-      metadata: {
-        email: "test@test.com",
-      },
-    });
+	const onClickOrganization = async () => {
+		const { data: state } = await authClient.organization.create({
+			name: "My Organization",
+			slug: "my-organization",
+		});
+	};
 
-    console.log(ingestion);
-  };
+	const onClickIngest = async () => {
+		const { data: ingestion } = await authClient.usage.ingest({
+			event: "user.created",
+			metadata: {
+				email: "test@test.com",
+			},
+		});
 
-  const onClickSubscriptions = async () => {
-    const { data: subs } = await authClient.customer.subscriptions.list({
-      query: {
-        page: 1,
-        limit: 10,
-        active: true,
-      },
-    });
-    console.log(subs);
-  };
+		console.log(ingestion);
+	};
 
-  return (
-    <div className="flex flex-row gap-4 items-center justify-center h-screen">
-      <Me />
-      <Register />
-      <Login />
-      <div className="flex flex-col gap-4 items-center justify-center">
-        <button onClick={onClickCheckout} type="button">
-          Checkout
-        </button>
-        <button onClick={onClickCustomerPortal} type="button">
-          Customer Portal
-        </button>
-        <button onClick={onClickCustomerState} type="button">
-          Customer State
-        </button>
-        <button onClick={onClickOrganization} type="button">
-          Organization
-        </button>
-        <button onClick={onClickIngest} type="button">
-          Ingest
-        </button>
-        <button onClick={onClickSubscriptions} type="button">
-          Subscriptions
-        </button>
-      </div>
-    </div>
-  );
+	const onClickSubscriptions = async () => {
+		const { data: subs } = await authClient.customer.subscriptions.list({
+			query: {
+				page: 1,
+				limit: 10,
+				active: true,
+			},
+		});
+		console.log(subs);
+	};
+
+	return (
+		<div className="flex flex-row gap-4 items-center justify-center h-screen">
+			<Me />
+			<Register />
+			<Login />
+			<div className="flex flex-col gap-4 items-center justify-center">
+				<button onClick={onClickCheckout} type="button">
+					Checkout
+				</button>
+				<button onClick={onClickCustomerPortal} type="button">
+					Customer Portal
+				</button>
+				<button onClick={onClickCustomerState} type="button">
+					Customer State
+				</button>
+				<button onClick={onClickOrganization} type="button">
+					Organization
+				</button>
+				<button onClick={onClickIngest} type="button">
+					Ingest
+				</button>
+				<button onClick={onClickSubscriptions} type="button">
+					Subscriptions
+				</button>
+			</div>
+		</div>
+	);
 }
