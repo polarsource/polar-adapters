@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.1.2
+
+### Patch Changes
+
+- 2299d7a: new supabase version
+
 ## 0.1.1
 
 ### Patch Changes
