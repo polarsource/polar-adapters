@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.1.1
+
+### Patch Changes
+
+- 6e03516: init supabase adapter
+
 ## 0.1.0
 
 ### Minor Changes
