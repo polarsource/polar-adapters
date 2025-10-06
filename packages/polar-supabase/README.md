@@ -110,47 +110,6 @@ The Webhook handler also supports granular handlers for easy integration.
 - onCustomerDeleted: (payload) => Promise<void>
 - onCustomerStateChanged: (payload) => Promise<void>
 
-### Entitlements
-
-You can use the Entitlements API to automatically manage entitlements for your customers.
-
-```typescript
-// supabase/functions/webhooks/index.ts
-import { Webhooks, Entitlements } from "@polar-sh/supabase";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-	Deno.env.get("SUPABASE_URL")!,
-	Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-);
-
-const handler = Webhooks({
-	webhookSecret: Deno.env.get("POLAR_WEBHOOK_SECRET")!,
-	entitlements: Entitlements({
-		customerIdField: "polar_customer_id", // The field in your database that stores the Polar customer ID
-		benefitIdField: "polar_benefit_id", // The field in your database that stores the Polar benefit ID
-		async onCreate(properties) {
-			// Grant access to customer
-			await supabase.from("entitlements").insert({
-				polar_customer_id: properties.customerId,
-				polar_benefit_id: properties.benefitId,
-				granted_at: new Date().toISOString(),
-			});
-		},
-		async onRevoke(properties) {
-			// Revoke access from customer
-			await supabase
-				.from("entitlements")
-				.delete()
-				.eq("polar_customer_id", properties.customerId)
-				.eq("polar_benefit_id", properties.benefitId);
-		},
-	}),
-});
-
-Deno.serve(handler);
-```
-
 ## Edge Runtime Compatibility
 
 This adapter is built to work with Supabase Edge Functions, which run on the Deno runtime. It uses standard Web APIs (`Request`, `Response`) that are compatible with edge environments, making it ideal for:
