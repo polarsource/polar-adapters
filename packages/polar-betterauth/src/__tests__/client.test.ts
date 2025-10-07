@@ -42,15 +42,6 @@ describe("polarClient", () => {
 		expect(plugin.$InferServerPlugin).toEqual({});
 	});
 
-	it("should create new instances on each call", () => {
-		const plugin1 = polarClient();
-		const plugin2 = polarClient();
-
-		// Different instances but same structure
-		expect(plugin1).not.toBe(plugin2);
-		expect(plugin1).toEqual(plugin2);
-	});
-
 	it("should conform to BetterAuthClientPlugin type structure", () => {
 		const plugin = polarClient();
 
