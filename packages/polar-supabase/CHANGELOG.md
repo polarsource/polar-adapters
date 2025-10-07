@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.1.1
+
+### Patch Changes
+
+- 017e7c3: New Supabase adapter version
+
 ## 0.1.2
 
 ### Patch Changes
