@@ -388,9 +388,6 @@ importers:
 
   packages/polar-supabase:
     dependencies:
-      '@polar-sh/adapter-utils':
-        specifier: workspace:*
-        version: link:../adapter-utils
       '@polar-sh/sdk':
         specifier: ^0.35.3
         version: 0.35.3
@@ -398,6 +395,9 @@ importers:
       '@biomejs/biome':
         specifier: 1.9.4
         version: 1.9.4
+      '@polar-sh/adapter-utils':
+        specifier: 0.2.8
+        version: 0.2.8
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
         version: 7.0.0
@@ -2386,6 +2386,9 @@ packages:
     resolution: {integrity: sha512-04IXzPwHrW69XusN/SIdDdKZBzMfOT9UNT/YiJit/xpy2VuAoB8NHc8Aplb96zsWDddLnbkPL3TsmrS04ZU2xQ==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@polar-sh/adapter-utils@0.2.8':
+    resolution: {integrity: sha512-VRCYectPSc8H63hYsGMNJK9rGy4WjpwL0G7LvnVHHYCpxBadkn90eWssS0AyaOsYaUiqCwwGcJd609UoDk3IQA==}
 
   '@polar-sh/checkout@0.1.12':
     resolution: {integrity: sha512-CmNdrZKOnr22Z2Cj0yeD0VfxeHW4eJufHjdufORBZwjoSnr9/xkUm+mdGIBlTGZRfAC2AekQ/ie8aqx9PVWfLQ==}
@@ -11109,6 +11112,12 @@ snapshots:
   '@playwright/test@1.55.0':
     dependencies:
       playwright: 1.55.0
+
+  '@polar-sh/adapter-utils@0.2.8':
+    dependencies:
+      '@polar-sh/sdk': 0.35.3
+    transitivePeerDependencies:
+      - '@modelcontextprotocol/sdk'
 
   '@polar-sh/checkout@0.1.12(@stripe/react-stripe-js@3.10.0(@stripe/stripe-js@7.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@stripe/stripe-js@7.9.0)(@types/react-dom@19.1.9(@types/react@19.1.16))(@types/react@19.1.16)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
