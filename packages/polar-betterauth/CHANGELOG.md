@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.9
+
+### Patch Changes
+
+- 3713498: Bump BetterAuth adapter dependencies
+
 ## 1.1.8
 
 ### Patch Changes
