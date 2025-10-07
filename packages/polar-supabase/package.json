@@ -28,11 +28,11 @@
 	},
 	"files": ["dist"],
 	"dependencies": {
-		"@polar-sh/adapter-utils": "workspace:*",
 		"@polar-sh/sdk": "^0.35.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
+		"@polar-sh/adapter-utils": "0.2.8",
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"tsup": "^8.3.5",
 		"vitest": "^3.2.4"
