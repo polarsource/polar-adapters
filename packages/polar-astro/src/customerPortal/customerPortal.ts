@@ -4,6 +4,7 @@ import type { APIRoute } from "astro";
 export interface CustomerPortalConfig {
 	accessToken?: string;
 	getCustomerId: (req: Request) => Promise<string>;
+	returnUrl?: string;
 	server?: "sandbox" | "production";
 }
 
@@ -11,6 +12,7 @@ export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	returnUrl,
 }: CustomerPortalConfig): APIRoute => {
 	return async ({ request }) => {
 		if (!accessToken) {
@@ -32,9 +34,12 @@ export const CustomerPortal = ({
 			);
 		}
 
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		try {
 			const result = await polar.customerSessions.create({
 				customerId,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			return Response.redirect(result.customerPortalUrl);

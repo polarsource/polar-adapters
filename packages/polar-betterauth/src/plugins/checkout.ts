@@ -14,6 +14,10 @@ export interface CheckoutOptions {
 	 */
 	successUrl?: string;
 	/**
+	 * Checkout Return URL
+	 */
+	returnUrl?: string;
+	/**
 	 * Only allow authenticated customers to checkout
 	 */
 	authenticatedUsersOnly?: boolean;
@@ -41,8 +45,8 @@ export const CheckoutParams = z.object({
 	discountId: z.string().optional(),
 	redirect: z.coerce.boolean().optional(),
 	embedOrigin: z.string().url().optional(),
-    trialInterval: z.enum(["day" , "week" , "month" , "year"]).optional(),
-    trialIntervalCount: z.number().min(1).max(1000).optional(),
+  trialInterval: z.enum(["day" , "week" , "month" , "year"]).optional(),
+  trialIntervalCount: z.number().min(1).max(1000).optional(),
 });
 
 export type CheckoutParams = z.infer<typeof CheckoutParams>;
@@ -111,8 +115,14 @@ export const checkout =
 							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
 							discountId: ctx.body.discountId,
 							embedOrigin: ctx.body.embedOrigin,
-                            trialInterval: ctx.body.trialInterval ?? null,
-                            trialIntervalCount: ctx.body.trialIntervalCount ?? null,
+              trialInterval: ctx.body.trialInterval ?? null,
+              trialIntervalCount: ctx.body.trialIntervalCount ?? null,
+							returnUrl: checkoutOptions.returnUrl
+								? new URL(
+										checkoutOptions.returnUrl,
+										ctx.request?.url ?? ctx.context.baseURL,
+									).toString()
+								: undefined,
 						});
 
 						const redirectUrl = new URL(checkout.url);

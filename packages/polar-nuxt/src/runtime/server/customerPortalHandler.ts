@@ -6,14 +6,18 @@ export interface CustomerPortalConfig {
 	accessToken: string;
 	server?: "sandbox" | "production";
 	getCustomerId: (event: H3Event) => Promise<string>;
+	returnUrl?: string;
 }
 
 export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	returnUrl,
 }: CustomerPortalConfig) => {
 	return async (event: H3Event) => {
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		const customerId = await getCustomerId(event);
 
 		if (!customerId) {
@@ -34,6 +38,7 @@ export const CustomerPortal = ({
 
 			const result = await polar.customerSessions.create({
 				customerId,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			return sendRedirect(event, result.customerPortalUrl);

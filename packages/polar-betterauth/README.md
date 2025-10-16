@@ -63,9 +63,12 @@ const auth = betterAuth({
                         }
                     ],
                     successUrl: "/success?checkout_id={CHECKOUT_ID}",
-                    authenticatedUsersOnly: true
+                    authenticatedUsersOnly: true,
+                    returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Checkout
                 }),
-                portal(),
+                portal({
+                  returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Customer Portal
+                }),
                 usage(),
                 webhooks({
                     secret: process.env.POLAR_WEBHOOK_SECRET,
@@ -169,6 +172,8 @@ const auth = betterAuth({
                     products: [ { productId: "123-456-789", slug: "pro" } ],
                     // Relative URL to return to when checkout is successfully completed
                     successUrl: "/success?checkout_id={CHECKOUT_ID}",
+                    // Optional Return URL, which renders a Back-button in the Checkout
+                    returnUrl: "https://myapp.com",
                     // Wheather you want to allow unauthenticated checkout sessions or not
                     authenticatedUsersOnly: true,
                     // Enforces the theme - System-preferred theme will be set if left omitted
@@ -252,7 +257,10 @@ const auth = betterAuth({
             ...
             use: [
                 checkout(...),
-                portal()
+                portal({
+                   // Optional Return URL, which renders a Back-button in the Customer Portal
+                  redirectUrl: "https://myapp.com"
+                })
             ],
         })
     ]

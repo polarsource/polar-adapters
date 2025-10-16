@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/remix",
-	"version": "0.3.9",
+	"version": "0.3.10",
 	"description": "Polar integration for Remix and React Router",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -45,6 +45,6 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.35.3"
+		"@polar-sh/sdk": "^0.36.2"
 	}
 }

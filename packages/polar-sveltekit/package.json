@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/sveltekit",
-	"version": "0.4.9",
+	"version": "0.4.10",
 	"description": "Polar integration for SvelteKit",
 	"main": "dist/index.js",
 	"module": "dist/index.js",
@@ -50,6 +50,6 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.35.3"
+		"@polar-sh/sdk": "^0.36.2"
 	}
 }

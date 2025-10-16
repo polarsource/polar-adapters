@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/supabase",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -26,13 +26,15 @@
 		"test:watch": "vitest --watch",
 		"test:coverage": "vitest --coverage"
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"dependencies": {
-		"@polar-sh/sdk": "^0.35.3"
+		"@polar-sh/sdk": "^0.36.2"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@polar-sh/adapter-utils": "0.2.8",
+		"@polar-sh/adapter-utils": "0.2.9",
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"tsup": "^8.3.5",
 		"vitest": "^3.2.4"

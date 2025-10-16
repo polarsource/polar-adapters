@@ -1,5 +1,13 @@
 # @polar-sh/elysia
 
+## 0.2.10
+
+### Patch Changes
+
+- a84c64c: Add support for returnUrl
+- Updated dependencies [a84c64c]
+  - @polar-sh/adapter-utils@0.2.9
+
 ## 0.2.9
 
 ### Patch Changes

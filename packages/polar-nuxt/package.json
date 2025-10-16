@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/nuxt",
-	"version": "0.3.11",
+	"version": "0.3.12",
 	"description": "Polar.sh integration for Nuxt",
 	"repository": {
 		"type": "git",
@@ -36,7 +36,7 @@
 	"dependencies": {
 		"@nuxt/kit": "^3.15.4",
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.35.3"
+		"@polar-sh/sdk": "^0.36.2"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
