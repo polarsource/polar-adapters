@@ -42,7 +42,7 @@ export const CheckoutParams = z.object({
 	redirect: z.coerce.boolean().optional(),
 	embedOrigin: z.string().url().optional(),
     trialInterval: z.enum(["day" , "week" , "month" , "year"]).optional(),
-    trialIntervalCount: z.number().positive().optional(),
+    trialIntervalCount: z.number().min(1).max(1000).optional(),
 });
 
 export type CheckoutParams = z.infer<typeof CheckoutParams>;
