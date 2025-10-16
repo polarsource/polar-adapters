@@ -24,12 +24,10 @@
 		"check": "biome check --write ./src",
 		"test": "vitest"
 	},
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.35.3"
+		"@polar-sh/sdk": "^0.36.2"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
@@ -42,9 +40,7 @@
 			"ts": "module",
 			"tsx": "module"
 		},
-		"nodeArguments": [
-			"--loader=ts-node/esm"
-		]
+		"nodeArguments": ["--loader=ts-node/esm"]
 	},
 	"peerDependencies": {
 		"next": "^15.0.0 || ^15.2.0-canary.*"

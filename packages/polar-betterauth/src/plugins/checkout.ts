@@ -14,6 +14,10 @@ export interface CheckoutOptions {
 	 */
 	successUrl?: string;
 	/**
+	 * Checkout Return URL
+	 */
+	returnUrl?: string;
+	/**
 	 * Only allow authenticated customers to checkout
 	 */
 	authenticatedUsersOnly?: boolean;
@@ -109,6 +113,12 @@ export const checkout =
 							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
 							discountId: ctx.body.discountId,
 							embedOrigin: ctx.body.embedOrigin,
+							returnUrl: checkoutOptions.returnUrl
+								? new URL(
+										checkoutOptions.returnUrl,
+										ctx.request?.url ?? ctx.context.baseURL,
+									).toString()
+								: undefined,
 						});
 
 						const redirectUrl = new URL(checkout.url);

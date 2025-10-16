@@ -6,12 +6,14 @@ export interface CustomerPortalConfig {
 	accessToken: string;
 	getCustomerId: (req: Request) => Promise<string>;
 	server: "sandbox" | "production";
+	returnUrl?: string;
 }
 
 export const CustomerPortal = <TPath extends string = string>({
 	accessToken,
 	server,
 	getCustomerId,
+	returnUrl,
 }: CustomerPortalConfig): StartAPIMethodCallback<TPath> => {
 	const polar = new Polar({
 		accessToken,
@@ -20,6 +22,8 @@ export const CustomerPortal = <TPath extends string = string>({
 
 	// @ts-expect-error - TODO: fix this
 	return async ({ request }) => {
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		const customerId = await getCustomerId(request);
 
 		if (!customerId) {
@@ -32,6 +36,7 @@ export const CustomerPortal = <TPath extends string = string>({
 		try {
 			const result = await polar.customerSessions.create({
 				customerId,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			return Response.redirect(result.customerPortalUrl);

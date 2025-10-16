@@ -19,6 +19,7 @@ export {
 export interface CheckoutConfig {
 	accessToken?: string;
 	successUrl?: string;
+	returnUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
@@ -31,6 +32,7 @@ export type WebhookHandler = (event: RequestEvent) => Promise<Response>;
 export const Checkout = ({
 	accessToken,
 	successUrl,
+	returnUrl,
 	server,
 	theme,
 	includeCheckoutId = true,
@@ -55,6 +57,8 @@ export const Checkout = ({
 		if (success && includeCheckoutId) {
 			success.searchParams.set("checkoutId", "{CHECKOUT_ID}");
 		}
+
+		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
 
 		try {
 			const result = await polar.checkouts.create({
@@ -81,6 +85,7 @@ export const Checkout = ({
 				metadata: url.searchParams.has("metadata")
 					? JSON.parse(url.searchParams.get("metadata") ?? "{}")
 					: undefined,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			const redirectUrl = new URL(result.url);
@@ -104,12 +109,14 @@ export interface CustomerPortalConfig {
 	accessToken: string;
 	server?: "sandbox" | "production";
 	getCustomerId: (event: RequestEvent) => Promise<string>;
+	returnUrl?: string;
 }
 
 export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	returnUrl,
 }: CustomerPortalConfig): CustomerPortalHandler => {
 	const polar = new Polar({
 		accessToken,
@@ -117,6 +124,8 @@ export const CustomerPortal = ({
 	});
 
 	return async (event) => {
+		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
+
 		const customerId = await getCustomerId(event);
 
 		if (!customerId) {
@@ -128,6 +137,7 @@ export const CustomerPortal = ({
 		try {
 			const result = await polar.customerSessions.create({
 				customerId,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			return new Response(null, {

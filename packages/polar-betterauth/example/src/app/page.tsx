@@ -7,11 +7,9 @@ import { authClient } from "@/lib/auth-client";
 
 export default function Home() {
 	const onClickCheckout = async () => {
-		const embed = await authClient.checkoutEmbed({
+		await authClient.checkout({
 			slug: "pro",
 		});
-
-		return embed;
 	};
 
 	const onClickCustomerPortal = async () => {

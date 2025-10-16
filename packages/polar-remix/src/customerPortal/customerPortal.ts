@@ -5,12 +5,14 @@ export interface CustomerPortalConfig {
 	accessToken?: string;
 	getCustomerId: (req: Request) => Promise<string>;
 	server?: "sandbox" | "production";
+	returnUrl?: string;
 }
 
 export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	returnUrl,
 }: CustomerPortalConfig): LoaderFunction => {
 	const polar = new Polar({
 		accessToken: accessToken ?? process.env["POLAR_ACCESS_TOKEN"],
@@ -18,6 +20,8 @@ export const CustomerPortal = ({
 	});
 
 	return async ({ request }) => {
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		const customerId = await getCustomerId(request);
 
 		if (!customerId) {
@@ -30,6 +34,7 @@ export const CustomerPortal = ({
 		try {
 			const result = await polar.customerSessions.create({
 				customerId,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			return Response.redirect(result.customerPortalUrl);

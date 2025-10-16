@@ -15,6 +15,7 @@ import { Checkout } from "@polar-sh/supabase";
 const handler = Checkout({
 	accessToken: Deno.env.get("POLAR_ACCESS_TOKEN"),
 	successUrl: Deno.env.get("SUCCESS_URL"),
+    returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Checkout
 	server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
 	theme: "dark", // Enforces the theme - System-preferred theme will be set if left omitted
 });
@@ -54,6 +55,7 @@ const handler = CustomerPortal({
 		// You can extract customer ID from auth headers, cookies, etc.
 		return "123";
 	},
+    returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Customer Portal
 	server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
 });
 

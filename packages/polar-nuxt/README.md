@@ -34,6 +34,7 @@ export default defineEventHandler((event) => {
   const checkoutHandler = Checkout({
     accessToken: polarAccessToken,
     successUrl: polarCheckoutSuccessUrl,
+    returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Checkout
     server: polarServer as "sandbox" | "production",
     theme: "dark" // Enforces the theme - System-preferred theme will be set if left omitted
   });
@@ -70,6 +71,7 @@ export default defineEventHandler((event) => {
     getCustomerId: (event) => {
       return Promise.resolve("9d89909b-216d-475e-8005-053dba7cff07");
     },
+    returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Customer Portal
   });
 
   return customerPortalHandler(event);

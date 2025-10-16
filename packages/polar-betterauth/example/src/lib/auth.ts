@@ -35,9 +35,12 @@ export const auth = betterAuth({
 							slug: "pro",
 						},
 					],
+					returnUrl: "https://myapp.com",
 				}),
 				usage(),
-				portal(),
+				portal({
+					returnUrl: "https://myapp.com",
+				}),
 				webhooks({
 					secret: process.env["POLAR_WEBHOOK_SECRET"] as string,
 					onOrganizationUpdated: async (payload) => {
