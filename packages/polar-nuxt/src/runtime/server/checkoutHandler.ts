@@ -6,6 +6,7 @@ import { z } from "zod";
 export interface CheckoutConfig {
 	accessToken?: string;
 	successUrl?: string;
+	returnUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
@@ -37,6 +38,7 @@ const checkoutQuerySchema = z.object({
 export const Checkout = ({
 	accessToken,
 	successUrl,
+	returnUrl,
 	server,
 	theme,
 	includeCheckoutId = true,
@@ -64,6 +66,8 @@ export const Checkout = ({
 				success.searchParams.set("checkoutId", "{CHECKOUT_ID}");
 			}
 
+			const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 			const polar = new Polar({ accessToken, server });
 
 			const result = await polar.checkouts.create({
@@ -84,6 +88,7 @@ export const Checkout = ({
 				allowDiscountCodes,
 				discountId,
 				metadata: metadata ? JSON.parse(metadata) : undefined,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			const redirectUrl = new URL(result.url);

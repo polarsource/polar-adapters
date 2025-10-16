@@ -28,7 +28,7 @@
 	},
 	"files": ["dist"],
 	"dependencies": {
-		"@polar-sh/sdk": "^0.35.3"
+		"@polar-sh/sdk": "^0.36.2"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",

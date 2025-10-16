@@ -2,15 +2,16 @@ import {
 	type WebhooksConfig,
 	handleWebhookPayload,
 } from "npm:@polar-sh/adapter-utils@0.2.7";
-import { Polar } from "npm:@polar-sh/sdk@0.35.3";
+import { Polar } from "npm:@polar-sh/sdk@0.36.2";
 import {
 	WebhookVerificationError,
 	validateEvent,
-} from "npm:@polar-sh/sdk@0.35.3/webhooks";
+} from "npm:@polar-sh/sdk@0.36.2/webhooks";
 
 export interface CheckoutConfig {
 	accessToken?: string;
 	successUrl?: string;
+	returnUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
@@ -19,6 +20,7 @@ export interface CheckoutConfig {
 export const Checkout = ({
 	accessToken,
 	successUrl,
+	returnUrl,
 	server,
 	theme,
 	includeCheckoutId = true,
@@ -48,10 +50,13 @@ export const Checkout = ({
 			success.searchParams.set("checkoutId", "{CHECKOUT_ID}");
 		}
 
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		try {
 			const result = await polar.checkouts.create({
 				products,
 				successUrl: success ? decodeURI(success.toString()) : undefined,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 				customerId: url.searchParams.get("customerId") ?? undefined,
 				externalCustomerId:
 					url.searchParams.get("customerExternalId") ?? undefined,
@@ -96,6 +101,7 @@ export interface CustomerPortalConfig {
 	accessToken?: string;
 	getCustomerId: (request: Request) => Promise<string>;
 	server?: "sandbox" | "production";
+	returnUrl?: string;
 }
 
 // deno-lint-ignore explicit-function-return-type
@@ -103,6 +109,7 @@ export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	returnUrl,
 }: CustomerPortalConfig): ((request: Request) => Promise<Response>) => {
 	const polar = new Polar({
 		accessToken: accessToken ?? Deno.env.get("POLAR_ACCESS_TOKEN"),
@@ -110,6 +117,8 @@ export const CustomerPortal = ({
 	});
 
 	return async (request: Request) => {
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		const customerId = await getCustomerId(request);
 
 		if (!customerId) {
@@ -122,6 +131,7 @@ export const CustomerPortal = ({
 		try {
 			const result = await polar.customerSessions.create({
 				customerId,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			return Response.redirect(result.customerPortalUrl);

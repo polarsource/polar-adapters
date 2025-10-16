@@ -5,6 +5,7 @@ import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
 export interface CheckoutConfig {
 	accessToken?: string;
 	successUrl?: string;
+	returnUrl?: string;
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
@@ -13,6 +14,7 @@ export interface CheckoutConfig {
 export const Checkout = <TPath extends string = string>({
 	accessToken,
 	successUrl,
+	returnUrl,
 	server,
 	theme,
 	includeCheckoutId = true,
@@ -40,6 +42,8 @@ export const Checkout = <TPath extends string = string>({
 			success.searchParams.set("checkoutId", "{CHECKOUT_ID}");
 		}
 
+		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
+
 		try {
 			const result = await polar.checkouts.create({
 				products,
@@ -65,6 +69,7 @@ export const Checkout = <TPath extends string = string>({
 				metadata: url.searchParams.has("metadata")
 					? JSON.parse(url.searchParams.get("metadata") ?? "{}")
 					: undefined,
+				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});
 
 			const redirectUrl = new URL(result.url);
