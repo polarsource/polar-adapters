@@ -159,5 +159,88 @@ describe("CustomerPortal", () => {
 
 			consoleSpy.mockRestore();
 		});
+
+		it("should add theme parameter to redirect URL", async () => {
+			const getCustomerId = vi.fn().mockResolvedValue("cust_123");
+			mockCustomerSessionCreate.mockResolvedValue({
+				customerPortalUrl: "https://polar.sh/portal/session_123",
+			});
+
+			const portal = CustomerPortal({
+				accessToken: "test-token",
+				server: "production",
+				getCustomerId,
+				theme: "dark",
+			});
+
+			const request = new NextRequest("https://example.com/portal");
+			const response = await portal(request);
+
+			expect(response.headers.get("location")).toBe(
+				"https://polar.sh/portal/session_123?theme=dark",
+			);
+		});
+
+		it("should not add theme parameter when theme is not provided", async () => {
+			const getCustomerId = vi.fn().mockResolvedValue("cust_123");
+			mockCustomerSessionCreate.mockResolvedValue({
+				customerPortalUrl: "https://polar.sh/portal/session_123",
+			});
+
+			const portal = CustomerPortal({
+				accessToken: "test-token",
+				server: "production",
+				getCustomerId,
+			});
+
+			const request = new NextRequest("https://example.com/portal");
+			const response = await portal(request);
+
+			expect(response.headers.get("location")).toBe(
+				"https://polar.sh/portal/session_123",
+			);
+		});
+
+		it("should not add theme parameter when theme is auto", async () => {
+			const getCustomerId = vi.fn().mockResolvedValue("cust_123");
+			mockCustomerSessionCreate.mockResolvedValue({
+				customerPortalUrl: "https://polar.sh/portal/session_123",
+			});
+
+			const portal = CustomerPortal({
+				accessToken: "test-token",
+				server: "production",
+				getCustomerId,
+				theme: "auto",
+			});
+
+			const request = new NextRequest("https://example.com/portal");
+			const response = await portal(request);
+
+			expect(response.headers.get("location")).toBe(
+				"https://polar.sh/portal/session_123",
+			);
+		});
+
+		it("should add light theme parameter to redirect URL", async () => {
+			const getCustomerId = vi.fn().mockResolvedValue("cust_123");
+			mockCustomerSessionCreate.mockResolvedValue({
+				customerPortalUrl: "https://polar.sh/portal/session_123",
+			});
+
+			const portal = CustomerPortal({
+				accessToken: "test-token",
+				server: "production",
+				getCustomerId,
+				theme: "light",
+			});
+
+			const request = new NextRequest("https://example.com/portal");
+			const response = await portal(request);
+
+			expect(response.headers.get("location")).toBe(
+				"https://polar.sh/portal/session_123?theme=light",
+			);
+		});
 	});
 });
