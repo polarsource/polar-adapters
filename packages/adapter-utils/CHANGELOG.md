@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.2.9
+
+### Patch Changes
+
+- a84c64c: Add support for returnUrl
+
 ## 0.2.8
 
 ### Patch Changes

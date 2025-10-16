@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/astro",
-	"version": "0.4.9",
+	"version": "0.4.10",
 	"description": "Polar integration for Astro",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -25,8 +25,15 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": ["dist"],
-	"keywords": ["polar", "withastro", "payments", "subscriptions"],
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"polar",
+		"withastro",
+		"payments",
+		"subscriptions"
+	],
 	"peerDependencies": {
 		"astro": "^5.0.0"
 	},

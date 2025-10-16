@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.10
+
+### Patch Changes
+
+- a84c64c: Add support for returnUrl
+
 ## 1.1.9
 
 ### Patch Changes
