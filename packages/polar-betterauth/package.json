@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/better-auth",
-	"version": "1.1.9",
+	"version": "1.1.10",
 	"description": "Polar integration for better-auth",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -27,8 +27,15 @@
 		"dev": "npm run build -- --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": ["dist"],
-	"keywords": ["polar", "better-auth", "payments", "subscriptions"],
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"polar",
+		"better-auth",
+		"payments",
+		"subscriptions"
+	],
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@polar-sh/adapter-utils": "workspace:*",

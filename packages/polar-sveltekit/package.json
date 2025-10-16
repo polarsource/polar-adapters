@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/sveltekit",
-	"version": "0.4.9",
+	"version": "0.4.10",
 	"description": "Polar integration for SvelteKit",
 	"main": "dist/index.js",
 	"module": "dist/index.js",
@@ -23,8 +23,15 @@
 			"svelte": "./dist/index.js"
 		}
 	},
-	"files": ["dist"],
-	"keywords": ["polar", "sveltekit", "payments", "subscriptions"],
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"polar",
+		"sveltekit",
+		"payments",
+		"subscriptions"
+	],
 	"peerDependencies": {
 		"@sveltejs/kit": "^2.0.0"
 	},

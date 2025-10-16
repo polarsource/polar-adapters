@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.1.2
+
+### Patch Changes
+
+- a84c64c: Add support for returnUrl
+
 ## 0.1.1
 
 ### Patch Changes
