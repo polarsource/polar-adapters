@@ -39,12 +39,12 @@
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"@types/node": "^20.0.0",
-		"prettier": "^3.2.5",
-		"tsup": "^8.3.5",
+		"prettier": "^3.6.2",
+		"tsup": "^8.5.0",
 		"vitest": "^2.1.8"
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.36.2"
+		"@polar-sh/sdk": "^0.38.1"
 	}
 }
