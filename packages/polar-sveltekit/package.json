@@ -36,20 +36,20 @@
 		"@sveltejs/kit": "^2.0.0"
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.28.1",
+		"@playwright/test": "^1.56.1",
 		"@sveltejs/adapter-auto": "^3.3.1",
-		"@sveltejs/kit": "^2.15.1",
-		"@sveltejs/package": "^2.3.7",
+		"@sveltejs/kit": "^2.47.2",
+		"@sveltejs/package": "^2.5.4",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/node": "^20.0.0",
-		"prettier": "^3.2.5",
-		"svelte": "^5.11.0",
-		"svelte-check": "4.0.5",
+		"prettier": "^3.6.2",
+		"svelte": "^5.41.1",
+		"svelte-check": "4.3.3",
 		"vite": "^6.0.7",
 		"vite-plugin-dts": "^3.0.0"
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.36.2"
+		"@polar-sh/sdk": "^0.38.1"
 	}
 }
