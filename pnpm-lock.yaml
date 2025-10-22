@@ -114,8 +114,8 @@ importers:
   packages/polar-betterauth:
     dependencies:
       '@polar-sh/checkout':
-        specifier: ^0.1.12
-        version: 0.1.12(@stripe/react-stripe-js@3.10.0(@stripe/stripe-js@7.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@stripe/stripe-js@7.9.0)(@types/react-dom@19.1.9(@types/react@19.1.16))(@types/react@19.1.16)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^0.1.13
+        version: 0.1.13(@stripe/react-stripe-js@3.10.0(@stripe/stripe-js@7.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@stripe/stripe-js@7.9.0)(@types/react-dom@19.1.9(@types/react@19.1.16))(@types/react@19.1.16)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       zod:
         specifier: ^3.24.2 || ^4
         version: 3.25.76
@@ -389,15 +389,15 @@ importers:
   packages/polar-supabase:
     dependencies:
       '@polar-sh/sdk':
-        specifier: ^0.36.2
-        version: 0.36.2
+        specifier: ^0.38.1
+        version: 0.38.1
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
         version: 1.9.4
       '@polar-sh/adapter-utils':
-        specifier: 0.2.8
-        version: 0.2.8
+        specifier: workspace:*
+        version: link:../adapter-utils
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
         version: 7.0.0
@@ -2398,42 +2398,12 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@polar-sh/adapter-utils@0.2.8':
-    resolution: {integrity: sha512-VRCYectPSc8H63hYsGMNJK9rGy4WjpwL0G7LvnVHHYCpxBadkn90eWssS0AyaOsYaUiqCwwGcJd609UoDk3IQA==}
-
-  '@polar-sh/checkout@0.1.12':
-    resolution: {integrity: sha512-CmNdrZKOnr22Z2Cj0yeD0VfxeHW4eJufHjdufORBZwjoSnr9/xkUm+mdGIBlTGZRfAC2AekQ/ie8aqx9PVWfLQ==}
+  '@polar-sh/checkout@0.1.13':
+    resolution: {integrity: sha512-9Eaw5nGG+NLpYdE2zuCywNg8OszYi2Pa+FVbXlOrEF706gOmCdtbmDMxEKILYWgKkFybkQgG8Od2fDgb6Yi3Pw==}
     peerDependencies:
-      '@stripe/react-stripe-js': ^3.6.0
+      '@stripe/react-stripe-js': ^3.6.0 || ^4.0.2
       '@stripe/stripe-js': ^7.1.0
       react: ^18 || ^19
-
-  '@polar-sh/sdk@0.34.17':
-    resolution: {integrity: sha512-+eJAAyyP4CAtMy9Hd6gaNXErjaH3KuTXJFv72kqlCCvv7SweBlM4U2+zpeYAZvd/YMRZq/c447f0a0DD2e7UEA==}
-    hasBin: true
-    peerDependencies:
-      '@modelcontextprotocol/sdk': '>=1.5.0 <1.10.0'
-    peerDependenciesMeta:
-      '@modelcontextprotocol/sdk':
-        optional: true
-
-  '@polar-sh/sdk@0.35.3':
-    resolution: {integrity: sha512-oL/BlxfiHJTonM2yoLH2Hknqjis8nKyLVb981Wwy3uSSz2Qny6UMBZIPO6+k8Hcy+sv06U7ZBLD0UYJYfaghfQ==}
-    hasBin: true
-    peerDependencies:
-      '@modelcontextprotocol/sdk': '>=1.5.0 <1.10.0'
-    peerDependenciesMeta:
-      '@modelcontextprotocol/sdk':
-        optional: true
-
-  '@polar-sh/sdk@0.36.2':
-    resolution: {integrity: sha512-Qt+YRP+nBOUOEP+E5oD9eVzLubvpfmJJk2aptsZgVLx6ZSICUD2H6TdYD/uj5g12KLMu1XmOSolRDBB9noRj2g==}
-    hasBin: true
-    peerDependencies:
-      '@modelcontextprotocol/sdk': '>=1.5.0 <1.10.0'
-    peerDependenciesMeta:
-      '@modelcontextprotocol/sdk':
-        optional: true
 
   '@polar-sh/sdk@0.38.1':
     resolution: {integrity: sha512-UdTaHqmRrY4aOCsfGaI+OM7NMNNXxaHFr4KomDgwuJ7JT4gZn4geCDvM8qf64GGLOXikiAtq+uOcpVPlGk0C9Q==}
@@ -6473,11 +6443,14 @@ packages:
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
 
-  markdown-to-jsx@7.7.13:
-    resolution: {integrity: sha512-DiueEq2bttFcSxUs85GJcQVrOr0+VVsPfj9AEUPqmExJ3f8P/iQNvZHltV4tm1XVhu1kl0vWBZWT3l99izRMaA==}
+  markdown-to-jsx@7.7.16:
+    resolution: {integrity: sha512-2YLPWjSAdJqVCTIQtP3zPPYfLUWuu74Ms7E9vr/RqLTWzPT5clZWNIlgxyzUKD/Gv+P12TNgpnRgtaNNj/vn8A==}
     engines: {node: '>= 10'}
     peerDependencies:
       react: '>= 0.14.0'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -7544,8 +7517,8 @@ packages:
     peerDependencies:
       react: ^19.1.1
 
-  react-hook-form@7.63.0:
-    resolution: {integrity: sha512-ZwueDMvUeucovM2VjkCf7zIHcs1aAlDimZu2Hvel5C5907gUzMpm4xCrQXtRzCvsBqFjonB4m3x4LzCFI1ZKWA==}
+  react-hook-form@7.65.0:
+    resolution: {integrity: sha512-xtOzDz063WcXvGWaHgLNrNzlsdFgtUWcb32E6WFaGTd7kPZG3EeDusjdZfUsPwKCKVXy1ZlntifaHZ4l8pAsmw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -11209,43 +11182,21 @@ snapshots:
     dependencies:
       playwright: 1.56.1
 
-  '@polar-sh/adapter-utils@0.2.8':
+  '@polar-sh/checkout@0.1.13(@stripe/react-stripe-js@3.10.0(@stripe/stripe-js@7.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@stripe/stripe-js@7.9.0)(@types/react-dom@19.1.9(@types/react@19.1.16))(@types/react@19.1.16)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
-      '@polar-sh/sdk': 0.35.3
-    transitivePeerDependencies:
-      - '@modelcontextprotocol/sdk'
-
-  '@polar-sh/checkout@0.1.12(@stripe/react-stripe-js@3.10.0(@stripe/stripe-js@7.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@stripe/stripe-js@7.9.0)(@types/react-dom@19.1.9(@types/react@19.1.16))(@types/react@19.1.16)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
-    dependencies:
-      '@polar-sh/sdk': 0.34.17
+      '@polar-sh/sdk': 0.38.1
       '@polar-sh/ui': 0.1.1(@types/react-dom@19.1.9(@types/react@19.1.16))(@types/react@19.1.16)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@stripe/react-stripe-js': 3.10.0(@stripe/stripe-js@7.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@stripe/stripe-js': 7.9.0
       event-source-plus: 0.1.12
       eventemitter3: 5.0.1
-      markdown-to-jsx: 7.7.13(react@19.1.1)
+      markdown-to-jsx: 7.7.16(react@19.1.1)
       react: 19.1.1
-      react-hook-form: 7.63.0(react@19.1.1)
+      react-hook-form: 7.65.0(react@19.1.1)
     transitivePeerDependencies:
-      - '@modelcontextprotocol/sdk'
       - '@types/react'
       - '@types/react-dom'
       - react-dom
-
-  '@polar-sh/sdk@0.34.17':
-    dependencies:
-      standardwebhooks: 1.0.0
-      zod: 3.25.76
-
-  '@polar-sh/sdk@0.35.3':
-    dependencies:
-      standardwebhooks: 1.0.0
-      zod: 3.25.76
-
-  '@polar-sh/sdk@0.36.2':
-    dependencies:
-      standardwebhooks: 1.0.0
-      zod: 3.25.76
 
   '@polar-sh/sdk@0.38.1':
     dependencies:
@@ -11282,7 +11233,7 @@ snapshots:
       react: 19.1.1
       react-day-picker: 8.10.1(date-fns@3.6.0)(react@19.1.1)
       react-dom: 19.1.1(react@19.1.1)
-      react-hook-form: 7.63.0(react@19.1.1)
+      react-hook-form: 7.65.0(react@19.1.1)
       react-timeago: 7.2.0(react@19.1.1)
       tailwind-merge: 2.6.0
     transitivePeerDependencies:
@@ -16097,8 +16048,8 @@ snapshots:
 
   markdown-table@3.0.4: {}
 
-  markdown-to-jsx@7.7.13(react@19.1.1):
-    dependencies:
+  markdown-to-jsx@7.7.16(react@19.1.1):
+    optionalDependencies:
       react: 19.1.1
 
   math-intrinsics@1.1.0: {}
@@ -17520,7 +17471,7 @@ snapshots:
       react: 19.1.1
       scheduler: 0.26.0
 
-  react-hook-form@7.63.0(react@19.1.1):
+  react-hook-form@7.65.0(react@19.1.1):
     dependencies:
       react: 19.1.1
 
