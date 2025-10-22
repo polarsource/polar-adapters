@@ -30,11 +30,11 @@
 		"dist"
 	],
 	"dependencies": {
-		"@polar-sh/sdk": "^0.36.2"
+		"@polar-sh/sdk": "^0.38.1"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@polar-sh/adapter-utils": "0.2.8",
+		"@polar-sh/adapter-utils": "workspace:*",
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"tsup": "^8.3.5",
 		"vitest": "^3.2.4"
