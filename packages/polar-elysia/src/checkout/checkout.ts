@@ -1,5 +1,5 @@
 import { Polar } from "@polar-sh/sdk";
-import type { Context } from "elysia";
+import { status, type Context } from "elysia";
 import type { InlineHandler } from "elysia/types";
 
 export interface CheckoutConfig {
@@ -29,7 +29,7 @@ export const Checkout = ({
 		const products = url.searchParams.getAll("products");
 
 		if (products.length === 0) {
-			return ctx.error(400, {
+			return status(400, {
 				error: "Missing products in query params",
 			});
 		}
