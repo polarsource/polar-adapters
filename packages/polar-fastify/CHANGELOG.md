@@ -1,5 +1,13 @@
 # @polar-sh/elysia
 
+## 0.2.11
+
+### Patch Changes
+
+- 3250323: Update Polar SDK to 0.38.1
+- Updated dependencies [3250323]
+  - @polar-sh/adapter-utils@0.2.10
+
 ## 0.2.10
 
 ### Patch Changes
