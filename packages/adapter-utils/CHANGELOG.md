@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.2.10
+
+### Patch Changes
+
+- 3250323: Update Polar SDK to 0.38.1
+
 ## 0.2.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.1.11
+
+### Patch Changes
+
+- 3250323: Update Polar SDK to 0.38.1
+
 ## 1.1.10
 
 ### Patch Changes
