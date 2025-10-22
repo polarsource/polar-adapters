@@ -39,6 +39,7 @@
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"@types/node": "^20.0.0",
 		"elysia": "^1.4.12",
+		"memoirist": "^0.4.0",
 		"prettier": "^3.6.2",
 		"tsup": "^8.5.0",
 		"vitest": "^2.1.8"
