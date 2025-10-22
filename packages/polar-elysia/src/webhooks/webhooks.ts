@@ -6,7 +6,7 @@ import {
 	WebhookVerificationError,
 	validateEvent,
 } from "@polar-sh/sdk/webhooks";
-import type { Context } from "elysia";
+import { status, type Context } from "elysia";
 import type { InlineHandler } from "elysia/types";
 
 export {
@@ -42,10 +42,10 @@ export const Webhooks = ({
 		} catch (error) {
 			console.log(error);
 			if (error instanceof WebhookVerificationError) {
-				return ctx.error(400, { received: false });
+				return status(400, { received: false });
 			}
 
-			return ctx.error(500, { error: "Internal server error" });
+			return status(500, { error: "Internal server error" });
 		}
 
 		await handleWebhookPayload(webhookPayload, {
