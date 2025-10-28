@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.2.0
+
+### Minor Changes
+
+- 1deb3b3: Update sdk to 0.40.2
+
 ## 1.1.11
 
 ### Patch Changes
