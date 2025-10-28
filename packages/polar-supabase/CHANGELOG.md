@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.2.0
+
+### Minor Changes
+
+- 1deb3b3: Update sdk to 0.40.2
+
 ## 0.1.2
 
 ### Patch Changes

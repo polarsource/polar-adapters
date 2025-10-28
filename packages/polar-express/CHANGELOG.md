@@ -1,5 +1,16 @@
 # @polar-sh/hono
 
+## 0.4.0
+
+### Minor Changes
+
+- 1deb3b3: Update sdk to 0.40.2
+
+### Patch Changes
+
+- Updated dependencies [1deb3b3]
+  - @polar-sh/adapter-utils@0.3.0
+
 ## 0.3.11
 
 ### Patch Changes
