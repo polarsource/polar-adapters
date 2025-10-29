@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.2.1
+
+### Patch Changes
+
+- 81e9926: Upgrade dependencies, list Next.js 16 as supported peer dependency
+
 ## 1.2.0
 
 ### Minor Changes
