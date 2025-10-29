@@ -1,5 +1,11 @@
 # polar-nextjs
 
+## 0.6.0
+
+### Minor Changes
+
+- 81e9926: Upgrade dependencies, list Next.js 16 as supported peer dependency
+
 ## 0.5.0
 
 ### Minor Changes
