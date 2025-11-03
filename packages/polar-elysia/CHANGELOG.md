@@ -1,5 +1,11 @@
 # @polar-sh/elysia
 
+## 0.4.0
+
+### Minor Changes
+
+- 6c46bd1: feat: add seats param to checkout
+
 ## 0.3.0
 
 ### Minor Changes
