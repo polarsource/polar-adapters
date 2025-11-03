@@ -38,6 +38,7 @@ Pass query params to this route.
 - customerMetadata (optional) `URL-Encoded JSON string`
 - allowDiscountCodes (optional) `?products=123&allowDiscountCodes=true`
 - discountId (optional) `?products=123&discountId=xxx`
+- seats (optional) `?products=123&seats=5` - Number of seats for seat-based products
 - metadata (optional) `URL-Encoded JSON string`
 
 ## Customer Portal

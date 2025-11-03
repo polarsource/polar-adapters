@@ -29,6 +29,7 @@ Pass query params to this route.
 - customerExternalId (optional) `?products=123&customerExternalId=xxx`
 - customerEmail (optional) `?products=123&customerEmail=janedoe@gmail.com`
 - customerName (optional) `?products=123&customerName=Jane`
+- seats (optional) `?products=123&seats=5` - Number of seats for seat-based products
 - metadata (optional) `URL-Encoded JSON string`
 
 ## Customer Portal

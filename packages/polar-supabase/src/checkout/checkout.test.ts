@@ -16,7 +16,7 @@ vi.mock("@polar-sh/sdk", async (importOriginal) => {
 	};
 });
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Checkout } from "./checkout";
 
 describe("Checkout", () => {

@@ -1,5 +1,5 @@
 import { Polar } from "@polar-sh/sdk";
-import { status, type Context } from "elysia";
+import { type Context, status } from "elysia";
 import type { InlineHandler } from "elysia/types";
 
 export interface CheckoutConfig {
@@ -66,6 +66,9 @@ export const Checkout = ({
 				discountId: url.searchParams.get("discountId") ?? undefined,
 				metadata: url.searchParams.has("metadata")
 					? JSON.parse(url.searchParams.get("metadata") ?? "{}")
+					: undefined,
+				seats: url.searchParams.has("seats")
+					? Number.parseInt(url.searchParams.get("seats") ?? "1", 10)
 					: undefined,
 				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 			});

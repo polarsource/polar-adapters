@@ -1,7 +1,7 @@
-import type { BetterAuthClientPlugin } from "better-auth";
-import type { CheckoutParams, polar } from "./index";
-import type { BetterFetchOption } from "better-auth/client";
 import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
+import type { BetterAuthClientPlugin } from "better-auth";
+import type { BetterFetchOption } from "better-auth/client";
+import type { CheckoutParams, polar } from "./index";
 
 export const polarClient = () => {
 	return {

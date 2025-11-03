@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { onBeforeUserCreate, onAfterUserCreate, onUserUpdate } from "../../hooks/customer";
+import {
+	onAfterUserCreate,
+	onBeforeUserCreate,
+	onUserUpdate,
+} from "../../hooks/customer";
 import { createTestPolarOptions, mockApiError } from "../utils/helpers";
 import {
 	createMockCustomer,
@@ -58,7 +62,6 @@ describe("customer hooks", () => {
 			});
 		});
 
-
 		it("should use custom getCustomerCreateParams when provided", async () => {
 			const mockGetCustomerCreateParams = vi.fn().mockResolvedValue({
 				metadata: { source: "website", plan: "premium" },
@@ -90,7 +93,6 @@ describe("customer hooks", () => {
 				metadata: { source: "website", plan: "premium" },
 			});
 		});
-
 
 		it("should not create customer when createCustomerOnSignUp is disabled", async () => {
 			const options = createTestPolarOptions({

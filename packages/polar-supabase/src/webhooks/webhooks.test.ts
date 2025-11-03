@@ -17,17 +17,21 @@ vi.mock("@polar-sh/sdk/webhooks", () => {
 });
 
 vi.mock("@polar-sh/adapter-utils", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@polar-sh/adapter-utils")>();
+	const actual =
+		await importOriginal<typeof import("@polar-sh/adapter-utils")>();
 	return {
 		...actual,
 		handleWebhookPayload: vi.fn(async () => {}),
 	};
 });
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { Webhooks } from "./webhooks";
-import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
 import { handleWebhookPayload } from "@polar-sh/adapter-utils";
+import {
+	WebhookVerificationError,
+	validateEvent,
+} from "@polar-sh/sdk/webhooks";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Webhooks } from "./webhooks";
 
 // Get the mocked functions
 const mockValidateEvent = vi.mocked(validateEvent);
