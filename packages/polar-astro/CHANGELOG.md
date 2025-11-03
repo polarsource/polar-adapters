@@ -1,5 +1,11 @@
 # @polar-sh/astro
 
+## 0.6.0
+
+### Minor Changes
+
+- 6c46bd1: feat: add seats param to checkout
+
 ## 0.5.0
 
 ### Minor Changes

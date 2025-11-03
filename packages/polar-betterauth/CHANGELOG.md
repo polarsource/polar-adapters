@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.3.0
+
+### Minor Changes
+
+- 6c46bd1: feat: add seats param to checkout
+
 ## 1.2.1
 
 ### Patch Changes

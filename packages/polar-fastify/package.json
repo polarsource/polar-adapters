@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/fastify",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "Polar integration for Fastify",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
