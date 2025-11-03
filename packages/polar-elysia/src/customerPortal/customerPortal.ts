@@ -1,5 +1,5 @@
 import { Polar } from "@polar-sh/sdk";
-import { status, type Context } from "elysia";
+import { type Context, status } from "elysia";
 import type { InlineHandler } from "elysia/types";
 
 export interface CustomerPortalConfig {

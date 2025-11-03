@@ -76,6 +76,8 @@ describe("Checkout", () => {
 				allowDiscountCodes: undefined,
 				discountId: undefined,
 				metadata: undefined,
+				seats: undefined,
+				returnUrl: undefined,
 			});
 			expect(response.status).toBe(307);
 		});
@@ -210,6 +212,8 @@ describe("Checkout", () => {
 				allowDiscountCodes: true,
 				discountId: "disc_123",
 				metadata: { source: "website" },
+				seats: undefined,
+				returnUrl: undefined,
 			});
 		});
 
@@ -228,6 +232,25 @@ describe("Checkout", () => {
 			expect(mockCheckoutCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					allowDiscountCodes: false,
+				}),
+			);
+		});
+
+		it("should handle seats parameter", async () => {
+			mockCheckoutCreate.mockResolvedValue({
+				url: "https://polar.sh/checkout/123",
+			});
+
+			const checkout = Checkout({ accessToken: "test-token" });
+			const request = new NextRequest(
+				"https://example.com/checkout?products=prod_123&seats=5",
+			);
+
+			await checkout(request);
+
+			expect(mockCheckoutCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					seats: 5,
 				}),
 			);
 		});
