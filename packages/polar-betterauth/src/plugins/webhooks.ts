@@ -61,7 +61,7 @@ export interface WebhooksOptions {
 	/**
 	 * Webhook for order updated
 	 */
-	WebhookOrderUpdatedPayload?: (payload: WebhookOrderUpdatedPayload) => Promise<void>;
+	onOrderUpdated?: (payload: WebhookOrderUpdatedPayload) => Promise<void>;
 	/**
 	 * Webhook for refund created
 	 */
