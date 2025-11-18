@@ -27,8 +27,6 @@ export const portal =
 						});
 					}
 
-					console.log(retUrl ? decodeURI(retUrl.toString()) : undefined);
-
 					try {
 						const customerSession = await polar.customerSessions.create({
 							externalCustomerId: ctx.context.session?.user.id,
