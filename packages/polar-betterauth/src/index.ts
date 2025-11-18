@@ -2,6 +2,7 @@ import type { BetterAuthPlugin } from "better-auth";
 import {
 	onAfterUserCreate,
 	onBeforeUserCreate,
+	onUserDelete,
 	onUserUpdate,
 } from "./hooks/customer";
 import type { PolarEndpoints, PolarOptions } from "./types";
@@ -37,6 +38,9 @@ export const polar = <O extends PolarOptions>(options: O) => {
 							},
 							update: {
 								after: onUserUpdate(options),
+							},
+							delete: {
+								after: onUserDelete(options),
 							},
 						},
 					},
