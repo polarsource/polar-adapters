@@ -104,3 +104,32 @@ export const onUserUpdate =
 			}
 		}
 	};
+
+export const onUserDelete =
+	(options: PolarOptions) =>
+	async (user: User, context?: GenericEndpointContext | undefined) => {
+		if (context && options.createCustomerOnSignUp) {
+			try {
+				if (user.email) {
+					const { result: existingCustomers } =
+						await options.client.customers.list({ email: user.email });
+					const existingCustomer = existingCustomers.items[0];
+					if (existingCustomer) {
+						await options.client.customers.delete({
+							id: existingCustomer.id,
+						});
+					}
+				}
+			} catch (e: unknown) {
+				if (e instanceof Error) {
+					context?.context.logger.error(
+						`Polar customer delete failed. Error: ${e.message}`,
+					);
+					return;
+				}
+				context?.context.logger.error(
+					`Polar customer delete failed. Error: ${e}`,
+				);
+			}
+		}
+	};
