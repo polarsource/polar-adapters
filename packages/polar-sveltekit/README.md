@@ -43,10 +43,14 @@ import { CustomerPortal } from "@polar-sh/sveltekit";
 export const GET = CustomerPortal({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
   getCustomerId: (event) => "", // Fuction to resolve a Polar Customer ID
+  getExternalCustomerId: (event) => "", // Alternatively, resolve the external customer ID
   returnUrl: "https://myapp.com", // Optional Return URL, which renders a Back-button in the Customer Portal
   server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
 });
 ```
+
+#### Resolving the customer
+One can either resolve the Polar Customer ID (by implementing `getCustomerId`) or the external customer ID (by implementing `getExternalCustomerId`). A common example is to resolve the customer by session cookie or JWT token.
 
 ## Webhooks
 

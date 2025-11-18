@@ -105,19 +105,34 @@ export const Checkout = ({
 	};
 };
 
-export interface CustomerPortalConfig {
+type CustomerPortalBaseConfig = {
 	accessToken: string;
 	server?: "sandbox" | "production";
-	getCustomerId: (event: RequestEvent) => Promise<string>;
 	returnUrl?: string;
-}
+};
 
-export const CustomerPortal = ({
+export function CustomerPortal(
+	config: CustomerPortalBaseConfig & {
+		getCustomerId: (event: RequestEvent) => Promise<string>;
+	},
+): CustomerPortalHandler;
+
+export function CustomerPortal(
+	config: CustomerPortalBaseConfig & {
+		getExternalCustomerId: (event: RequestEvent) => Promise<string>;
+	},
+): CustomerPortalHandler;
+
+export function CustomerPortal({
 	accessToken,
 	server,
 	getCustomerId,
+	getExternalCustomerId,
 	returnUrl,
-}: CustomerPortalConfig): CustomerPortalHandler => {
+}: CustomerPortalBaseConfig & {
+	getCustomerId?: (event: RequestEvent) => Promise<string>;
+	getExternalCustomerId?: (event: RequestEvent) => Promise<string>;
+}): CustomerPortalHandler {
 	const polar = new Polar({
 		accessToken,
 		server,
@@ -126,19 +141,43 @@ export const CustomerPortal = ({
 	return async (event) => {
 		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
 
-		const customerId = await getCustomerId(event);
-
-		if (!customerId) {
-			return new Response(JSON.stringify({ error: "customerId not defined" }), {
-				status: 400,
-			});
-		}
-
 		try {
-			const result = await polar.customerSessions.create({
-				customerId,
-				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
-			});
+			let result;
+
+			if (getCustomerId) {
+				const customerId = await getCustomerId(event);
+
+				if (!customerId) {
+					return new Response(
+						JSON.stringify({ error: "customerId not defined" }),
+						{ status: 400 },
+					);
+				}
+
+				result = await polar.customerSessions.create({
+					customerId,
+					returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
+				});
+			} else if (getExternalCustomerId) {
+				const externalCustomerId = await getExternalCustomerId(event);
+
+				if (!externalCustomerId) {
+					return new Response(
+						JSON.stringify({ error: "externalCustomerId not defined" }),
+						{ status: 400 },
+					);
+				}
+
+				result = await polar.customerSessions.create({
+					externalCustomerId,
+					returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
+				});
+			} else {
+				return new Response(
+					JSON.stringify({ error: "No customer identifier function provided" }),
+					{ status: 400 },
+				);
+			}
 
 			return new Response(null, {
 				status: 302,
@@ -149,7 +188,7 @@ export const CustomerPortal = ({
 			return new Response(null, { status: 500 });
 		}
 	};
-};
+}
 
 export const Webhooks = ({
 	webhookSecret,
