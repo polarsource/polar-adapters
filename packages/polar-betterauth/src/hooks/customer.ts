@@ -19,11 +19,18 @@ export const onBeforeUserCreate =
 					});
 				}
 
-				await options.client.customers.create({
-					...params,
-					email: user.email,
-					name: user.name,
-				});
+				// Check if customer already exists
+				const { result: existingCustomers } =
+					await options.client.customers.list({ email: user.email });
+				const existingCustomer = existingCustomers.items[0];
+
+				// Skip creation if customer already exists
+				if (!existingCustomer)
+					await options.client.customers.create({
+						...params,
+						email: user.email,
+						name: user.name,
+					});
 			} catch (e: unknown) {
 				if (e instanceof Error) {
 					throw new APIError("INTERNAL_SERVER_ERROR", {
