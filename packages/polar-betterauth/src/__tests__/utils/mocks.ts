@@ -1,4 +1,5 @@
 import type { Polar } from "@polar-sh/sdk";
+import type { Customer } from "@polar-sh/sdk/models/components/customer.js";
 import type { User } from "better-auth";
 import { vi } from "vitest";
 
@@ -122,7 +123,9 @@ export const createMockCheckout = () => ({
 	expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
 });
 
-export const createMockCustomer = () => ({
+export const createMockCustomer = (
+	overrides: Partial<Customer> = {},
+): Customer => ({
 	id: "customer-123",
 	email: "test@example.com",
 	emailVerified: true,
@@ -130,8 +133,11 @@ export const createMockCustomer = () => ({
 	billingAddress: null,
 	taxId: null,
 	organizationId: "org-123",
-	avatarUrl: null,
-	createdAt: new Date().toISOString(),
-	modifiedAt: new Date().toISOString(),
+	avatarUrl: "",
+	createdAt: new Date(),
+	modifiedAt: new Date(),
+	externalId: "external-id-123",
+	deletedAt: null,
 	metadata: {},
+	...overrides,
 });

@@ -25,12 +25,13 @@ export const onBeforeUserCreate =
 				const existingCustomer = existingCustomers.items[0];
 
 				// Skip creation if customer already exists
-				if (!existingCustomer)
+				if (!existingCustomer) {
 					await options.client.customers.create({
 						...params,
 						email: user.email,
 						name: user.name,
 					});
+				}
 			} catch (e: unknown) {
 				if (e instanceof Error) {
 					throw new APIError("INTERNAL_SERVER_ERROR", {
