@@ -6,10 +6,14 @@ import { z } from "zod";
 
 export interface PortalConfig {
 	returnUrl?: string;
+	/**
+	 * Portal theme
+	 */
+	theme?: "light" | "dark";
 }
 
 export const portal =
-	({ returnUrl }: PortalConfig = {}) =>
+	({ returnUrl, theme }: PortalConfig = {}) =>
 	(polar: Polar) => {
 		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
 
@@ -44,8 +48,14 @@ export const portal =
 							returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 						});
 
+						const portalUrl = new URL(customerSession.customerPortalUrl);
+
+						if (theme) {
+							portalUrl.searchParams.set("theme", theme);
+						}
+
 						return ctx.json({
-							url: customerSession.customerPortalUrl,
+							url: portalUrl.toString(),
 							redirect: ctx.body?.redirect ?? true,
 						});
 					} catch (e: unknown) {
