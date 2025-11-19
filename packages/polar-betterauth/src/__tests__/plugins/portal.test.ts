@@ -193,6 +193,122 @@ describe("portal plugin", () => {
 				expect.stringContaining("Polar customer portal creation failed"),
 			);
 		});
+
+		it("should apply theme to portal URL when provided", async () => {
+			const plugin = portal({ theme: "dark" });
+			const endpoints = plugin(mockClient);
+			const themeHandler = endpoints.portal.handler;
+
+			const mockSession = {
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123",
+			};
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
+				mockSession,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+				},
+				json: vi.fn(),
+			};
+
+			await themeHandler(ctx);
+
+			expect(ctx.json).toHaveBeenCalledWith({
+				url: "https://polar.sh/portal/session-123?theme=dark",
+				redirect: true,
+			});
+		});
+
+		it("should support light theme", async () => {
+			const plugin = portal({ theme: "light" });
+			const endpoints = plugin(mockClient);
+			const themeHandler = endpoints.portal.handler;
+
+			const mockSession = {
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123",
+			};
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
+				mockSession,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+				},
+				json: vi.fn(),
+			};
+
+			await themeHandler(ctx);
+
+			expect(ctx.json).toHaveBeenCalledWith({
+				url: "https://polar.sh/portal/session-123?theme=light",
+				redirect: true,
+			});
+		});
+
+		it("should not add theme parameter when not provided", async () => {
+			const plugin = portal();
+			const endpoints = plugin(mockClient);
+			const noThemeHandler = endpoints.portal.handler;
+
+			const mockSession = {
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123",
+			};
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
+				mockSession,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+				},
+				json: vi.fn(),
+			};
+
+			await noThemeHandler(ctx);
+
+			expect(ctx.json).toHaveBeenCalledWith({
+				url: "https://polar.sh/portal/session-123",
+				redirect: true,
+			});
+		});
+
+		it("should preserve existing query parameters when adding theme", async () => {
+			const plugin = portal({ theme: "dark" });
+			const endpoints = plugin(mockClient);
+			const themeHandler = endpoints.portal.handler;
+
+			const mockSession = {
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123?foo=bar",
+			};
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
+				mockSession,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+				},
+				json: vi.fn(),
+			};
+
+			await themeHandler(ctx);
+
+			expect(ctx.json).toHaveBeenCalledWith({
+				url: "https://polar.sh/portal/session-123?foo=bar&theme=dark",
+				redirect: true,
+			});
+		});
 	});
 
 	describe("state endpoint", () => {
