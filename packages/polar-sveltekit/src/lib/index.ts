@@ -105,34 +105,28 @@ export const Checkout = ({
 	};
 };
 
-export type CustomerPortalBaseConfig = {
+export type CustomerPortalConfig = {
 	accessToken: string;
 	server?: "sandbox" | "production";
 	returnUrl?: string;
-};
+} & (
+	| {
+			getCustomerId: (event: RequestEvent) => Promise<string>;
+			getExternalCustomerId?: never;
+	  }
+	| {
+			getCustomerId?: never;
+			getExternalCustomerId: (event: RequestEvent) => Promise<string>;
+	  }
+);
 
-export function CustomerPortal(
-	config: CustomerPortalBaseConfig & {
-		getCustomerId: (event: RequestEvent) => Promise<string>;
-	},
-): CustomerPortalHandler;
-
-export function CustomerPortal(
-	config: CustomerPortalBaseConfig & {
-		getExternalCustomerId: (event: RequestEvent) => Promise<string>;
-	},
-): CustomerPortalHandler;
-
-export function CustomerPortal({
+export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
 	getExternalCustomerId,
 	returnUrl,
-}: CustomerPortalBaseConfig & {
-	getCustomerId?: (event: RequestEvent) => Promise<string>;
-	getExternalCustomerId?: (event: RequestEvent) => Promise<string>;
-}): CustomerPortalHandler {
+}: CustomerPortalConfig): CustomerPortalHandler => {
 	const polar = new Polar({
 		accessToken,
 		server,
@@ -188,7 +182,7 @@ export function CustomerPortal({
 			return new Response(null, { status: 500 });
 		}
 	};
-}
+};
 
 export const Webhooks = ({
 	webhookSecret,
