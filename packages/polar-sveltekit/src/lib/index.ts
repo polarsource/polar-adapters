@@ -105,7 +105,7 @@ export const Checkout = ({
 	};
 };
 
-type CustomerPortalBaseConfig = {
+export type CustomerPortalBaseConfig = {
 	accessToken: string;
 	server?: "sandbox" | "production";
 	returnUrl?: string;
