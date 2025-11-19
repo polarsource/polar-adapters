@@ -152,9 +152,8 @@ export const CustomerPortal = ({
 					customerId,
 					returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 				});
-			} else if (getExternalCustomerId) {
+			} else {
 				const externalCustomerId = await getExternalCustomerId(event);
-
 				if (!externalCustomerId) {
 					return new Response(
 						JSON.stringify({ error: "externalCustomerId not defined" }),
@@ -166,11 +165,6 @@ export const CustomerPortal = ({
 					externalCustomerId,
 					returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 				});
-			} else {
-				return new Response(
-					JSON.stringify({ error: "No customer identifier function provided" }),
-					{ status: 400 },
-				);
 			}
 
 			return new Response(null, {
