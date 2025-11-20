@@ -131,45 +131,29 @@ export const CustomerPortal = ({
 		accessToken,
 		server,
 	});
-
 	return async (event) => {
 		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
-
+		const returnUrl = retUrl ? decodeURI(retUrl.toString()) : undefined;
 		try {
 			let result;
-
-			if (getCustomerId) {
-				const customerId = await getCustomerId(event);
-
-				if (!customerId) {
-					return new Response(
-						JSON.stringify({ error: "customerId not defined" }),
+			if (!getCustomerId && !getExternalCustomerId) {
+				return new Response(
+						JSON.stringify({ error: "getCustomerId or getExternalCustomerId not defined" }),
 						{ status: 400 },
-					);
-				}
-
-				result = await polar.customerSessions.create({
-					customerId,
-					returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
-				});
-			} else {
-				const externalCustomerId = await getExternalCustomerId(event);
-				if (!externalCustomerId) {
-					return new Response(
-						JSON.stringify({ error: "externalCustomerId not defined" }),
-						{ status: 400 },
-					);
-				}
-
-				result = await polar.customerSessions.create({
-					externalCustomerId,
-					returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
-				});
+				);
 			}
-
+			const [customerId, externalCustomerId] = await Promise.allSettled([getCustomerId(event), getExternalCustomerId(event)]);
+			const { customerPortalUrl: Location } = await polar.customerSessions.create({
+					returnUrl,
+					...(customerId.status === 'fulfilled' && customerId.value
+					    ? { customerId: customerId.value }
+					    : externalCustomerId.status === 'fulfilled' && externalCustomerId.value
+					    ? { externalCustomerId: externalCustomerId.value }
+					    : {}),
+			});
 			return new Response(null, {
 				status: 302,
-				headers: { Location: result.customerPortalUrl },
+				headers: { Location },
 			});
 		} catch (error) {
 			console.error(error);
