@@ -105,44 +105,55 @@ export const Checkout = ({
 	};
 };
 
-export interface CustomerPortalConfig {
+export type CustomerPortalConfig = {
 	accessToken: string;
 	server?: "sandbox" | "production";
-	getCustomerId: (event: RequestEvent) => Promise<string>;
 	returnUrl?: string;
-}
+} & (
+	| {
+			getCustomerId: (event: RequestEvent) => Promise<string>;
+			getExternalCustomerId?: never;
+	  }
+	| {
+			getCustomerId?: never;
+			getExternalCustomerId: (event: RequestEvent) => Promise<string>;
+	  }
+);
 
 export const CustomerPortal = ({
 	accessToken,
 	server,
 	getCustomerId,
+	getExternalCustomerId,
 	returnUrl,
 }: CustomerPortalConfig): CustomerPortalHandler => {
 	const polar = new Polar({
 		accessToken,
 		server,
 	});
-
 	return async (event) => {
 		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
-
-		const customerId = await getCustomerId(event);
-
-		if (!customerId) {
-			return new Response(JSON.stringify({ error: "customerId not defined" }), {
-				status: 400,
-			});
-		}
-
+		const returnUrl = retUrl ? decodeURI(retUrl.toString()) : undefined;
 		try {
-			const result = await polar.customerSessions.create({
-				customerId,
-				returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
+			let result;
+			if (!getCustomerId && !getExternalCustomerId) {
+				return new Response(
+						JSON.stringify({ error: "getCustomerId or getExternalCustomerId not defined" }),
+						{ status: 400 },
+				);
+			}
+			const [customerId, externalCustomerId] = await Promise.allSettled([getCustomerId(event), getExternalCustomerId(event)]);
+			const { customerPortalUrl: Location } = await polar.customerSessions.create({
+					returnUrl,
+					...(customerId.status === 'fulfilled' && customerId.value
+					    ? { customerId: customerId.value }
+					    : externalCustomerId.status === 'fulfilled' && externalCustomerId.value
+					    ? { externalCustomerId: externalCustomerId.value }
+					    : {}),
 			});
-
 			return new Response(null, {
 				status: 302,
-				headers: { Location: result.customerPortalUrl },
+				headers: { Location },
 			});
 		} catch (error) {
 			console.error(error);
