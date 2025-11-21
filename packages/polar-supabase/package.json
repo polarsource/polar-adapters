@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/supabase",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -26,7 +26,9 @@
 		"test:watch": "vitest --watch",
 		"test:coverage": "vitest --coverage"
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"dependencies": {
 		"@polar-sh/sdk": "^0.41.5"
 	},

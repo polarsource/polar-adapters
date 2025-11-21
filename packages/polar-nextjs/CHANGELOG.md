@@ -1,5 +1,16 @@
 # polar-nextjs
 
+## 0.8.0
+
+### Minor Changes
+
+- 4512e82: Bump Polar SDK
+
+### Patch Changes
+
+- Updated dependencies [4512e82]
+  - @polar-sh/adapter-utils@0.4.0
+
 ## 0.7.0
 
 ### Minor Changes
