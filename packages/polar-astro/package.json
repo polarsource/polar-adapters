@@ -25,15 +25,8 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"withastro",
-		"payments",
-		"subscriptions"
-	],
+	"files": ["dist"],
+	"keywords": ["polar", "withastro", "payments", "subscriptions"],
 	"peerDependencies": {
 		"astro": "^5.0.0"
 	},
@@ -47,6 +40,6 @@
 	},
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.40.2"
+		"@polar-sh/sdk": "^0.41.5"
 	}
 }
