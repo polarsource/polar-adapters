@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/tanstack-start",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -23,7 +23,9 @@
 		"dev": "tsc --watch",
 		"check": "biome check --write ./src"
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
 		"@polar-sh/sdk": "^0.41.5",
@@ -40,6 +42,8 @@
 			"ts": "module",
 			"tsx": "module"
 		},
-		"nodeArguments": ["--loader=ts-node/esm"]
+		"nodeArguments": [
+			"--loader=ts-node/esm"
+		]
 	}
 }

@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.4.0
+
+### Minor Changes
+
+- 4512e82: Bump Polar SDK
+
 ## 0.3.0
 
 ### Minor Changes
