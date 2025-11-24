@@ -1,5 +1,11 @@
 # polar-nextjs
 
+## 0.9.0
+
+### Minor Changes
+
+- 260e2b0: Support `getExternalCustomerId` when generating a customer portal link
+
 ## 0.8.0
 
 ### Minor Changes
