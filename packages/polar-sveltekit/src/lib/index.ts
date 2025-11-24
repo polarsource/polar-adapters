@@ -105,65 +105,84 @@ export const Checkout = ({
 	};
 };
 
-export type CustomerPortalConfig = {
+type CustomerPortalBaseConfig = {
 	accessToken: string;
 	server?: "sandbox" | "production";
 	returnUrl?: string;
-} & (
-		| {
-			getCustomerId: (event: RequestEvent) => Promise<string>;
-			getExternalCustomerId?: never;
-		}
-		| {
-			getCustomerId?: never;
-			getExternalCustomerId: (event: RequestEvent) => Promise<string>;
-		}
-	);
+}
 
-export const CustomerPortal = ({
-	accessToken,
-	server,
-	getCustomerId,
-	getExternalCustomerId,
-	returnUrl,
-}: CustomerPortalConfig): CustomerPortalHandler => {
+type CustomerPortalCustomerIdConfig = CustomerPortalBaseConfig & {
+	getCustomerId: (event: RequestEvent) => Promise<string>;
+	getExternalCustomerId?: never;
+}
+
+type CustomerPortalExternalCustomerIdConfig = CustomerPortalBaseConfig & {
+	getCustomerId?: never;
+	getExternalCustomerId: (event: RequestEvent) => Promise<string>;
+}
+
+function configIsExternalCustomerIdConfig(
+	config: CustomerPortalConfig,
+): config is CustomerPortalExternalCustomerIdConfig {
+	return typeof config.getExternalCustomerId === "function";
+}
+
+export type CustomerPortalConfig = CustomerPortalCustomerIdConfig | CustomerPortalExternalCustomerIdConfig;
+
+export const CustomerPortal = (config: CustomerPortalConfig): CustomerPortalHandler => {
+	const {
+		accessToken,
+		server,
+		returnUrl,
+	} = config;
+
 	const polar = new Polar({
 		accessToken,
 		server,
 	});
+	
 	return async (event) => {
-		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
-		const returnUrlString = retUrl ? decodeURI(retUrl.toString()) : undefined;
 		try {
-			if (!getCustomerId && !getExternalCustomerId) {
+			const decodedReturnUrl = returnUrl ? decodeURI(new URL(returnUrl, event.url).toString()) : undefined
+
+			if (configIsExternalCustomerIdConfig(config)) {
+				const externalCustomerId = await config.getExternalCustomerId(event);
+
+				if (!externalCustomerId) {
+					return new Response(
+						JSON.stringify({ error: `getExternalCustomerId not defined` }),
+						{ status: 400 },
+					);
+				}
+
+				const { customerPortalUrl } = await polar.customerSessions.create({
+					returnUrl: decodedReturnUrl,
+					externalCustomerId,
+				});
+				
+				return new Response(null, {
+					status: 302,
+					headers: { Location: customerPortalUrl },
+				});
+			}
+
+			const customerId = await config.getCustomerId(event);
+
+			if (!customerId) {
 				return new Response(
-					JSON.stringify({ error: "getCustomerId or getExternalCustomerId not defined" }),
+					JSON.stringify({ error: `customerId not defined` }),
 					{ status: 400 },
 				);
 			}
-			if (getCustomerId && getExternalCustomerId) {
-				return new Response(
-					JSON.stringify({ error: "Exactly one of getCustomerId or getExternalCustomerId must be defined" }),
-					{ status: 400 },
-				);
-			}
-			const isExternal = !!getExternalCustomerId;
-			const idGetter = isExternal ? getExternalCustomerId : getCustomerId;
-			const idKey = isExternal ? "externalCustomerId" : "customerId";
-			const idValue = await idGetter(event);
-			if (!idValue) {
-				return new Response(
-					JSON.stringify({ error: `${idKey} not defined` }),
-					{ status: 400 },
-				);
-			}
-			const { customerPortalUrl: Location } = await polar.customerSessions.create({
-				returnUrl: returnUrlString,
-				...(isExternal ? { externalCustomerId: idValue } : { customerId: idValue }),
+
+			const { customerPortalUrl } = await polar.customerSessions.create({
+				returnUrl: decodedReturnUrl,
+				customerId,
 			});
+
 			return new Response(null, {
 				status: 302,
-				headers: { Location },
+				headers: { Location: customerPortalUrl },
 			});
 		} catch (error) {
 			console.error(error);
