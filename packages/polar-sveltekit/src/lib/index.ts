@@ -8,7 +8,6 @@ import {
 	type WebhooksConfig,
 	handleWebhookPayload,
 } from "@polar-sh/adapter-utils";
-import type { CustomerSessionsCreateCustomerSessionCreate } from "@polar-sh/sdk/models/operations/customersessionscreate.js";
 
 export {
 	type EntitlementContext,
