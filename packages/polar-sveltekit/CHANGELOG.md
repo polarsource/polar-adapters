@@ -1,5 +1,11 @@
 # @polar-sh/sveltekit
 
+## 0.7.0
+
+### Minor Changes
+
+- 260e2b0: Support `getExternalCustomerId` when generating a customer portal link
+
 ## 0.6.0
 
 ### Minor Changes
