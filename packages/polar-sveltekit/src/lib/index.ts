@@ -8,6 +8,7 @@ import {
 	type WebhooksConfig,
 	handleWebhookPayload,
 } from "@polar-sh/adapter-utils";
+import type { CustomerSessionsCreateCustomerSessionCreate } from "@polar-sh/sdk/models/operations/customersessionscreate.js";
 
 export {
 	type EntitlementContext,
@@ -110,15 +111,15 @@ export type CustomerPortalConfig = {
 	server?: "sandbox" | "production";
 	returnUrl?: string;
 } & (
-	| {
+		| {
 			getCustomerId: (event: RequestEvent) => Promise<string>;
 			getExternalCustomerId?: never;
-	  }
-	| {
+		}
+		| {
 			getCustomerId?: never;
 			getExternalCustomerId: (event: RequestEvent) => Promise<string>;
-	  }
-);
+		}
+	);
 
 export const CustomerPortal = ({
 	accessToken,
@@ -133,23 +134,33 @@ export const CustomerPortal = ({
 	});
 	return async (event) => {
 		const retUrl = returnUrl ? new URL(returnUrl, event.url) : undefined;
-		const returnUrl = retUrl ? decodeURI(retUrl.toString()) : undefined;
+		const returnUrlString = retUrl ? decodeURI(retUrl.toString()) : undefined;
 		try {
-			let result;
 			if (!getCustomerId && !getExternalCustomerId) {
 				return new Response(
-						JSON.stringify({ error: "getCustomerId or getExternalCustomerId not defined" }),
-						{ status: 400 },
+					JSON.stringify({ error: "getCustomerId or getExternalCustomerId not defined" }),
+					{ status: 400 },
 				);
 			}
-			const [customerId, externalCustomerId] = await Promise.allSettled([getCustomerId(event), getExternalCustomerId(event)]);
+			if (getCustomerId && getExternalCustomerId) {
+				return new Response(
+					JSON.stringify({ error: "Exactly one of getCustomerId or getExternalCustomerId must be defined" }),
+					{ status: 400 },
+				);
+			}
+			const isExternal = !!getExternalCustomerId;
+			const idGetter = isExternal ? getExternalCustomerId : getCustomerId;
+			const idKey = isExternal ? "externalCustomerId" : "customerId";
+			const idValue = await idGetter(event);
+			if (!idValue) {
+				return new Response(
+					JSON.stringify({ error: `${idKey} not defined` }),
+					{ status: 400 },
+				);
+			}
 			const { customerPortalUrl: Location } = await polar.customerSessions.create({
-					returnUrl,
-					...(customerId.status === 'fulfilled' && customerId.value
-					    ? { customerId: customerId.value }
-					    : externalCustomerId.status === 'fulfilled' && externalCustomerId.value
-					    ? { externalCustomerId: externalCustomerId.value }
-					    : {}),
+				returnUrl: returnUrlString,
+				...(isExternal ? { externalCustomerId: idValue } : { customerId: idValue }),
 			});
 			return new Response(null, {
 				status: 302,
