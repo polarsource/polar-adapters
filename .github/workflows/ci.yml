@@ -22,3 +22,5 @@ jobs:
         run: pnpm install
       - name: Run Biome
         run: pnpm run ci
+      - name: Run Test
+        run: pnpm test

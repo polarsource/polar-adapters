@@ -1,15 +1,15 @@
+import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
 import type { BetterAuthPlugin } from "better-auth";
+import type { BetterAuthClientPlugin } from "better-auth";
+import type { BetterFetchOption } from "better-auth/client";
 import {
 	onAfterUserCreate,
 	onBeforeUserCreate,
 	onUserDelete,
 	onUserUpdate,
 } from "./hooks/customer";
-import type { PolarEndpoints, PolarOptions } from "./types";
-import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
-import type { BetterAuthClientPlugin } from "better-auth";
-import type { BetterFetchOption } from "better-auth/client";
 import type { CheckoutParams } from "./shared-types";
+import type { PolarEndpoints, PolarOptions } from "./types";
 
 export const polar = <O extends PolarOptions>(options: O) => {
 	const plugins = options.use
