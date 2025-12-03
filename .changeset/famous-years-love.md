@@ -1,5 +1,5 @@
 ---
-"@polar-sh/better-auth": minor
+"@polar-sh/better-auth": patch
 ---
 
-Exports client to be exclusively imported in client side plugin
+Add clients-only export as `@polar/better-auth/client`
