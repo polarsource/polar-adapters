@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.4.1
+
+### Patch Changes
+
+- b658623: Upgrade dependencies
+
 ## 0.4.0
 
 ### Minor Changes
