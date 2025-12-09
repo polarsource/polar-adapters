@@ -40,13 +40,13 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
-		"@types/express": "^5.0.3",
+		"@types/express": "^5.0.6",
 		"@types/node": "^20.0.0",
 		"@types/supertest": "^6.0.3",
 		"express": "^4.21.2",
-		"prettier": "^3.6.2",
+		"prettier": "^3.7.4",
 		"supertest": "^7.1.4",
-		"tsup": "^8.5.0",
+		"tsup": "^8.5.1",
 		"vitest": "^2.1.8"
 	},
 	"dependencies": {
