@@ -29,12 +29,12 @@
 	"dependencies": {
 		"@polar-sh/adapter-utils": "workspace:*",
 		"@polar-sh/sdk": "^0.41.5",
-		"@tanstack/react-start": "^1.133.21"
+		"@tanstack/react-start": "^1.140.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
-		"tsup": "^8.5.0",
+		"tsup": "^8.5.1",
 		"vitest": "^2.1.8"
 	},
 	"ava": {

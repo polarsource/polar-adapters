@@ -34,7 +34,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@sindresorhus/tsconfig": "^7.0.0",
-		"tsup": "^8.5.0",
+		"tsup": "^8.5.1",
 		"vitest": "^2.1.8"
 	},
 	"ava": {

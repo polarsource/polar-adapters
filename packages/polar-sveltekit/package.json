@@ -36,15 +36,15 @@
 		"@sveltejs/kit": "^2.0.0"
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.56.1",
+		"@playwright/test": "^1.57.0",
 		"@sveltejs/adapter-auto": "^3.3.1",
-		"@sveltejs/kit": "^2.47.2",
-		"@sveltejs/package": "^2.5.4",
+		"@sveltejs/kit": "^2.49.2",
+		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/node": "^20.0.0",
-		"prettier": "^3.6.2",
-		"svelte": "^5.41.1",
-		"svelte-check": "4.3.3",
+		"prettier": "^3.7.4",
+		"svelte": "^5.45.8",
+		"svelte-check": "4.3.4",
 		"vite": "^6.0.7",
 		"vite-plugin-dts": "^3.0.0"
 	},
