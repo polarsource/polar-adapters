@@ -4,7 +4,7 @@ import type { PolarOptions } from "../types";
 
 export const onBeforeUserCreate =
 	(options: PolarOptions) =>
-	async (user: Partial<User>, context?: GenericEndpointContext | undefined) => {
+	async (user: Partial<User>, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
 				const params = options.getCustomerCreateParams
@@ -48,7 +48,7 @@ export const onBeforeUserCreate =
 
 export const onAfterUserCreate =
 	(options: PolarOptions) =>
-	async (user: User, context?: GenericEndpointContext | undefined) => {
+	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
 				const { result: existingCustomers } =
@@ -81,7 +81,7 @@ export const onAfterUserCreate =
 
 export const onUserUpdate =
 	(options: PolarOptions) =>
-	async (user: User, context?: GenericEndpointContext | undefined) => {
+	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
 				await options.client.customers.updateExternal({
@@ -107,7 +107,7 @@ export const onUserUpdate =
 
 export const onUserDelete =
 	(options: PolarOptions) =>
-	async (user: User, context?: GenericEndpointContext | undefined) => {
+	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
 				if (user.email) {
