@@ -1,5 +1,15 @@
 # @polar-sh/hono
 
+## 1.6.0
+
+### Minor Changes
+
+- b658623: Upgrade dependencies
+
+### Patch Changes
+
+- 85c32f7: Add clients-only export as `@polar/better-auth/client`
+
 ## 1.5.0
 
 ### Minor Changes
