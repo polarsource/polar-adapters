@@ -1,7 +1,10 @@
 import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
+import type { PolarEmbedCheckout as PolarEmbedCheckoutType } from "@polar-sh/checkout/embed";
 import type { BetterAuthClientPlugin } from "better-auth";
 import type { BetterFetchOption } from "better-auth/client";
 import type { CheckoutParams, polar } from "./index";
+
+export type { PolarEmbedCheckoutType as PolarEmbedCheckout };
 
 export const polarClient = () => {
 	return {
@@ -12,7 +15,7 @@ export const polarClient = () => {
 				checkoutEmbed: async (
 					data: Omit<CheckoutParams, "redirect" | "embedOrigin">,
 					fetchOptions?: BetterFetchOption,
-				) => {
+				): Promise<PolarEmbedCheckoutType> => {
 					const res = await $fetch("/checkout", {
 						method: "POST",
 						body: {
