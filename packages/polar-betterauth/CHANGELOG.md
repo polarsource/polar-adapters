@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.6.1
+
+### Patch Changes
+
+- 55f13ed: Re-export the `PolarEmbedCheckout` type
+
 ## 1.6.0
 
 ### Minor Changes
