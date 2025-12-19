@@ -1,69 +1,69 @@
 {
-	"name": "@polar-sh/better-auth",
-	"version": "1.6.1",
-	"description": "Polar integration for better-auth",
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": {
-				"types": "./dist/index.d.ts",
-				"default": "./dist/index.js"
-			},
-			"require": {
-				"types": "./dist/index.d.cts",
-				"default": "./dist/index.cjs"
-			}
-		},
-		"./client": {
-			"import": {
-				"types": "./dist/client.d.ts",
-				"default": "./dist/client.js"
-			},
-			"require": {
-				"types": "./dist/client.d.cts",
-				"default": "./dist/client.cjs"
-			}
-		}
-	},
-	"type": "module",
-	"engines": {
-		"node": ">=16"
-	},
-	"scripts": {
-		"test": "vitest",
-		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage",
-		"build": "tsup ./src/index.ts ./src/client.ts --format esm,cjs --dts --clean --sourcemap",
-		"dev": "npm run build -- --watch",
-		"check": "biome check --write ./src"
-	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"better-auth",
-		"payments",
-		"subscriptions"
-	],
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.41.5",
-		"@sindresorhus/tsconfig": "^7.0.0",
-		"@types/node": "^20.0.0",
-		"better-auth": "^1.4.6",
-		"tsup": "^8.5.1",
-		"vitest": "^2.1.8"
-	},
-	"peerDependencies": {
-		"@polar-sh/sdk": "^0.41.5",
-		"better-auth": "^1.4.6",
-		"zod": "^3.24.2 || ^4"
-	},
-	"dependencies": {
-		"@polar-sh/checkout": "^0.1.14"
-	}
+  "name": "@polar-sh/better-auth",
+  "version": "1.6.1",
+  "description": "Polar integration for better-auth",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./client": {
+      "import": {
+        "types": "./dist/client.d.ts",
+        "default": "./dist/client.js"
+      },
+      "require": {
+        "types": "./dist/client.d.cts",
+        "default": "./dist/client.cjs"
+      }
+    }
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "build": "tsup ./src/index.ts ./src/client.ts --format esm,cjs --dts --clean --sourcemap",
+    "dev": "npm run build -- --watch",
+    "check": "biome check --write ./src"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "polar",
+    "better-auth",
+    "payments",
+    "subscriptions"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@polar-sh/adapter-utils": "workspace:*",
+    "@polar-sh/sdk": "^0.42.0",
+    "@sindresorhus/tsconfig": "^7.0.0",
+    "@types/node": "^20.0.0",
+    "better-auth": "^1.4.6",
+    "tsup": "^8.5.1",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "@polar-sh/sdk": "^0.42.0",
+    "better-auth": "^1.4.6",
+    "zod": "^3.24.2 || ^4"
+  },
+  "dependencies": {
+    "@polar-sh/checkout": "^0.1.14"
+  }
 }
