@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.6.2
+
+### Patch Changes
+
+- c591126: Bump @polar-sh/sdk
+
 ## 1.6.1
 
 ### Patch Changes
