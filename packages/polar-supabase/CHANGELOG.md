@@ -1,5 +1,11 @@
 # @polar-sh/supabase
 
+## 0.4.1
+
+### Patch Changes
+
+- c591126: Bump @polar-sh/sdk
+
 ## 0.4.0
 
 ### Minor Changes

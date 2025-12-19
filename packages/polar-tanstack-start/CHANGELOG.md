@@ -1,5 +1,13 @@
 # @polar-sh/tanstack-start
 
+## 0.4.2
+
+### Patch Changes
+
+- c591126: Bump @polar-sh/sdk
+- Updated dependencies [c591126]
+  - @polar-sh/adapter-utils@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes

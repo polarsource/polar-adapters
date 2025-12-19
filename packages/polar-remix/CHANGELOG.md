@@ -1,5 +1,13 @@
 # @polar-sh/hono
 
+## 0.6.2
+
+### Patch Changes
+
+- c591126: Bump @polar-sh/sdk
+- Updated dependencies [c591126]
+  - @polar-sh/adapter-utils@0.4.2
+
 ## 0.6.1
 
 ### Patch Changes

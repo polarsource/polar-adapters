@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/sveltekit",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Polar integration for SvelteKit",
   "main": "dist/index.js",
   "module": "dist/index.js",

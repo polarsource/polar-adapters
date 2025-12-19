@@ -1,5 +1,13 @@
 # polar-nextjs
 
+## 0.9.2
+
+### Patch Changes
+
+- c591126: Bump @polar-sh/sdk
+- Updated dependencies [c591126]
+  - @polar-sh/adapter-utils@0.4.2
+
 ## 0.9.1
 
 ### Patch Changes

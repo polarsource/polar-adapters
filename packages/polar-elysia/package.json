@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/elysia",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Polar integration for Elysia",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

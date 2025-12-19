@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/better-auth",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Polar integration for better-auth",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
