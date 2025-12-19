@@ -1,50 +1,50 @@
 {
-	"name": "@polar-sh/remix",
-	"version": "0.6.1",
-	"description": "Polar integration for Remix and React Router",
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		"import": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		},
-		"require": {
-			"types": "./dist/index.d.cts",
-			"require": "./dist/index.cjs"
-		}
-	},
-	"type": "module",
-	"engines": {
-		"node": ">=16"
-	},
-	"scripts": {
-		"test": "vitest",
-		"build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
-		"dev": "tsc --watch",
-		"check": "biome check --write ./src"
-	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"remix",
-		"react-router",
-		"payments",
-		"subscriptions"
-	],
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@sindresorhus/tsconfig": "^7.0.0",
-		"@types/node": "^20.0.0",
-		"prettier": "^3.7.4",
-		"tsup": "^8.5.1",
-		"vitest": "^2.1.8"
-	},
-	"dependencies": {
-		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.41.5"
-	}
+  "name": "@polar-sh/remix",
+  "version": "0.6.1",
+  "description": "Polar integration for Remix and React Router",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "vitest",
+    "build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
+    "dev": "tsc --watch",
+    "check": "biome check --write ./src"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "polar",
+    "remix",
+    "react-router",
+    "payments",
+    "subscriptions"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@sindresorhus/tsconfig": "^7.0.0",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.7.4",
+    "tsup": "^8.5.1",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@polar-sh/adapter-utils": "workspace:*",
+    "@polar-sh/sdk": "^0.42.0"
+  }
 }

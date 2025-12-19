@@ -1,55 +1,55 @@
 {
-	"name": "@polar-sh/sveltekit",
-	"version": "0.7.1",
-	"description": "Polar integration for SvelteKit",
-	"main": "dist/index.js",
-	"module": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"type": "module",
-	"engines": {
-		"node": ">=16"
-	},
-	"scripts": {
-		"dev": "pnpm watch",
-		"preview": "vite preview",
-		"prepublishOnly": "pnpm run package",
-		"build": "pnpm run package",
-		"package": "svelte-kit sync && svelte-package",
-		"watch": "svelte-package --watch"
-	},
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"svelte": "./dist/index.js"
-		}
-	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"polar",
-		"sveltekit",
-		"payments",
-		"subscriptions"
-	],
-	"peerDependencies": {
-		"@sveltejs/kit": "^2.0.0"
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.57.0",
-		"@sveltejs/adapter-auto": "^3.3.1",
-		"@sveltejs/kit": "^2.49.2",
-		"@sveltejs/package": "^2.5.7",
-		"@sveltejs/vite-plugin-svelte": "^5.0.3",
-		"@types/node": "^20.0.0",
-		"prettier": "^3.7.4",
-		"svelte": "^5.45.8",
-		"svelte-check": "4.3.4",
-		"vite": "^6.0.7",
-		"vite-plugin-dts": "^3.0.0"
-	},
-	"dependencies": {
-		"@polar-sh/adapter-utils": "workspace:*",
-		"@polar-sh/sdk": "^0.41.5"
-	}
+  "name": "@polar-sh/sveltekit",
+  "version": "0.7.1",
+  "description": "Polar integration for SvelteKit",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "dev": "pnpm watch",
+    "preview": "vite preview",
+    "prepublishOnly": "pnpm run package",
+    "build": "pnpm run package",
+    "package": "svelte-kit sync && svelte-package",
+    "watch": "svelte-package --watch"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "polar",
+    "sveltekit",
+    "payments",
+    "subscriptions"
+  ],
+  "peerDependencies": {
+    "@sveltejs/kit": "^2.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@sveltejs/adapter-auto": "^3.3.1",
+    "@sveltejs/kit": "^2.49.2",
+    "@sveltejs/package": "^2.5.7",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.7.4",
+    "svelte": "^5.45.8",
+    "svelte-check": "4.3.4",
+    "vite": "^6.0.7",
+    "vite-plugin-dts": "^3.0.0"
+  },
+  "dependencies": {
+    "@polar-sh/adapter-utils": "workspace:*",
+    "@polar-sh/sdk": "^0.42.0"
+  }
 }
