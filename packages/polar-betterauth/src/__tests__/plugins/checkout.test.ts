@@ -383,5 +383,154 @@ describe("checkout plugin", () => {
 				}),
 			);
 		});
+
+		it("should include trial parameters when provided", async () => {
+			const mockCheckout = createMockCheckout();
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const ctx = {
+				...mockContext,
+				body: {
+					products: ["prod-123"],
+					trialInterval: "month",
+					trialIntervalCount: 3,
+				},
+				json: vi
+					.fn()
+					.mockReturnValue({ url: mockCheckout.url, redirect: true }),
+			};
+
+			await handler(ctx);
+
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["prod-123"],
+					trialInterval: "month",
+					trialIntervalCount: 3,
+				}),
+			);
+		});
+
+		it("should accept all valid trial interval values", async () => {
+			const mockCheckout = createMockCheckout();
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const intervals = ["day", "week", "month", "year"] as const;
+
+			for (const interval of intervals) {
+				const ctx = {
+					...mockContext,
+					body: {
+						products: ["prod-123"],
+						trialInterval: interval,
+						trialIntervalCount: 7,
+					},
+					json: vi
+						.fn()
+						.mockReturnValue({ url: mockCheckout.url, redirect: true }),
+				};
+
+				await handler(ctx);
+
+				expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+					expect.objectContaining({
+						trialInterval: interval,
+						trialIntervalCount: 7,
+					}),
+				);
+			}
+		});
+
+		it("should accept minimum trial interval count (1)", async () => {
+			const mockCheckout = createMockCheckout();
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const ctx = {
+				...mockContext,
+				body: {
+					products: ["prod-123"],
+					trialInterval: "day",
+					trialIntervalCount: 1,
+				},
+				json: vi
+					.fn()
+					.mockReturnValue({ url: mockCheckout.url, redirect: true }),
+			};
+
+			await handler(ctx);
+
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					trialInterval: "day",
+					trialIntervalCount: 1,
+				}),
+			);
+		});
+
+		it("should accept maximum trial interval count (1000)", async () => {
+			const mockCheckout = createMockCheckout();
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const ctx = {
+				...mockContext,
+				body: {
+					products: ["prod-123"],
+					trialInterval: "day",
+					trialIntervalCount: 1000,
+				},
+				json: vi
+					.fn()
+					.mockReturnValue({ url: mockCheckout.url, redirect: true }),
+			};
+
+			await handler(ctx);
+
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					trialInterval: "day",
+					trialIntervalCount: 1000,
+				}),
+			);
+		});
+
+		it("should handle checkout without trial parameters", async () => {
+			const mockCheckout = createMockCheckout();
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const ctx = {
+				...mockContext,
+				body: { products: ["prod-123"] },
+				json: vi
+					.fn()
+					.mockReturnValue({ url: mockCheckout.url, redirect: true }),
+			};
+
+			await handler(ctx);
+
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "user-123",
+					products: ["prod-123"],
+					trialInterval: undefined,
+					trialIntervalCount: undefined,
+				}),
+			);
+		});
 	});
 });
