@@ -5,7 +5,7 @@ import {
 	validateEvent,
 } from "@polar-sh/sdk/webhooks";
 import type { H3Event } from "h3";
-import { createError, getHeader, readBody, setResponseStatus } from "h3";
+import { createError, getHeader, readRawBody, setResponseStatus } from "h3";
 
 export const Webhooks = ({
 	webhookSecret,
@@ -14,7 +14,7 @@ export const Webhooks = ({
 	...eventHandlers
 }: WebhooksConfig) => {
 	return async (event: H3Event) => {
-		const requestBody = await readBody(event);
+		const requestBody = await readRawBody(event);
 
 		const webhookHeaders = {
 			"webhook-id": getHeader(event, "webhook-id") ?? "",
@@ -26,7 +26,7 @@ export const Webhooks = ({
 
 		try {
 			webhookPayload = validateEvent(
-				JSON.stringify(requestBody),
+				requestBody || "",
 				webhookHeaders,
 				webhookSecret,
 			);
