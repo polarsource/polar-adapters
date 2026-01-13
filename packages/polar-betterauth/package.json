@@ -54,13 +54,13 @@
     "@polar-sh/sdk": "^0.42.1",
     "@sindresorhus/tsconfig": "^7.0.0",
     "@types/node": "^20.0.0",
-    "better-auth": "^1.4.6",
+    "better-auth": "^1.4.12",
     "tsup": "^8.5.1",
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "@polar-sh/sdk": "^0.42.1",
-    "better-auth": "^1.4.6",
+    "better-auth": "^1.4.0",
     "zod": "^3.24.2 || ^4"
   },
   "dependencies": {
