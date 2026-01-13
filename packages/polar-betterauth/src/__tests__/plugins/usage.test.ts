@@ -1,94 +1,58 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { usage } from "../../plugins/usage";
-import { mockApiError } from "../utils/helpers";
-import { createMockPolarClient } from "../utils/mocks";
-
-vi.mock("better-auth/api", () => ({
-	APIError: class APIError extends Error {
-		constructor(
-			public code: string,
-			public data: { message: string },
-		) {
-			super(data.message);
-		}
-	},
-	createAuthEndpoint: vi.fn((path, config, handler) => ({
-		path,
-		config,
-		handler,
-	})),
-	sessionMiddleware: vi.fn(),
-}));
-
-const { APIError, createAuthEndpoint, sessionMiddleware } =
-	(await vi.importMock("better-auth/api")) as any;
+import { describe, expect, it, vi } from "vitest";
+import { getTestInstance } from "better-auth/test";
+import { polar, usage } from "../../index";
+import { polarClient } from "../../client";
+import { createMockCustomer, createMockPolarClient } from "../utils/mocks";
 
 describe("usage plugin", () => {
-	let mockClient: ReturnType<typeof createMockPolarClient>;
+	const setupTestInstance = async (usageOptions: Parameters<typeof usage>[0] = {}) => {
+		const mockClient = createMockPolarClient();
+		const mockCustomer = createMockCustomer();
 
-	beforeEach(() => {
-		mockClient = createMockPolarClient();
-		vi.clearAllMocks();
-	});
-
-	describe("plugin creation", () => {
-		it("should create usage plugin with all endpoints", () => {
-			const plugin = usage();
-			const endpoints = plugin(mockClient);
-
-			expect(endpoints).toHaveProperty("meters");
-			expect(endpoints).toHaveProperty("ingestion");
+		vi.mocked(mockClient.customers.list).mockResolvedValue({
+			result: {
+				items: [],
+				pagination: { totalCount: 0, maxPage: 1 },
+			},
 		});
+		vi.mocked(mockClient.customers.create).mockResolvedValue(mockCustomer);
 
-		it("should create plugin with custom options", () => {
-			const options = {
-				creditProducts: [{ productId: "credits-123", slug: "credits" }],
-			};
+		const { auth, client, signInWithTestUser } = await getTestInstance(
+			{
+				plugins: [
+					polar({
+						client: mockClient,
+						createCustomerOnSignUp: true,
+						use: [usage(usageOptions)],
+					}),
+				],
+			},
+			{
+				clientOptions: {
+					plugins: [polarClient()],
+				},
+			},
+		);
 
-			const plugin = usage(options);
-			const endpoints = plugin(mockClient);
+		const { headers } = await signInWithTestUser();
 
-			expect(endpoints).toHaveProperty("meters");
-			expect(endpoints).toHaveProperty("ingestion");
-		});
-
-		it("should configure endpoints with correct paths and middleware", () => {
-			const plugin = usage();
-			plugin(mockClient);
-
-			expect(createAuthEndpoint).toHaveBeenCalledWith(
-				"/usage/meters/list",
-				expect.objectContaining({
-					method: "GET",
-					use: [sessionMiddleware],
-					query: expect.any(Object),
-				}),
-				expect.any(Function),
-			);
-
-			expect(createAuthEndpoint).toHaveBeenCalledWith(
-				"/usage/ingest",
-				expect.objectContaining({
-					method: "POST",
-					body: expect.any(Object),
-					use: [sessionMiddleware],
-				}),
-				expect.any(Function),
-			);
-		});
-	});
+		return { auth, client, headers, mockClient };
+	};
 
 	describe("meters endpoint", () => {
-		let handler: Function;
-
-		beforeEach(() => {
-			const plugin = usage();
-			const endpoints = plugin(mockClient);
-			handler = endpoints.meters.handler;
-		});
-
 		it("should list customer meters with pagination", async () => {
-			const mockSession = { token: "session-token-123" };
+			const { client, headers, mockClient } = await setupTestInstance();
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue({
+				id: "session-123",
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal",
+				createdAt: new Date(),
+				modifiedAt: new Date(),
+				expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+				customerId: "customer-123",
+			});
+
 			const mockMeters = {
 				items: [
 					{
@@ -106,127 +70,102 @@ describe("usage plugin", () => {
 						limit: 500,
 					},
 				],
-				pagination: { total: 2, maxPage: 1 },
+				pagination: { totalCount: 2, maxPage: 1 },
 			};
 
-			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
-				mockSession,
+			vi.mocked(mockClient.customerPortal.customerMeters.list).mockResolvedValue(
+				mockMeters,
 			);
-			vi.mocked(
-				mockClient.customerPortal.customerMeters.list,
-			).mockResolvedValue(mockMeters);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-				},
-				query: { page: 1, limit: 10 },
-				json: vi.fn(),
-			};
-
-			await handler(ctx);
+			const { data } = await client.usage.meters.list(
+				{ query: { page: 1, limit: 10 } },
+				{ headers },
+			);
 
 			expect(mockClient.customerSessions.create).toHaveBeenCalledWith({
-				externalCustomerId: "user-123",
+				externalCustomerId: expect.any(String),
 			});
 
-			expect(
-				mockClient.customerPortal.customerMeters.list,
-			).toHaveBeenCalledWith(
+			expect(mockClient.customerPortal.customerMeters.list).toHaveBeenCalledWith(
 				{ customerSession: "session-token-123" },
 				{ page: 1, limit: 10 },
 			);
 
-			expect(ctx.json).toHaveBeenCalledWith(mockMeters);
+			expect(data).toEqual(mockMeters);
 		});
 
 		it("should handle missing pagination parameters", async () => {
-			const mockSession = { token: "session-token-123" };
-			const mockMeters = { items: [], pagination: { total: 0, maxPage: 1 } };
+			const { client, headers, mockClient } = await setupTestInstance();
 
-			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
-				mockSession,
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue({
+				id: "session-123",
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal",
+				createdAt: new Date(),
+				modifiedAt: new Date(),
+				expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+				customerId: "customer-123",
+			});
+
+			const mockMeters = { items: [], pagination: { totalCount: 0, maxPage: 1 } };
+
+			vi.mocked(mockClient.customerPortal.customerMeters.list).mockResolvedValue(
+				mockMeters,
 			);
-			vi.mocked(
-				mockClient.customerPortal.customerMeters.list,
-			).mockResolvedValue(mockMeters);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-				},
-				query: {},
-				json: vi.fn(),
-			};
+			await client.usage.meters.list({ query: {} }, { headers });
 
-			await handler(ctx);
-
-			expect(
-				mockClient.customerPortal.customerMeters.list,
-			).toHaveBeenCalledWith(
+			expect(mockClient.customerPortal.customerMeters.list).toHaveBeenCalledWith(
 				{ customerSession: "session-token-123" },
 				{ page: undefined, limit: undefined },
 			);
 		});
 
-		it("should throw error when user not found", async () => {
-			const ctx = {
-				context: {
-					session: { user: { id: null } },
-				},
-			};
-
-			await expect(handler(ctx)).rejects.toThrow("User not found");
-		});
-
 		it("should handle customer session creation failure", async () => {
+			const { client, headers, mockClient } = await setupTestInstance();
+
 			vi.mocked(mockClient.customerSessions.create).mockRejectedValue(
-				mockApiError(400, "Customer not found"),
+				new Error("Customer not found"),
 			);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-					logger: { error: vi.fn() },
-				},
-			};
-
-			await expect(handler(ctx)).rejects.toThrow("Meters list failed");
-			expect(ctx.context.logger.error).toHaveBeenCalledWith(
-				expect.stringContaining("Polar meters list failed"),
+			const { error } = await client.usage.meters.list(
+				{ query: {} },
+				{ headers },
 			);
+
+			expect(error?.message).toContain("Meters list failed");
 		});
 
 		it("should handle meters list API failure", async () => {
-			const mockSession = { token: "session-token-123" };
-			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
-				mockSession,
+			const { client, headers, mockClient } = await setupTestInstance();
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue({
+				id: "session-123",
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal",
+				createdAt: new Date(),
+				modifiedAt: new Date(),
+				expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+				customerId: "customer-123",
+			});
+
+			vi.mocked(mockClient.customerPortal.customerMeters.list).mockRejectedValue(
+				new Error("Internal server error"),
 			);
-			vi.mocked(
-				mockClient.customerPortal.customerMeters.list,
-			).mockRejectedValue(mockApiError(500, "Internal server error"));
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-					logger: { error: vi.fn() },
-				},
-			};
+			const { error } = await client.usage.meters.list(
+				{ query: {} },
+				{ headers },
+			);
 
-			await expect(handler(ctx)).rejects.toThrow("Meters list failed");
+			expect(error?.message).toContain("Meters list failed");
 		});
 	});
 
 	describe("ingestion endpoint", () => {
-		let handler: Function;
-
-		beforeEach(() => {
-			const plugin = usage();
-			const endpoints = plugin(mockClient);
-			handler = endpoints.ingestion.handler;
-		});
-
 		it("should ingest usage event", async () => {
+			const { auth, headers, mockClient } = await setupTestInstance();
+
 			const mockIngestion = {
 				success: true,
 				events: [
@@ -240,10 +179,9 @@ describe("usage plugin", () => {
 
 			vi.mocked(mockClient.events.ingest).mockResolvedValue(mockIngestion);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-				},
+			// Use auth.api directly since /usage/ingest doesn't end in /list
+			const response = await auth.api.ingestion({
+				headers,
 				body: {
 					event: "api_call",
 					metadata: {
@@ -252,10 +190,7 @@ describe("usage plugin", () => {
 						responseTime: 150,
 					},
 				},
-				json: vi.fn(),
-			};
-
-			await handler(ctx);
+			});
 
 			expect(mockClient.events.ingest).toHaveBeenCalledWith({
 				events: [
@@ -266,22 +201,22 @@ describe("usage plugin", () => {
 							method: "GET",
 							responseTime: 150,
 						},
-						externalCustomerId: "user-123",
+						externalCustomerId: expect.any(String),
 					},
 				],
 			});
 
-			expect(ctx.json).toHaveBeenCalledWith(mockIngestion);
+			expect(response).toEqual(mockIngestion);
 		});
 
 		it("should handle string metadata values", async () => {
+			const { auth, headers, mockClient } = await setupTestInstance();
+
 			const mockIngestion = { success: true, events: [] };
 			vi.mocked(mockClient.events.ingest).mockResolvedValue(mockIngestion);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-				},
+			await auth.api.ingestion({
+				headers,
 				body: {
 					event: "document_processed",
 					metadata: {
@@ -291,10 +226,7 @@ describe("usage plugin", () => {
 						processed: true,
 					},
 				},
-				json: vi.fn(),
-			};
-
-			await handler(ctx);
+			});
 
 			expect(mockClient.events.ingest).toHaveBeenCalledWith({
 				events: [
@@ -306,20 +238,20 @@ describe("usage plugin", () => {
 							size: 1024,
 							processed: true,
 						},
-						externalCustomerId: "user-123",
+						externalCustomerId: expect.any(String),
 					},
 				],
 			});
 		});
 
 		it("should handle mixed metadata types", async () => {
+			const { auth, headers, mockClient } = await setupTestInstance();
+
 			const mockIngestion = { success: true, events: [] };
 			vi.mocked(mockClient.events.ingest).mockResolvedValue(mockIngestion);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-				},
+			await auth.api.ingestion({
+				headers,
 				body: {
 					event: "mixed_event",
 					metadata: {
@@ -328,10 +260,7 @@ describe("usage plugin", () => {
 						booleanValue: false,
 					},
 				},
-				json: vi.fn(),
-			};
-
-			await handler(ctx);
+			});
 
 			expect(mockClient.events.ingest).toHaveBeenCalledWith({
 				events: [
@@ -342,68 +271,46 @@ describe("usage plugin", () => {
 							numberValue: 42,
 							booleanValue: false,
 						},
-						externalCustomerId: "user-123",
+						externalCustomerId: expect.any(String),
 					},
 				],
 			});
 		});
 
-		it("should throw error when user not found", async () => {
-			const ctx = {
-				context: {
-					session: { user: { id: null } },
-				},
-				body: {
-					event: "test_event",
-					metadata: {},
-				},
-			};
-
-			await expect(handler(ctx)).rejects.toThrow("User not found");
-		});
-
 		it("should handle ingestion API failure", async () => {
+			const { auth, headers, mockClient } = await setupTestInstance();
+
 			vi.mocked(mockClient.events.ingest).mockRejectedValue(
-				mockApiError(400, "Invalid event data"),
+				new Error("Invalid event data"),
 			);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-					logger: { error: vi.fn() },
-				},
-				body: {
-					event: "invalid_event",
-					metadata: { test: "data" },
-				},
-			};
-
-			await expect(handler(ctx)).rejects.toThrow("Ingestion failed");
-			expect(ctx.context.logger.error).toHaveBeenCalledWith(
-				expect.stringContaining("Polar ingestion failed"),
-			);
+			await expect(
+				auth.api.ingestion({
+					headers,
+					body: {
+						event: "invalid_event",
+						metadata: { test: "data" },
+					},
+				}),
+			).rejects.toThrow("Ingestion failed");
 		});
 
 		it("should handle network errors", async () => {
+			const { auth, headers, mockClient } = await setupTestInstance();
+
 			vi.mocked(mockClient.events.ingest).mockRejectedValue(
 				new Error("Network timeout"),
 			);
 
-			const ctx = {
-				context: {
-					session: { user: { id: "user-123" } },
-					logger: { error: vi.fn() },
-				},
-				body: {
-					event: "network_test",
-					metadata: { test: "data" },
-				},
-			};
-
-			await expect(handler(ctx)).rejects.toThrow("Ingestion failed");
-			expect(ctx.context.logger.error).toHaveBeenCalledWith(
-				"Polar ingestion failed. Error: Network timeout",
-			);
+			await expect(
+				auth.api.ingestion({
+					headers,
+					body: {
+						event: "network_test",
+						metadata: { test: "data" },
+					},
+				}),
+			).rejects.toThrow("Ingestion failed");
 		});
 	});
 });

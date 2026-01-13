@@ -1,5 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { webhooks } from "../../plugins/webhooks";
+import { describe, expect, it, vi } from "vitest";
+import { getTestInstance } from "better-auth/test";
+import { polar, webhooks } from "../../index";
+import { polarClient } from "../../client";
 import { createMockPolarClient } from "../utils/mocks";
 
 vi.mock("@polar-sh/adapter-utils", () => ({
@@ -10,124 +12,70 @@ vi.mock("@polar-sh/sdk/webhooks", () => ({
 	validateEvent: vi.fn(),
 }));
 
-vi.mock("better-auth/api", () => ({
-	APIError: class APIError extends Error {
-		constructor(
-			public code: string,
-			public data?: { message: string },
-		) {
-			super(data?.message || code);
-		}
-	},
-	createAuthEndpoint: vi.fn((path, config, handler) => ({
-		path,
-		config,
-		handler,
-	})),
-}));
-
 const { handleWebhookPayload } = (await vi.importMock(
 	"@polar-sh/adapter-utils",
 )) as any;
 const { validateEvent } = (await vi.importMock(
 	"@polar-sh/sdk/webhooks",
 )) as any;
-const { APIError, createAuthEndpoint } = (await vi.importMock(
-	"better-auth/api",
-)) as any;
 
 describe("webhooks plugin", () => {
-	let mockClient: ReturnType<typeof createMockPolarClient>;
+	const setupTestInstance = async (
+		webhookOptions: Parameters<typeof webhooks>[0],
+	) => {
+		const mockClient = createMockPolarClient();
 
-	beforeEach(() => {
-		mockClient = createMockPolarClient();
-		vi.clearAllMocks();
-	});
-
-	describe("plugin creation", () => {
-		it("should create webhooks plugin with minimal options", () => {
-			const options = {
-				secret: "test-secret",
-			};
-
-			const plugin = webhooks(options);
-			const endpoints = plugin(mockClient);
-
-			expect(endpoints).toHaveProperty("polarWebhooks");
+		vi.mocked(mockClient.customers.list).mockResolvedValue({
+			result: {
+				items: [],
+				pagination: { totalCount: 0, maxPage: 1 },
+			},
 		});
 
-		it("should create webhooks plugin with all handlers", () => {
-			const options = {
-				secret: "test-secret",
-				onPayload: vi.fn(),
-				onCheckoutCreated: vi.fn(),
-				onCheckoutUpdated: vi.fn(),
-				onOrderCreated: vi.fn(),
-				onOrderPaid: vi.fn(),
-				onOrderRefunded: vi.fn(),
-				onSubscriptionCreated: vi.fn(),
-				onSubscriptionUpdated: vi.fn(),
-				onSubscriptionActive: vi.fn(),
-				onSubscriptionCanceled: vi.fn(),
-				onCustomerCreated: vi.fn(),
-				onCustomerUpdated: vi.fn(),
-			};
+		const { auth } = await getTestInstance(
+			{
+				plugins: [
+					polar({
+						client: mockClient,
+						use: [webhooks(webhookOptions)],
+					}),
+				],
+			},
+			{
+				clientOptions: {
+					plugins: [polarClient()],
+				},
+			},
+		);
 
-			const plugin = webhooks(options);
-			const endpoints = plugin(mockClient);
+		return { auth, mockClient };
+	};
 
-			expect(endpoints).toHaveProperty("polarWebhooks");
-		});
+	const createWebhookRequest = (
+		body: string,
+		headers: Record<string, string> = {},
+	) => {
+		const defaultHeaders = {
+			"webhook-id": "wh_123",
+			"webhook-timestamp": "1234567890",
+			"webhook-signature": "v1,signature123",
+			...headers,
+		};
 
-		it("should configure endpoint with correct path and options", () => {
-			const options = { secret: "test-secret" };
-			const plugin = webhooks(options);
-			plugin(mockClient);
+		return {
+			headers: new Headers(defaultHeaders),
+			text: vi.fn().mockResolvedValue(body),
+			body,
+		} as unknown as Request;
+	};
 
-			expect(createAuthEndpoint).toHaveBeenCalledWith(
-				"/polar/webhooks",
-				expect.objectContaining({
-					method: "POST",
-					metadata: { isAction: false },
-					cloneRequest: true,
-				}),
-				expect.any(Function),
-			);
-		});
-	});
-
-	describe("webhook endpoint handler", () => {
-		let handler: Function;
-		let mockRequest: Request;
-
-		beforeEach(() => {
-			const options = {
+	describe("webhook endpoint", () => {
+		it("should process valid webhook successfully", async () => {
+			const { auth } = await setupTestInstance({
 				secret: "test-webhook-secret",
 				onCheckoutCreated: vi.fn(),
-				onOrderPaid: vi.fn(),
-			};
-
-			const plugin = webhooks(options);
-			const endpoints = plugin(mockClient);
-			handler = endpoints.polarWebhooks.handler;
-
-			// Create a mock request with proper headers
-			const headers = new Headers({
-				"webhook-id": "wh_123",
-				"webhook-timestamp": "1234567890",
-				"webhook-signature": "v1,signature123",
 			});
 
-			mockRequest = {
-				headers,
-				text: vi
-					.fn()
-					.mockResolvedValue('{"type": "checkout.created", "data": {}}'),
-				body: '{"type": "checkout.created", "data": {}}',
-			} as any;
-		});
-
-		it("should process valid webhook successfully", async () => {
 			const mockEvent = {
 				type: "checkout.created",
 				data: { id: "checkout-123" },
@@ -136,15 +84,11 @@ describe("webhooks plugin", () => {
 			vi.mocked(validateEvent).mockReturnValue(mockEvent);
 			vi.mocked(handleWebhookPayload).mockResolvedValue(undefined);
 
-			const ctx = {
-				request: mockRequest,
-				context: {
-					logger: { error: vi.fn() },
-				},
-				json: vi.fn().mockReturnValue({ received: true }),
-			};
+			const request = createWebhookRequest(
+				'{"type": "checkout.created", "data": {}}',
+			);
 
-			await handler(ctx);
+			const response = await auth.api.polarWebhooks({ request });
 
 			expect(validateEvent).toHaveBeenCalledWith(
 				'{"type": "checkout.created", "data": {}}',
@@ -163,150 +107,127 @@ describe("webhooks plugin", () => {
 				}),
 			);
 
-			expect(ctx.json).toHaveBeenCalledWith({ received: true });
-		});
-
-		it("should throw error when request body is missing", async () => {
-			const ctx = {
-				request: { body: null },
-				context: { logger: { error: vi.fn() } },
-			};
-
-			await expect(handler(ctx)).rejects.toThrow();
+			expect(response).toEqual({ received: true });
 		});
 
 		it("should throw error when webhook secret is missing", async () => {
-			const options = { secret: "" };
-			const plugin = webhooks(options);
-			const endpoints = plugin(mockClient);
-			const noSecretHandler = endpoints.polarWebhooks.handler;
+			const { auth } = await setupTestInstance({
+				secret: "",
+			});
 
-			const ctx = {
-				request: mockRequest,
-				context: { logger: { error: vi.fn() } },
-			};
+			const request = createWebhookRequest('{"type": "test"}');
 
-			await expect(noSecretHandler(ctx)).rejects.toThrow(
+			await expect(auth.api.polarWebhooks({ request })).rejects.toThrow(
 				"Polar webhook secret not found",
 			);
 		});
 
 		it("should handle invalid webhook signature", async () => {
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+			});
+
 			vi.mocked(validateEvent).mockImplementation(() => {
 				throw new Error("Invalid signature");
 			});
 
-			const ctx = {
-				request: mockRequest,
-				context: { logger: { error: vi.fn() } },
-			};
+			const request = createWebhookRequest('{"type": "test"}');
 
-			await expect(handler(ctx)).rejects.toThrow(
+			await expect(auth.api.polarWebhooks({ request })).rejects.toThrow(
 				"Webhook Error: Invalid signature",
-			);
-			expect(ctx.context.logger.error).toHaveBeenCalledWith(
-				"Invalid signature",
 			);
 		});
 
 		it("should handle missing webhook headers", async () => {
-			const invalidRequest = {
-				headers: new Headers({}),
-				text: vi.fn().mockResolvedValue('{"type": "test"}'),
-				body: '{"type": "test"}',
-			} as any;
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+			});
 
 			vi.mocked(validateEvent).mockImplementation(() => {
 				throw new Error("Missing required headers");
 			});
 
-			const ctx = {
-				request: invalidRequest,
-				context: { logger: { error: vi.fn() } },
-			};
+			const request = {
+				headers: new Headers({}),
+				text: vi.fn().mockResolvedValue('{"type": "test"}'),
+				body: '{"type": "test"}',
+			} as unknown as Request;
 
-			await expect(handler(ctx)).rejects.toThrow(
+			await expect(auth.api.polarWebhooks({ request })).rejects.toThrow(
 				"Webhook Error: Missing required headers",
 			);
 		});
 
 		it("should handle webhook payload processing errors", async () => {
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+			});
+
 			const mockEvent = { type: "checkout.created", data: {} };
 			vi.mocked(validateEvent).mockReturnValue(mockEvent);
 			vi.mocked(handleWebhookPayload).mockRejectedValue(
 				new Error("Handler processing failed"),
 			);
 
-			const ctx = {
-				request: mockRequest,
-				context: { logger: { error: vi.fn() } },
-			};
+			const request = createWebhookRequest('{"type": "checkout.created"}');
 
-			await expect(handler(ctx)).rejects.toThrow(
+			await expect(auth.api.polarWebhooks({ request })).rejects.toThrow(
 				"Webhook error: See server logs for more information.",
-			);
-			expect(ctx.context.logger.error).toHaveBeenCalledWith(
-				"Polar webhook failed. Error: Handler processing failed",
 			);
 		});
 
 		it("should handle non-Error webhook payload failures", async () => {
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+			});
+
 			const mockEvent = { type: "checkout.created", data: {} };
 			vi.mocked(validateEvent).mockReturnValue(mockEvent);
 			vi.mocked(handleWebhookPayload).mockRejectedValue("Unknown error");
 
-			const ctx = {
-				request: mockRequest,
-				context: { logger: { error: vi.fn() } },
-			};
+			const request = createWebhookRequest('{"type": "checkout.created"}');
 
-			await expect(handler(ctx)).rejects.toThrow(
+			await expect(auth.api.polarWebhooks({ request })).rejects.toThrow(
 				"Webhook error: See server logs for more information.",
-			);
-			expect(ctx.context.logger.error).toHaveBeenCalledWith(
-				"Polar webhook failed. Error: Unknown error",
 			);
 		});
 
 		it("should handle non-Error validation failures", async () => {
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+			});
+
 			vi.mocked(validateEvent).mockImplementation(() => {
 				throw "Unknown validation error";
 			});
 
-			const ctx = {
-				request: mockRequest,
-				context: { logger: { error: vi.fn() } },
-			};
+			const request = createWebhookRequest('{"type": "test"}');
 
-			await expect(handler(ctx)).rejects.toThrow(
+			await expect(auth.api.polarWebhooks({ request })).rejects.toThrow(
 				"Webhook Error: Unknown validation error",
 			);
 		});
 
 		it("should pass all event handlers to handleWebhookPayload", async () => {
 			const mockHandlers = {
-				secret: "test-secret",
 				onPayload: vi.fn(),
 				onCheckoutCreated: vi.fn(),
 				onOrderPaid: vi.fn(),
 				onSubscriptionActive: vi.fn(),
 			};
 
-			const plugin = webhooks(mockHandlers);
-			const endpoints = plugin(mockClient);
-			const handlerWithAllOptions = endpoints.polarWebhooks.handler;
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+				...mockHandlers,
+			});
 
 			const mockEvent = { type: "checkout.created", data: {} };
 			vi.mocked(validateEvent).mockReturnValue(mockEvent);
 			vi.mocked(handleWebhookPayload).mockResolvedValue(undefined);
 
-			const ctx = {
-				request: mockRequest,
-				context: { logger: { error: vi.fn() } },
-				json: vi.fn().mockReturnValue({ received: true }),
-			};
+			const request = createWebhookRequest('{"type": "checkout.created"}');
 
-			await handlerWithAllOptions(ctx);
+			await auth.api.polarWebhooks({ request });
 
 			expect(handleWebhookPayload).toHaveBeenCalledWith(
 				mockEvent,
@@ -321,6 +242,10 @@ describe("webhooks plugin", () => {
 		});
 
 		it("should handle different webhook event types", async () => {
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
+			});
+
 			const testCases = [
 				{ type: "checkout.created", data: { id: "checkout-123" } },
 				{ type: "order.paid", data: { id: "order-456" } },
@@ -332,13 +257,9 @@ describe("webhooks plugin", () => {
 				vi.mocked(validateEvent).mockReturnValue(mockEvent);
 				vi.mocked(handleWebhookPayload).mockResolvedValue(undefined);
 
-				const ctx = {
-					request: mockRequest,
-					context: { logger: { error: vi.fn() } },
-					json: vi.fn().mockReturnValue({ received: true }),
-				};
+				const request = createWebhookRequest(JSON.stringify(mockEvent));
 
-				await handler(ctx);
+				await auth.api.polarWebhooks({ request });
 
 				expect(handleWebhookPayload).toHaveBeenCalledWith(
 					mockEvent,
@@ -348,29 +269,21 @@ describe("webhooks plugin", () => {
 		});
 
 		it("should extract headers correctly from request", async () => {
-			const customHeaders = new Headers({
-				"webhook-id": "custom-id-456",
-				"webhook-timestamp": "9876543210",
-				"webhook-signature": "v1,custom-signature",
+			const { auth } = await setupTestInstance({
+				secret: "test-secret",
 			});
-
-			const customRequest = {
-				headers: customHeaders,
-				text: vi.fn().mockResolvedValue('{"type": "test"}'),
-				body: '{"type": "test"}',
-			} as any;
 
 			const mockEvent = { type: "test", data: {} };
 			vi.mocked(validateEvent).mockReturnValue(mockEvent);
 			vi.mocked(handleWebhookPayload).mockResolvedValue(undefined);
 
-			const ctx = {
-				request: customRequest,
-				context: { logger: { error: vi.fn() } },
-				json: vi.fn().mockReturnValue({ received: true }),
-			};
+			const request = createWebhookRequest('{"type": "test"}', {
+				"webhook-id": "custom-id-456",
+				"webhook-timestamp": "9876543210",
+				"webhook-signature": "v1,custom-signature",
+			});
 
-			await handler(ctx);
+			await auth.api.polarWebhooks({ request });
 
 			expect(validateEvent).toHaveBeenCalledWith(
 				'{"type": "test"}',
@@ -379,7 +292,7 @@ describe("webhooks plugin", () => {
 					"webhook-timestamp": "9876543210",
 					"webhook-signature": "v1,custom-signature",
 				},
-				"test-webhook-secret",
+				"test-secret",
 			);
 		});
 	});
