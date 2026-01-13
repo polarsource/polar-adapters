@@ -1,4 +1,3 @@
-import { vi } from "vitest";
 import type { PolarOptions } from "../../types";
 import { createMockPolarClient } from "./mocks";
 
@@ -14,19 +13,14 @@ export const createTestPolarOptions = (
 export { createMockPolarClient };
 
 export const mockApiError = (status: number, message: string) => {
-	const error = new Error(message) as any;
+	const error = new Error(message) as Error & {
+		status: number;
+		response: { status: number; data: { error: { message: string } } };
+	};
 	error.status = status;
 	error.response = {
 		status,
 		data: { error: { message } },
 	};
 	return error;
-};
-
-export const mockApiResponse = <T>(data: T) => Promise.resolve({ data });
-
-export const createMockMiddleware = () => {
-	const middleware = vi.fn();
-	middleware.mockImplementation((context, next) => next());
-	return middleware;
 };
