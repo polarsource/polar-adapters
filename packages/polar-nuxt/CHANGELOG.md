@@ -1,5 +1,11 @@
 # @polar-sh/nuxt
 
+## 0.5.4
+
+### Patch Changes
+
+- d163f2e: Fix webhook signature verification failing on parsed + re-serialized webhook bodies
+
 ## 0.5.3
 
 ### Patch Changes
