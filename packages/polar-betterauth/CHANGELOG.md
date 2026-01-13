@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.6.4
+
+### Patch Changes
+
+- e6fb64a: Update Better-Auth minimum version to double-check type issues
+
 ## 1.6.3
 
 ### Patch Changes
