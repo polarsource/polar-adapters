@@ -41,7 +41,7 @@
     "@biomejs/biome": "1.9.4",
     "@sindresorhus/tsconfig": "^7.0.0",
     "@types/node": "^20.0.0",
-    "hono": "^4.10.7",
+    "hono": "^4.11.7",
     "prettier": "^3.7.4",
     "tsup": "^8.5.1",
     "vitest": "^2.1.8"
