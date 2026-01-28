@@ -8,6 +8,10 @@ export interface PortalConfig {
 	returnUrl?: string;
 }
 
+export const PortalParams = z.object({
+	redirect: z.coerce.boolean().optional(),
+}).optional();
+
 export const portal =
 	({ returnUrl }: PortalConfig = {}) =>
 	(polar: Polar) => {
@@ -19,6 +23,7 @@ export const portal =
 				{
 					method: "GET",
 					use: [sessionMiddleware],
+					query: PortalParams,
 				},
 				async (ctx) => {
 					if (!ctx.context.session?.user.id) {
@@ -35,7 +40,7 @@ export const portal =
 
 						return ctx.json({
 							url: customerSession.customerPortalUrl,
-							redirect: true,
+							redirect: ctx.query?.redirect ?? true,
 						});
 					} catch (e: unknown) {
 						if (e instanceof Error) {

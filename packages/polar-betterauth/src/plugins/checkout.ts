@@ -45,6 +45,7 @@ export const CheckoutParams = z.object({
 	discountId: z.string().optional(),
 	redirect: z.coerce.boolean().optional(),
 	embedOrigin: z.string().url().optional(),
+	successQueryParams: z.record(z.string(), z.string()).optional(),
 });
 
 export type CheckoutParams = z.infer<typeof CheckoutParams>;
@@ -98,10 +99,19 @@ export const checkout =
 							externalCustomerId: session?.user.id,
 							products: productIds,
 							successUrl: checkoutOptions.successUrl
-								? new URL(
+								? (() => {
+									const url = new URL(
 										checkoutOptions.successUrl,
 										ctx.request?.url ?? ctx.context.baseURL,
-									).toString()
+									)
+
+									if (ctx.body.successQueryParams) {
+										for (const [key, value] of Object.entries(ctx.body.successQueryParams)) {
+											url.searchParams.set(key, value);
+										}
+									}
+									return url.toString();
+								})()
 								: undefined,
 							metadata: ctx.body.referenceId
 								? {
