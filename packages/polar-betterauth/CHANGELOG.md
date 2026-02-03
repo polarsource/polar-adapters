@@ -1,5 +1,19 @@
 # @polar-sh/hono
 
+## 1.8.0
+
+### Minor Changes
+
+- 04156c1: Support `{ redirect: false }` on `authClient.customer.portal()` to generate a link without redirecting
+- 48cdd1c: Adds theme to the portal hook
+- 6905772: Accept custom `successUrl` and `returnUrl` on `authClient.checkout({})` calls
+
+### Patch Changes
+
+- 548c814: Skip creating customers for anonymous users
+- 4a05db6: Remove unused `redirect` option on checkout plugin, keeping only on `authClient.checkout()` arguments
+- c5a8eba: Fix `checkout` & `portal` integration for anonymous users
+
 ## 1.7.0
 
 ### Minor Changes
