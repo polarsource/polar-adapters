@@ -7,6 +7,10 @@ export const onBeforeUserCreate =
 	async (user: Partial<User>, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
+				if (user.isAnonymous) {
+					return;
+				}
+
 				const params = options.getCustomerCreateParams
 					? await options.getCustomerCreateParams({
 							user,
@@ -50,6 +54,10 @@ export const onAfterUserCreate =
 	(options: PolarOptions) =>
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
+			if (user.isAnonymous) {
+				return;
+			}
+
 			try {
 				const { result: existingCustomers } =
 					await options.client.customers.list({ email: user.email });
@@ -84,6 +92,10 @@ export const onUserUpdate =
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
+				if (user.isAnonymous) {
+					return;
+				}
+
 				await options.client.customers.updateExternal({
 					externalId: user.id,
 					customerUpdateExternalID: {
@@ -110,6 +122,10 @@ export const onUserDelete =
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
+				if (user.isAnonymous) {
+					return;
+				}
+
 				if (user.email) {
 					const { result: existingCustomers } =
 						await options.client.customers.list({ email: user.email });
