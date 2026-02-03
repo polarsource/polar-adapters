@@ -39,7 +39,13 @@ export const CheckoutParams = z.object({
 		.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
 		.optional(),
 	metadata: z
-		.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+		.record(z.string(), z.union([z.string().max(500), z.number(), z.boolean()]))
+		.refine((obj) => Object.keys(obj).length <= 50, {
+			message: "Metadata can have at most 50 key-value pairs",
+		})
+		.refine((obj) => Object.keys(obj).every((key) => key.length <= 40), {
+			message: "Metadata keys must be at most 40 characters",
+		})
 		.optional(),
 	allowDiscountCodes: z.coerce.boolean().optional(),
 	discountId: z.string().optional(),
