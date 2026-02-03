@@ -23,18 +23,28 @@ vi.mock("better-auth/api", () => ({
 const { APIError, createAuthEndpoint, sessionMiddleware } =
 	(await vi.importMock("better-auth/api")) as any;
 
+const createMockOptions = (client: ReturnType<typeof createMockPolarClient>) => ({
+	client,
+	use: [],
+	getExternalCustomerId: async (ctx: any) => {
+		return ctx.context.session?.user.id;
+	},
+});
+
 describe("usage plugin", () => {
 	let mockClient: ReturnType<typeof createMockPolarClient>;
+	let mockOptions: ReturnType<typeof createMockOptions>;
 
 	beforeEach(() => {
 		mockClient = createMockPolarClient();
+		mockOptions = createMockOptions(mockClient);
 		vi.clearAllMocks();
 	});
 
 	describe("plugin creation", () => {
 		it("should create usage plugin with all endpoints", () => {
 			const plugin = usage();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 
 			expect(endpoints).toHaveProperty("meters");
 			expect(endpoints).toHaveProperty("ingestion");
@@ -46,7 +56,7 @@ describe("usage plugin", () => {
 			};
 
 			const plugin = usage(options);
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 
 			expect(endpoints).toHaveProperty("meters");
 			expect(endpoints).toHaveProperty("ingestion");
@@ -54,7 +64,7 @@ describe("usage plugin", () => {
 
 		it("should configure endpoints with correct paths and middleware", () => {
 			const plugin = usage();
-			plugin(mockClient);
+			plugin(mockOptions);
 
 			expect(createAuthEndpoint).toHaveBeenCalledWith(
 				"/usage/meters/list",
@@ -83,7 +93,7 @@ describe("usage plugin", () => {
 
 		beforeEach(() => {
 			const plugin = usage();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.meters.handler;
 		});
 
@@ -222,7 +232,7 @@ describe("usage plugin", () => {
 
 		beforeEach(() => {
 			const plugin = usage();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.ingestion.handler;
 		});
 

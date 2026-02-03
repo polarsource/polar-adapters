@@ -1,8 +1,8 @@
-import type { Polar } from "@polar-sh/sdk";
 import { APIError } from "better-auth/api";
 import { sessionMiddleware } from "better-auth/api";
 import { createAuthEndpoint } from "better-auth/plugins";
 import { z } from "zod";
+import type { ResolvedPolarOptions } from "../types";
 
 export interface PortalConfig {
 	returnUrl?: string;
@@ -14,7 +14,7 @@ export interface PortalConfig {
 
 export const portal =
 	({ returnUrl, theme }: PortalConfig = {}) =>
-	(polar: Polar) => {
+	(options: ResolvedPolarOptions) => {
 		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
 
 		return {
@@ -30,21 +30,23 @@ export const portal =
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
-					if (!ctx.context.session?.user.id) {
-						throw new APIError("BAD_REQUEST", {
-							message: "User not found",
-						});
-					}
-
 					if (ctx.context.session?.user['isAnonymous']) {
 						throw new APIError("UNAUTHORIZED", {
 							message: "Anonymous users cannot access the portal",
 						});
 					}
 
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
+
+					if (!externalCustomerId) {
+						throw new APIError("BAD_REQUEST", {
+							message: "User not found",
+						});
+					}
+
 					try {
-						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+						const customerSession = await options.client.customerSessions.create({
+							externalCustomerId,
 							returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 						});
 
@@ -78,15 +80,17 @@ export const portal =
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
-					if (!ctx.context.session.user.id) {
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
+
+					if (!externalCustomerId) {
 						throw new APIError("BAD_REQUEST", {
 							message: "User not found",
 						});
 					}
 
 					try {
-						const state = await polar.customers.getStateExternal({
-							externalId: ctx.context.session?.user.id,
+						const state = await options.client.customers.getStateExternal({
+							externalId: externalCustomerId,
 						});
 
 						return ctx.json(state);
@@ -116,18 +120,20 @@ export const portal =
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
-					if (!ctx.context.session.user.id) {
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
+
+					if (!externalCustomerId) {
 						throw new APIError("BAD_REQUEST", {
 							message: "User not found",
 						});
 					}
 
 					try {
-						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+						const customerSession = await options.client.customerSessions.create({
+							externalCustomerId,
 						});
 
-						const benefits = await polar.customerPortal.benefitGrants.list(
+						const benefits = await options.client.customerPortal.benefitGrants.list(
 							{ customerSession: customerSession.token },
 							{
 								page: ctx.query?.page,
@@ -164,15 +170,9 @@ export const portal =
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
-					if (!ctx.context.session.user.id) {
-						throw new APIError("BAD_REQUEST", {
-							message: "User not found",
-						});
-					}
-
 					if (ctx.query?.referenceId) {
 						try {
-							const subscriptions = await polar.subscriptions.list({
+							const subscriptions = await options.client.subscriptions.list({
 								page: ctx.query?.page,
 								limit: ctx.query?.limit,
 								active: ctx.query?.active,
@@ -196,12 +196,20 @@ export const portal =
 						}
 					}
 
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
+
+					if (!externalCustomerId) {
+						throw new APIError("BAD_REQUEST", {
+							message: "User not found",
+						});
+					}
+
 					try {
-						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+						const customerSession = await options.client.customerSessions.create({
+							externalCustomerId,
 						});
 
-						const subscriptions = await polar.customerPortal.subscriptions.list(
+						const subscriptions = await options.client.customerPortal.subscriptions.list(
 							{ customerSession: customerSession.token },
 							{
 								page: ctx.query?.page,
@@ -238,18 +246,20 @@ export const portal =
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
-					if (!ctx.context.session.user.id) {
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
+
+					if (!externalCustomerId) {
 						throw new APIError("BAD_REQUEST", {
 							message: "User not found",
 						});
 					}
 
 					try {
-						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+						const customerSession = await options.client.customerSessions.create({
+							externalCustomerId,
 						});
 
-						const orders = await polar.customerPortal.orders.list(
+						const orders = await options.client.customerPortal.orders.list(
 							{ customerSession: customerSession.token },
 							{
 								page: ctx.query?.page,

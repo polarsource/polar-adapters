@@ -74,8 +74,18 @@ describe("polar plugin", () => {
 
 		expect(plugin.endpoints).toHaveProperty("checkout/create");
 		expect(plugin.endpoints).toHaveProperty("portal/url");
-		expect(mockCheckoutPlugin).toHaveBeenCalledWith(mockClient);
-		expect(mockPortalPlugin).toHaveBeenCalledWith(mockClient);
+		expect(mockCheckoutPlugin).toHaveBeenCalledWith(
+			expect.objectContaining({
+				client: mockClient,
+				getExternalCustomerId: expect.any(Function),
+			}),
+		);
+		expect(mockPortalPlugin).toHaveBeenCalledWith(
+			expect.objectContaining({
+				client: mockClient,
+				getExternalCustomerId: expect.any(Function),
+			}),
+		);
 	});
 
 	it("should initialize with database hooks", () => {

@@ -1,11 +1,19 @@
-import type { BetterAuthPlugin } from "better-auth";
+import type { BetterAuthPlugin, GenericEndpointContext } from "better-auth";
+import { getSessionFromCtx } from "better-auth/api";
 import {
 	onAfterUserCreate,
 	onBeforeUserCreate,
 	onUserDelete,
 	onUserUpdate,
 } from "./hooks/customer";
-import type { PolarEndpoints, PolarOptions } from "./types";
+import type { GetExternalCustomerId, PolarEndpoints, PolarOptions, ResolvedPolarOptions } from "./types";
+
+const defaultGetExternalCustomerId: GetExternalCustomerId = async (
+	context: GenericEndpointContext
+) => {
+	const session = await getSessionFromCtx(context);
+	return session?.user.id;
+};
 
 export { polarClient } from "./client";
 
@@ -15,8 +23,14 @@ export * from "./plugins/usage";
 export * from "./plugins/webhooks";
 
 export const polar = <O extends PolarOptions>(options: O) => {
+	const resolvedOptions: ResolvedPolarOptions = {
+		...options,
+		getExternalCustomerId:
+			options.getExternalCustomerId ?? defaultGetExternalCustomerId,
+	};
+
 	const plugins = options.use
-		.map((use) => use(options.client))
+		.map((use) => use(resolvedOptions))
 		.reduce((acc, plugin) => {
 			Object.assign(acc, plugin);
 			return acc;
@@ -33,14 +47,14 @@ export const polar = <O extends PolarOptions>(options: O) => {
 					databaseHooks: {
 						user: {
 							create: {
-								before: onBeforeUserCreate(options),
-								after: onAfterUserCreate(options),
+								before: onBeforeUserCreate(resolvedOptions),
+								after: onAfterUserCreate(resolvedOptions),
 							},
 							update: {
-								after: onUserUpdate(options),
+								after: onUserUpdate(resolvedOptions),
 							},
 							delete: {
-								after: onUserDelete(options),
+								after: onUserDelete(resolvedOptions),
 							},
 						},
 					},

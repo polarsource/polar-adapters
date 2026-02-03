@@ -1,8 +1,7 @@
-import type { Polar } from "@polar-sh/sdk";
 import { APIError, getSessionFromCtx } from "better-auth/api";
 import { createAuthEndpoint } from "better-auth/plugins";
 import { z } from "zod";
-import type { Product } from "../types";
+import type { ResolvedPolarOptions, Product } from "../types";
 
 export interface CheckoutOptions {
 	/**
@@ -68,7 +67,7 @@ export type CheckoutParams = z.infer<typeof CheckoutParams>;
 
 export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
-	(polar: Polar) => {
+	(options: ResolvedPolarOptions) => {
 		return {
 			checkout: createAuthEndpoint(
 				"/checkout",
@@ -118,13 +117,15 @@ export const checkout =
 						}
 					}
 
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
+
 					const successUrl =
 						ctx.body.successUrl ?? checkoutOptions.successUrl;
 					const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
 
 					try {
-						const checkout = await polar.checkouts.create({
-							externalCustomerId: session?.user.id,
+						const checkout = await options.client.checkouts.create({
+							externalCustomerId,
 							products: productIds,
 							successUrl: successUrl
 								? new URL(

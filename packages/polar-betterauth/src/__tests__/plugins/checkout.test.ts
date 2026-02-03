@@ -34,20 +34,31 @@ const { createAuthEndpoint } = (await vi.importMock(
 	"better-auth/plugins",
 )) as any;
 
+const createMockOptions = (client: ReturnType<typeof createMockPolarClient>) => ({
+	client,
+	use: [],
+	getExternalCustomerId: async (ctx: any) => {
+		const session = await getSessionFromCtx(ctx);
+		return session?.user.id;
+	},
+});
+
 describe("checkout plugin", () => {
 	let mockClient: ReturnType<typeof createMockPolarClient>;
 	let mockContext: ReturnType<typeof createMockBetterAuthContext>;
+	let mockOptions: ReturnType<typeof createMockOptions>;
 
 	beforeEach(() => {
 		mockClient = createMockPolarClient();
 		mockContext = createMockBetterAuthContext();
+		mockOptions = createMockOptions(mockClient);
 		vi.clearAllMocks();
 	});
 
 	describe("plugin creation", () => {
 		it("should create checkout plugin with default options", () => {
 			const plugin = checkout();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 
 			expect(endpoints).toHaveProperty("checkout");
 			expect(createAuthEndpoint).toHaveBeenCalledWith(
@@ -69,7 +80,7 @@ describe("checkout plugin", () => {
 			};
 
 			const plugin = checkout(options);
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 
 			expect(endpoints).toHaveProperty("checkout");
 		});
@@ -87,7 +98,7 @@ describe("checkout plugin", () => {
 				successUrl: "https://example.com/success",
 				theme: "dark",
 			});
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.checkout.handler;
 		});
 
@@ -188,7 +199,7 @@ describe("checkout plugin", () => {
 				]);
 
 			const plugin = checkout({ products: asyncProducts });
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const asyncHandler = endpoints.checkout.handler;
 
 			const mockCheckout = createMockCheckout();
@@ -267,7 +278,7 @@ describe("checkout plugin", () => {
 
 		it("should handle unauthenticated users when not required", async () => {
 			const plugin = checkout({ authenticatedUsersOnly: false });
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const publicHandler = endpoints.checkout.handler;
 
 			const mockCheckout = createMockCheckout();
@@ -297,7 +308,7 @@ describe("checkout plugin", () => {
 
 		it("should throw error for unauthenticated users when authentication required", async () => {
 			const plugin = checkout({ authenticatedUsersOnly: true });
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const authHandler = endpoints.checkout.handler;
 
 			vi.mocked(getSessionFromCtx).mockResolvedValue(null);

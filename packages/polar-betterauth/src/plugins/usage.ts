@@ -1,11 +1,10 @@
-import type { Polar } from "@polar-sh/sdk";
 import {
 	APIError,
 	createAuthEndpoint,
 	sessionMiddleware,
 } from "better-auth/api";
 import { z } from "zod";
-import type { Product } from "../types";
+import type { ResolvedPolarOptions, Product } from "../types";
 
 export interface UsageOptions {
 	/**
@@ -14,31 +13,35 @@ export interface UsageOptions {
 	creditProducts?: Product[] | (() => Promise<Product[]>);
 }
 
-export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
-	return {
-		meters: createAuthEndpoint(
-			"/usage/meters/list",
-			{
-				method: "GET",
-				use: [sessionMiddleware],
-				query: z.object({
-					page: z.coerce.number().optional(),
-					limit: z.coerce.number().optional(),
-				}),
-			},
-			async (ctx) => {
-				if (!ctx.context.session.user.id) {
-					throw new APIError("BAD_REQUEST", {
-						message: "User not found",
-					});
-				}
+export const usage =
+	(_usageOptions?: UsageOptions) =>
+	(options: ResolvedPolarOptions) => {
+		return {
+			meters: createAuthEndpoint(
+				"/usage/meters/list",
+				{
+					method: "GET",
+					use: [sessionMiddleware],
+					query: z.object({
+						page: z.coerce.number().optional(),
+						limit: z.coerce.number().optional(),
+					}),
+				},
+				async (ctx) => {
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
 
-				try {
-					const customerSession = await polar.customerSessions.create({
-						externalCustomerId: ctx.context.session.user.id,
-					});
+					if (!externalCustomerId) {
+						throw new APIError("BAD_REQUEST", {
+							message: "User not found",
+						});
+					}
 
-					const customerMeters = await polar.customerPortal.customerMeters.list(
+					try {
+						const customerSession = await options.client.customerSessions.create({
+							externalCustomerId,
+						});
+
+						const customerMeters = await options.client.customerPortal.customerMeters.list(
 						{ customerSession: customerSession.token },
 						{
 							page: ctx.query?.page,
@@ -60,50 +63,52 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 				}
 			},
 		),
-		ingestion: createAuthEndpoint(
-			"/usage/ingest",
-			{
-				method: "POST",
-				body: z.object({
-					event: z.string(),
-					metadata: z.record(
-						z.string(),
-						z.union([z.string(), z.number(), z.boolean()]),
-					),
-				}),
-				use: [sessionMiddleware],
-			},
-			async (ctx) => {
-				if (!ctx.context.session.user.id) {
-					throw new APIError("BAD_REQUEST", {
-						message: "User not found",
-					});
-				}
+			ingestion: createAuthEndpoint(
+				"/usage/ingest",
+				{
+					method: "POST",
+					body: z.object({
+						event: z.string(),
+						metadata: z.record(
+							z.string(),
+							z.union([z.string(), z.number(), z.boolean()]),
+						),
+					}),
+					use: [sessionMiddleware],
+				},
+				async (ctx) => {
+					const externalCustomerId = await options.getExternalCustomerId(ctx);
 
-				try {
-					const ingestion = await polar.events.ingest({
-						events: [
-							{
-								name: ctx.body.event,
-								metadata: ctx.body.metadata,
-								externalCustomerId: ctx.context.session.user.id,
-							},
-						],
-					});
-
-					return ctx.json(ingestion);
-				} catch (e: unknown) {
-					if (e instanceof Error) {
-						ctx.context.logger.error(
-							`Polar ingestion failed. Error: ${e.message}`,
-						);
+					if (!externalCustomerId) {
+						throw new APIError("BAD_REQUEST", {
+							message: "User not found",
+						});
 					}
 
-					throw new APIError("INTERNAL_SERVER_ERROR", {
-						message: "Ingestion failed",
-					});
-				}
-			},
-		),
+					try {
+						const ingestion = await options.client.events.ingest({
+							events: [
+								{
+									name: ctx.body.event,
+									metadata: ctx.body.metadata,
+									externalCustomerId,
+								},
+							],
+						});
+
+						return ctx.json(ingestion);
+					} catch (e: unknown) {
+						if (e instanceof Error) {
+							ctx.context.logger.error(
+								`Polar ingestion failed. Error: ${e.message}`,
+							);
+						}
+
+						throw new APIError("INTERNAL_SERVER_ERROR", {
+							message: "Ingestion failed",
+						});
+					}
+				},
+			),
+		};
 	};
-};

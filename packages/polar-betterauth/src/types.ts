@@ -1,10 +1,14 @@
 import type { Polar } from "@polar-sh/sdk";
 
-import type { UnionToIntersection, User } from "better-auth";
+import type { GenericEndpointContext, UnionToIntersection, User } from "better-auth";
 import type { checkout } from "./plugins/checkout";
 import type { portal } from "./plugins/portal";
 import type { usage } from "./plugins/usage";
 import type { webhooks } from "./plugins/webhooks";
+
+export type GetExternalCustomerId = (
+	context: GenericEndpointContext
+) => Promise<string | undefined>;
 
 export type Product = {
 	/**
@@ -51,7 +55,16 @@ export interface PolarOptions {
 		metadata?: Record<string, string | number | boolean>;
 	}>;
 	/**
+	 * Custom function to resolve the external customer ID from the request context.
+	 * Defaults to using the session user ID via Better Auth's getSessionFromCtx.
+	 */
+	getExternalCustomerId?: GetExternalCustomerId;
+	/**
 	 * Use Polar plugins
 	 */
 	use: PolarPlugins;
 }
+
+export type ResolvedPolarOptions = PolarOptions & {
+	getExternalCustomerId: GetExternalCustomerId;
+};

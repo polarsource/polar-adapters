@@ -1,13 +1,14 @@
 import { vi } from "vitest";
-import type { PolarOptions } from "../../types";
+import type { ResolvedPolarOptions } from "../../types";
 import { createMockPolarClient } from "./mocks";
 
 export const createTestPolarOptions = (
-	overrides: Partial<PolarOptions> = {},
-): PolarOptions => ({
+	overrides: Partial<ResolvedPolarOptions> = {},
+): ResolvedPolarOptions => ({
 	client: createMockPolarClient(),
 	createCustomerOnSignUp: true,
 	use: [],
+	getExternalCustomerId: async () => "user-123",
 	...overrides,
 });
 

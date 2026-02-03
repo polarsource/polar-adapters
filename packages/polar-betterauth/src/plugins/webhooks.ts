@@ -1,5 +1,4 @@
 import { handleWebhookPayload } from "@polar-sh/adapter-utils";
-import type { Polar } from "@polar-sh/sdk";
 import type { WebhookBenefitCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitcreatedpayload";
 import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload";
 import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload";
@@ -166,7 +165,7 @@ export interface WebhooksOptions {
 	) => Promise<void>;
 }
 
-export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
+export const webhooks = (webhooksOptions: WebhooksOptions) => (_options: unknown) => {
 	return {
 		polarWebhooks: createAuthEndpoint(
 			"/polar/webhooks",
@@ -178,7 +177,7 @@ export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
 				cloneRequest: true,
 			},
 			async (ctx) => {
-				const { secret, ...eventHandlers } = options;
+				const { secret, ...eventHandlers } = webhooksOptions;
 
 				if (!ctx.request?.body) {
 					throw new APIError("INTERNAL_SERVER_ERROR");

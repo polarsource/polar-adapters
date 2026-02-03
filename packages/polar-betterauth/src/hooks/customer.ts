@@ -1,9 +1,9 @@
 import type { GenericEndpointContext, User } from "better-auth";
 import { APIError } from "better-auth/api";
-import type { PolarOptions } from "../types";
+import type { ResolvedPolarOptions } from "../types";
 
 export const onBeforeUserCreate =
-	(options: PolarOptions) =>
+	(options: ResolvedPolarOptions) =>
 	async (user: Partial<User>, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
@@ -51,7 +51,7 @@ export const onBeforeUserCreate =
 	};
 
 export const onAfterUserCreate =
-	(options: PolarOptions) =>
+	(options: ResolvedPolarOptions) =>
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			if (user.isAnonymous) {
@@ -59,16 +59,18 @@ export const onAfterUserCreate =
 			}
 
 			try {
+				const externalCustomerId = await options.getExternalCustomerId(context) ?? user.id;
+
 				const { result: existingCustomers } =
 					await options.client.customers.list({ email: user.email });
 				const existingCustomer = existingCustomers.items[0];
 
 				if (existingCustomer) {
-					if (existingCustomer.externalId !== user.id) {
+					if (existingCustomer.externalId !== externalCustomerId) {
 						await options.client.customers.update({
 							id: existingCustomer.id,
 							customerUpdate: {
-								externalId: user.id,
+								externalId: externalCustomerId,
 							},
 						});
 					}
@@ -88,7 +90,7 @@ export const onAfterUserCreate =
 	};
 
 export const onUserUpdate =
-	(options: PolarOptions) =>
+	(options: ResolvedPolarOptions) =>
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
@@ -96,8 +98,10 @@ export const onUserUpdate =
 					return;
 				}
 
+				const externalCustomerId = await options.getExternalCustomerId(context) ?? user.id;
+
 				await options.client.customers.updateExternal({
-					externalId: user.id,
+					externalId: externalCustomerId,
 					customerUpdateExternalID: {
 						email: user.email,
 						name: user.name,
@@ -118,7 +122,7 @@ export const onUserUpdate =
 	};
 
 export const onUserDelete =
-	(options: PolarOptions) =>
+	(options: ResolvedPolarOptions) =>
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {

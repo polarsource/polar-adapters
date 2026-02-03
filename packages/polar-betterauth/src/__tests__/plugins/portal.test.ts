@@ -30,18 +30,28 @@ const { createAuthEndpoint } = (await vi.importMock(
 	"better-auth/plugins",
 )) as any;
 
+const createMockOptions = (client: ReturnType<typeof createMockPolarClient>) => ({
+	client,
+	use: [],
+	getExternalCustomerId: async (ctx: any) => {
+		return ctx.context.session?.user.id;
+	},
+});
+
 describe("portal plugin", () => {
 	let mockClient: ReturnType<typeof createMockPolarClient>;
+	let mockOptions: ReturnType<typeof createMockOptions>;
 
 	beforeEach(() => {
 		mockClient = createMockPolarClient();
+		mockOptions = createMockOptions(mockClient);
 		vi.clearAllMocks();
 	});
 
 	describe("plugin creation", () => {
 		it("should create portal plugin with all endpoints", () => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 
 			expect(endpoints).toHaveProperty("portal");
 			expect(endpoints).toHaveProperty("state");
@@ -52,7 +62,7 @@ describe("portal plugin", () => {
 
 		it("should configure endpoints with correct paths and middleware", () => {
 			const plugin = portal();
-			plugin(mockClient);
+			plugin(mockOptions);
 
 			expect(createAuthEndpoint).toHaveBeenCalledWith(
 				"/customer/portal",
@@ -79,7 +89,7 @@ describe("portal plugin", () => {
 
 		beforeEach(() => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.portal.handler;
 		});
 
@@ -196,7 +206,7 @@ describe("portal plugin", () => {
 
 		it("should apply theme to portal URL when provided", async () => {
 			const plugin = portal({ theme: "dark" });
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const themeHandler = endpoints.portal.handler;
 
 			const mockSession = {
@@ -225,7 +235,7 @@ describe("portal plugin", () => {
 
 		it("should support light theme", async () => {
 			const plugin = portal({ theme: "light" });
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const themeHandler = endpoints.portal.handler;
 
 			const mockSession = {
@@ -254,7 +264,7 @@ describe("portal plugin", () => {
 
 		it("should not add theme parameter when not provided", async () => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const noThemeHandler = endpoints.portal.handler;
 
 			const mockSession = {
@@ -283,7 +293,7 @@ describe("portal plugin", () => {
 
 		it("should preserve existing query parameters when adding theme", async () => {
 			const plugin = portal({ theme: "dark" });
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			const themeHandler = endpoints.portal.handler;
 
 			const mockSession = {
@@ -316,7 +326,7 @@ describe("portal plugin", () => {
 
 		beforeEach(() => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.state.handler;
 		});
 
@@ -381,7 +391,7 @@ describe("portal plugin", () => {
 
 		beforeEach(() => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.benefits.handler;
 		});
 
@@ -472,7 +482,7 @@ describe("portal plugin", () => {
 
 		beforeEach(() => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.subscriptions.handler;
 		});
 
@@ -580,7 +590,7 @@ describe("portal plugin", () => {
 
 		beforeEach(() => {
 			const plugin = portal();
-			const endpoints = plugin(mockClient);
+			const endpoints = plugin(mockOptions);
 			handler = endpoints.orders.handler;
 		});
 
