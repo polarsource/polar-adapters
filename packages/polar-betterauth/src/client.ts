@@ -38,7 +38,7 @@ export const polarClient = () => {
 							| "dark"
 							| undefined) ?? "light";
 
-					return await PolarEmbedCheckout.create(checkout.url, theme);
+					return await PolarEmbedCheckout.create(checkout.url, { theme });
 				},
 			};
 		},
