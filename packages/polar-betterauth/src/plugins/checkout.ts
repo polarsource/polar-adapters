@@ -108,10 +108,18 @@ export const checkout =
 							: [ctx.body.products].filter((id) => id !== undefined);
 					}
 
-					if (checkoutOptions.authenticatedUsersOnly && !session?.user.id) {
-						throw new APIError("UNAUTHORIZED", {
-							message: "You must be logged in to checkout",
-						});
+					if (checkoutOptions.authenticatedUsersOnly) {
+						if (!session?.user.id) {
+							throw new APIError("UNAUTHORIZED", {
+								message: "You must be logged in to checkout",
+							});
+						}
+
+						if (session.user['isAnonymous']) {
+							throw new APIError("UNAUTHORIZED", {
+								message: "Anonymous users are not allowed to checkout",
+							});
+						}
 					}
 
 					const successUrl =
