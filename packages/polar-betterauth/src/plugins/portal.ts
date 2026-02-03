@@ -17,7 +17,12 @@ export const portal =
 			portal: createAuthEndpoint(
 				"/customer/portal",
 				{
-					method: "GET",
+					method: ["GET", "POST"],
+					body: z
+						.object({
+							redirect: z.boolean().optional(),
+						})
+						.optional(),
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
@@ -41,7 +46,7 @@ export const portal =
 
 						return ctx.json({
 							url: customerSession.customerPortalUrl,
-							redirect: true,
+							redirect: ctx.body?.redirect ?? true,
 						});
 					} catch (e: unknown) {
 						if (e instanceof Error) {

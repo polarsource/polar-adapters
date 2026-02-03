@@ -57,7 +57,7 @@ describe("portal plugin", () => {
 			expect(createAuthEndpoint).toHaveBeenCalledWith(
 				"/customer/portal",
 				expect.objectContaining({
-					method: "GET",
+					method: ["GET", "POST"],
 					use: [sessionMiddleware],
 				}),
 				expect.any(Function),
@@ -120,6 +120,58 @@ describe("portal plugin", () => {
 			};
 
 			await expect(handler(ctx)).rejects.toThrow("User not found");
+		});
+
+		it("should return redirect: false when body param is false (POST)", async () => {
+			const mockSession = {
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123",
+			};
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
+				mockSession,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+				},
+				body: { redirect: false },
+				json: vi.fn(),
+			};
+
+			await handler(ctx);
+
+			expect(ctx.json).toHaveBeenCalledWith({
+				url: "https://polar.sh/portal/session-123",
+				redirect: false,
+			});
+		});
+
+		it("should return redirect: true when body param is true (POST)", async () => {
+			const mockSession = {
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123",
+			};
+
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue(
+				mockSession,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+				},
+				body: { redirect: true },
+				json: vi.fn(),
+			};
+
+			await handler(ctx);
+
+			expect(ctx.json).toHaveBeenCalledWith({
+				url: "https://polar.sh/portal/session-123",
+				redirect: true,
+			});
 		});
 
 		it("should handle API errors", async () => {
