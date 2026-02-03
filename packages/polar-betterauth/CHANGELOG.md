@@ -1,5 +1,16 @@
 # @polar-sh/hono
 
+## 1.7.0
+
+### Minor Changes
+
+- a2e1a44: Match `metadata` validation with the API validation
+- 1eae6e7: Support trial configuration on checkouts
+
+### Patch Changes
+
+- 0172ee2: Update dependencies
+
 ## 1.6.4
 
 ### Patch Changes
