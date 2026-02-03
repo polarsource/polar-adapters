@@ -45,6 +45,9 @@ export const CheckoutParams = z.object({
 	discountId: z.string().optional(),
 	redirect: z.coerce.boolean().optional(),
 	embedOrigin: z.string().url().optional(),
+	allowTrial: z.boolean().optional(),
+	trialInterval: z.enum(["day", "week", "month", "year"]).optional(),
+	trialIntervalCount: z.number().int().min(1).max(1000).optional(),
 });
 
 export type CheckoutParams = z.infer<typeof CheckoutParams>;
@@ -113,6 +116,9 @@ export const checkout =
 							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
 							discountId: ctx.body.discountId,
 							embedOrigin: ctx.body.embedOrigin,
+							allowTrial: ctx.body.allowTrial,
+							trialInterval: ctx.body.trialInterval,
+							trialIntervalCount: ctx.body.trialIntervalCount,
 							returnUrl: checkoutOptions.returnUrl
 								? new URL(
 										checkoutOptions.returnUrl,
