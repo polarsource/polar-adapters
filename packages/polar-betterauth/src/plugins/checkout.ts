@@ -51,6 +51,18 @@ export const CheckoutParams = z.object({
 	discountId: z.string().optional(),
 	redirect: z.coerce.boolean().optional(),
 	embedOrigin: z.string().url().optional(),
+	successUrl: z
+		.string()
+		.refine((val) => val.startsWith("/") || URL.canParse(val), {
+			message: "Must be a valid URL or a relative path starting with /",
+		})
+		.optional(),
+	returnUrl: z
+		.string()
+		.refine((val) => val.startsWith("/") || URL.canParse(val), {
+			message: "Must be a valid URL or a relative path starting with /",
+		})
+		.optional(),
 	allowTrial: z.boolean().optional(),
 	trialInterval: z.enum(["day", "week", "month", "year"]).optional(),
 	trialIntervalCount: z.number().int().min(1).max(1000).optional(),
@@ -102,13 +114,17 @@ export const checkout =
 						});
 					}
 
+					const successUrl =
+						ctx.body.successUrl ?? checkoutOptions.successUrl;
+					const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
+
 					try {
 						const checkout = await polar.checkouts.create({
 							externalCustomerId: session?.user.id,
 							products: productIds,
-							successUrl: checkoutOptions.successUrl
+							successUrl: successUrl
 								? new URL(
-										checkoutOptions.successUrl,
+										successUrl,
 										ctx.request?.url ?? ctx.context.baseURL,
 									).toString()
 								: undefined,
@@ -125,9 +141,9 @@ export const checkout =
 							allowTrial: ctx.body.allowTrial,
 							trialInterval: ctx.body.trialInterval,
 							trialIntervalCount: ctx.body.trialIntervalCount,
-							returnUrl: checkoutOptions.returnUrl
+							returnUrl: returnUrl
 								? new URL(
-										checkoutOptions.returnUrl,
+										returnUrl,
 										ctx.request?.url ?? ctx.context.baseURL,
 									).toString()
 								: undefined,
