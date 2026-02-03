@@ -25,10 +25,6 @@ export interface CheckoutOptions {
 	 * Checkout theme
 	 */
 	theme?: "light" | "dark";
-	/**
-	 * Redirect to checkout page
-	 */
-	redirect?: boolean;
 }
 
 export const CheckoutParams = z.object({
