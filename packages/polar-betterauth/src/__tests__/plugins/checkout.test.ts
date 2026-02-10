@@ -30,7 +30,9 @@ vi.mock("better-auth/api", () => ({
 const { APIError, getSessionFromCtx } = (await vi.importMock(
 	"better-auth/api",
 )) as any;
-const { createAuthEndpoint } = (await vi.importMock("better-auth/api")) as any;
+const { createAuthEndpoint } = (await vi.importMock(
+	"better-auth/api",
+)) as any;
 
 describe("checkout plugin", () => {
 	let mockClient: ReturnType<typeof createMockPolarClient>;

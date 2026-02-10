@@ -26,7 +26,9 @@ vi.mock("better-auth/api", () => ({
 const { APIError, sessionMiddleware } = (await vi.importMock(
 	"better-auth/api",
 )) as any;
-const { createAuthEndpoint } = (await vi.importMock("better-auth/api")) as any;
+const { createAuthEndpoint } = (await vi.importMock(
+	"better-auth/api",
+)) as any;
 
 describe("portal plugin", () => {
 	let mockClient: ReturnType<typeof createMockPolarClient>;
