@@ -19,7 +19,7 @@ vi.mock("better-auth/api", () => ({
 	getSessionFromCtx: vi.fn(),
 }));
 
-vi.mock("better-auth/plugins", () => ({
+vi.mock("better-auth/api", () => ({
 	createAuthEndpoint: vi.fn((path, config, handler) => ({
 		path,
 		config,
@@ -30,9 +30,7 @@ vi.mock("better-auth/plugins", () => ({
 const { APIError, getSessionFromCtx } = (await vi.importMock(
 	"better-auth/api",
 )) as any;
-const { createAuthEndpoint } = (await vi.importMock(
-	"better-auth/plugins",
-)) as any;
+const { createAuthEndpoint } = (await vi.importMock("better-auth/api")) as any;
 
 describe("checkout plugin", () => {
 	let mockClient: ReturnType<typeof createMockPolarClient>;

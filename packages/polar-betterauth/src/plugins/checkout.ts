@@ -1,6 +1,9 @@
 import type { Polar } from "@polar-sh/sdk";
-import { APIError, getSessionFromCtx } from "better-auth/api";
-import { createAuthEndpoint } from "better-auth/plugins";
+import {
+	APIError,
+	createAuthEndpoint,
+	getSessionFromCtx,
+} from "better-auth/api";
 import { z } from "zod";
 import type { Product } from "../types";
 
@@ -111,15 +114,14 @@ export const checkout =
 							});
 						}
 
-						if (session.user['isAnonymous']) {
+						if (session.user["isAnonymous"]) {
 							throw new APIError("UNAUTHORIZED", {
 								message: "Anonymous users are not allowed to checkout",
 							});
 						}
 					}
 
-					const successUrl =
-						ctx.body.successUrl ?? checkoutOptions.successUrl;
+					const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
 					const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
 
 					try {
