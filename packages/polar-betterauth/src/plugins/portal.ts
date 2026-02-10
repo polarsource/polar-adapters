@@ -35,7 +35,7 @@ export const portal =
 						});
 					}
 
-					if (ctx.context.session?.user["isAnonymous"]) {
+					if (ctx.context.session?.user['isAnonymous']) {
 						throw new APIError("UNAUTHORIZED", {
 							message: "Anonymous users cannot access the portal",
 						});
