@@ -1,7 +1,6 @@
 import type { Polar } from "@polar-sh/sdk";
 import { APIError } from "better-auth/api";
-import { sessionMiddleware } from "better-auth/api";
-import { createAuthEndpoint } from "better-auth/plugins";
+import { createAuthEndpoint, sessionMiddleware } from "better-auth/api";
 import { z } from "zod";
 
 export interface PortalConfig {
@@ -36,7 +35,7 @@ export const portal =
 						});
 					}
 
-					if (ctx.context.session?.user['isAnonymous']) {
+					if (ctx.context.session?.user["isAnonymous"]) {
 						throw new APIError("UNAUTHORIZED", {
 							message: "Anonymous users cannot access the portal",
 						});
