@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.8.1
+
+### Patch Changes
+
+- 569d831: Update deprecated `createAuthEndpoint` import for compatibility with 1.5.0-beta
+
 ## 1.8.0
 
 ### Minor Changes
