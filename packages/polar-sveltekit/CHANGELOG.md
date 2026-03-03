@@ -1,5 +1,13 @@
 # @polar-sh/sveltekit
 
+## 0.7.4
+
+### Patch Changes
+
+- 43ff4ac: Update @polar-sh/sdk to 0.46.0
+- Updated dependencies [43ff4ac]
+  - @polar-sh/adapter-utils@0.4.4
+
 ## 0.7.3
 
 ### Patch Changes

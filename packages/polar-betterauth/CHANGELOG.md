@@ -1,5 +1,11 @@
 # @polar-sh/hono
 
+## 1.8.2
+
+### Patch Changes
+
+- 43ff4ac: Update @polar-sh/sdk to 0.46.0
+
 ## 1.8.1
 
 ### Patch Changes
