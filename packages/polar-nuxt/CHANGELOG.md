@@ -1,5 +1,13 @@
 # @polar-sh/nuxt
 
+## 0.5.6
+
+### Patch Changes
+
+- 0e8d982: Update @polar-sh/sdk to 0.46.2
+- Updated dependencies [0e8d982]
+  - @polar-sh/adapter-utils@0.4.5
+
 ## 0.5.5
 
 ### Patch Changes
