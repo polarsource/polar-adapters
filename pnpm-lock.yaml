@@ -28,8 +28,8 @@ importers:
   packages/adapter-utils:
     dependencies:
       '@polar-sh/sdk':
-        specifier: ^0.46.2
-        version: 0.46.2
+        specifier: ^0.46.3
+        version: 0.46.3
     devDependencies:
       '@sindresorhus/tsconfig':
         specifier: ^7.0.0
@@ -2548,9 +2548,6 @@ packages:
 
   '@polar-sh/sdk@0.42.5':
     resolution: {integrity: sha512-GzC3/ElCtMO55+KeXwFTANlydZzw5qI3DU/F9vAFIsUKuegSmh+Xu03KCL+ct9/imJOvLUQucYhUSsNKqo2j2Q==}
-
-  '@polar-sh/sdk@0.46.2':
-    resolution: {integrity: sha512-xHRnSeyXdBCD4kN41u7/Pb71vRTFwxm+QNZtWT4SUN2p2hf/6/IY+k8T8jTgCfDoSjEBoAGTl2SUQ6Mq2wAtWA==}
 
   '@polar-sh/sdk@0.46.3':
     resolution: {integrity: sha512-o7e1TOJ6xMIS/cFflmAKzuczmaZDGddUP1uQNGDYb9d3ktigDXj88CP6ITTy3AEenhACRp65Ks/hVZ/rsQyI4Q==}
@@ -11354,11 +11351,6 @@ snapshots:
       - redux
 
   '@polar-sh/sdk@0.42.5':
-    dependencies:
-      standardwebhooks: 1.0.0
-      zod: 3.25.76
-
-  '@polar-sh/sdk@0.46.2':
     dependencies:
       standardwebhooks: 1.0.0
       zod: 3.25.76
