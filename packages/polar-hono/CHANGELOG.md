@@ -1,5 +1,15 @@
 # @polar-sh/hono
 
+## 0.5.5
+
+### Patch Changes
+
+- cfbb6ed: Update @polar-sh/sdk to 0.46.4
+- 0e8d982: Update @polar-sh/sdk to 0.46.2
+- 3f2cce5: Update @polar-sh/sdk to 0.46.3
+- Updated dependencies [0e8d982]
+  - @polar-sh/adapter-utils@0.4.5
+
 ## 0.5.4
 
 ### Patch Changes

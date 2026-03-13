@@ -1,5 +1,13 @@
 # @polar-sh/supabase
 
+## 0.4.4
+
+### Patch Changes
+
+- cfbb6ed: Update @polar-sh/sdk to 0.46.4
+- 0e8d982: Update @polar-sh/sdk to 0.46.2
+- 3f2cce5: Update @polar-sh/sdk to 0.46.3
+
 ## 0.4.3
 
 ### Patch Changes
