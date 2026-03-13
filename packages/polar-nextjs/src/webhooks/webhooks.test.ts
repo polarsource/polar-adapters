@@ -19,8 +19,8 @@ import { handleWebhookPayload } from "@polar-sh/adapter-utils";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { Webhooks } from "./webhooks";
 
-const mockHandleWebhookPayload = vi.mocked(handleWebhookPayload);
-const mockValidateEvent = vi.mocked(validateEvent);
+const mockHandleWebhookPayload = vi.mocked(handleWebhookPayload) as ReturnType<typeof vi.fn>;
+const mockValidateEvent = vi.mocked(validateEvent) as ReturnType<typeof vi.fn>;
 
 describe("Webhooks", () => {
 	beforeEach(() => {
@@ -30,11 +30,12 @@ describe("Webhooks", () => {
 	describe("webhook validation", () => {
 		it("should validate webhook headers and process payload", async () => {
 			const mockPayload = {
-				type: "checkout.completed",
+				type: "checkout.created" as const,
+				timestamp: new Date(),
 				data: { id: "checkout_123" },
 			};
 			mockValidateEvent.mockReturnValue(mockPayload);
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
@@ -77,11 +78,12 @@ describe("Webhooks", () => {
 
 		it("should handle missing webhook headers", async () => {
 			const mockPayload = {
-				type: "checkout.completed",
+				type: "checkout.created" as const,
+				timestamp: new Date(),
 				data: { id: "checkout_123" },
 			};
 			mockValidateEvent.mockReturnValue(mockPayload);
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
@@ -161,21 +163,22 @@ describe("Webhooks", () => {
 	describe("webhook configuration", () => {
 		it("should pass all configuration to handleWebhookPayload", async () => {
 			const mockPayload = {
-				type: "checkout.completed",
+				type: "checkout.created" as const,
+				timestamp: new Date(),
 				data: { id: "checkout_123" },
 			};
 			const onPayload = vi.fn();
-			const onCheckoutCompleted = vi.fn();
-			const entitlements = { testEntitlement: {} };
+			const onCheckoutCreated = vi.fn();
+			const entitlements = {};
 
 			mockValidateEvent.mockReturnValue(mockPayload);
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
 				entitlements,
 				onPayload,
-				"checkout.completed": onCheckoutCompleted,
+				onCheckoutCreated,
 			});
 
 			const request = new NextRequest("https://example.com/webhooks", {
@@ -194,14 +197,14 @@ describe("Webhooks", () => {
 				webhookSecret: "secret_123",
 				entitlements,
 				onPayload,
-				"checkout.completed": onCheckoutCompleted,
+				onCheckoutCreated,
 			});
 		});
 
 		it("should handle minimal configuration", async () => {
-			const mockPayload = { type: "test.event", data: {} };
+			const mockPayload = { type: "order.created" as const, timestamp: new Date(), data: {} };
 			mockValidateEvent.mockReturnValue(mockPayload);
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
@@ -223,19 +226,20 @@ describe("Webhooks", () => {
 
 		it("should handle multiple event handlers", async () => {
 			const mockPayload = {
-				type: "subscription.created",
+				type: "subscription.created" as const,
+				timestamp: new Date(),
 				data: { id: "sub_123" },
 			};
 			const onSubscriptionCreated = vi.fn();
 			const onSubscriptionUpdated = vi.fn();
 
 			mockValidateEvent.mockReturnValue(mockPayload);
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
-				"subscription.created": onSubscriptionCreated,
-				"subscription.updated": onSubscriptionUpdated,
+				onSubscriptionCreated,
+				onSubscriptionUpdated,
 			});
 
 			const request = new NextRequest("https://example.com/webhooks", {
@@ -247,19 +251,19 @@ describe("Webhooks", () => {
 
 			expect(mockHandleWebhookPayload).toHaveBeenCalledWith(mockPayload, {
 				webhookSecret: "secret_123",
-				"subscription.created": onSubscriptionCreated,
-				"subscription.updated": onSubscriptionUpdated,
+				onSubscriptionCreated,
+				onSubscriptionUpdated,
 			});
 		});
 	});
 
 	describe("request body handling", () => {
 		it("should read request body as text", async () => {
-			const mockPayload = { type: "test.event", data: {} };
+			const mockPayload = { type: "order.created" as const, timestamp: new Date(), data: {} };
 			const payloadString = JSON.stringify(mockPayload);
 
 			mockValidateEvent.mockReturnValue(mockPayload);
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
@@ -281,7 +285,7 @@ describe("Webhooks", () => {
 
 		it("should handle empty request body", async () => {
 			mockValidateEvent.mockReturnValue({});
-			mockHandleWebhookPayload.mockResolvedValue(undefined);
+			mockHandleWebhookPayload.mockResolvedValue([]);
 
 			const webhookHandler = Webhooks({
 				webhookSecret: "secret_123",
