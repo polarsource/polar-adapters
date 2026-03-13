@@ -17,6 +17,7 @@ describe("EntitlementStrategy", () => {
 
     const payload = {
       type: "benefit_grant.created",
+      timestamp: new Date(),
       data: {
         id: "123",
         createdAt: new Date(),
@@ -34,6 +35,7 @@ describe("EntitlementStrategy", () => {
           id: "123",
           createdAt: new Date(),
           modifiedAt: new Date(),
+          deletedAt: null,
           metadata: {},
           emailVerified: true,
           billingAddress: {
@@ -42,7 +44,7 @@ describe("EntitlementStrategy", () => {
             city: "123",
             state: "123",
             postalCode: "123",
-            country: "123",
+            country: "US",
           },
           name: "Test",
           taxId: ["123"],
@@ -80,6 +82,7 @@ describe("EntitlementStrategy", () => {
 
     const payload = {
       type: "benefit_grant.revoked",
+      timestamp: new Date(),
       data: {
         id: "123",
         createdAt: new Date(),

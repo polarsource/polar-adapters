@@ -9,7 +9,8 @@ vi.mock("@polar-sh/sdk/webhooks", () => {
 
 	return {
 		validateEvent: vi.fn((body: string) => ({
-			type: "order.created",
+			type: "order.created" as const,
+			timestamp: new Date(),
 			data: { id: "order-123" },
 		})),
 		WebhookVerificationError,
@@ -33,16 +34,17 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Webhooks } from "./webhooks";
 
-// Get the mocked functions
-const mockValidateEvent = vi.mocked(validateEvent);
-const mockHandleWebhookPayload = vi.mocked(handleWebhookPayload);
+// Get the mocked functions — typed loosely so mockReturnValue accepts partial payloads
+const mockValidateEvent = vi.mocked(validateEvent) as ReturnType<typeof vi.fn>;
+const mockHandleWebhookPayload = vi.mocked(handleWebhookPayload) as ReturnType<typeof vi.fn>;
 
 describe("Webhooks", () => {
 	beforeEach(() => {
 		mockValidateEvent.mockClear();
 		mockHandleWebhookPayload.mockClear();
 		mockValidateEvent.mockReturnValue({
-			type: "order.created",
+			type: "order.created" as const,
+			timestamp: new Date(),
 			data: { id: "order-123" },
 		});
 	});
