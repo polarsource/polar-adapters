@@ -1,7 +1,6 @@
 ---
 "@polar-sh/astro": patch
 "@polar-sh/better-auth": patch
-"@polar-sh/deno": patch
 "@polar-sh/elysia": patch
 "@polar-sh/express": patch
 "@polar-sh/fastify": patch
