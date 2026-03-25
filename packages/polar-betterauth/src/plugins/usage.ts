@@ -4,7 +4,7 @@ import {
 	createAuthEndpoint,
 	sessionMiddleware,
 } from "better-auth/api";
-import { z } from "zod";
+import * as z from "zod/v4";
 import type { Product } from "../types";
 
 export interface UsageOptions {
