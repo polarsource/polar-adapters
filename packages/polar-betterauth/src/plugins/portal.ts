@@ -1,7 +1,7 @@
 import type { Polar } from "@polar-sh/sdk";
 import { APIError } from "better-auth/api";
 import { createAuthEndpoint, sessionMiddleware } from "better-auth/api";
-import { z } from "zod";
+import * as z from "zod/v4";
 
 export interface PortalConfig {
 	returnUrl?: string;

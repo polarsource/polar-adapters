@@ -4,7 +4,7 @@ import {
 	createAuthEndpoint,
 	getSessionFromCtx,
 } from "better-auth/api";
-import { z } from "zod";
+import * as z from "zod/v4";
 import type { Product } from "../types";
 
 export interface CheckoutOptions {
@@ -49,7 +49,7 @@ export const CheckoutParams = z.object({
 	allowDiscountCodes: z.coerce.boolean().optional(),
 	discountId: z.string().optional(),
 	redirect: z.coerce.boolean().optional(),
-	embedOrigin: z.string().url().optional(),
+	embedOrigin: z.url().optional(),
 	successUrl: z
 		.string()
 		.refine((val) => val.startsWith("/") || URL.canParse(val), {
