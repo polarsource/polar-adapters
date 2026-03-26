@@ -49,7 +49,7 @@ export const CheckoutParams = z.object({
 	allowDiscountCodes: z.coerce.boolean().optional(),
 	discountId: z.string().optional(),
 	redirect: z.coerce.boolean().optional(),
-	embedOrigin: z.string().url().optional(),
+	embedOrigin: z.url().optional(),
 	successUrl: z
 		.string()
 		.refine((val) => val.startsWith("/") || URL.canParse(val), {
