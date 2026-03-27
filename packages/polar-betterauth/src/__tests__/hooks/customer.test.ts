@@ -419,7 +419,7 @@ describe("customer hooks", () => {
 	});
 
 	describe("onUserUpdate", () => {
-		it("should update customer when createCustomerOnSignUp is enabled", async () => {
+		it("should update email and name when both are in request body", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
 				createCustomerOnSignUp: true,
@@ -437,6 +437,7 @@ describe("customer hooks", () => {
 			);
 
 			const ctx = {
+				body: { email: "updated@example.com", name: "Updated User" },
 				context: { logger: { error: vi.fn() } },
 			} as any;
 
@@ -451,6 +452,111 @@ describe("customer hooks", () => {
 					name: "Updated User",
 				},
 			});
+		});
+
+		it("should only update name when only name is in request body", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				name: "Updated User",
+			});
+
+			const mockCustomer = createMockCustomer();
+			vi.mocked(mockClient.customers.updateExternal).mockResolvedValue(
+				mockCustomer,
+			);
+
+			const ctx = {
+				body: { name: "Updated User" },
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.updateExternal).toHaveBeenCalledWith({
+				externalId: "user-123",
+				customerUpdateExternalID: {
+					name: "Updated User",
+				},
+			});
+		});
+
+		it("should only update email when only email is in request body", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				email: "new@example.com",
+			});
+
+			const mockCustomer = createMockCustomer();
+			vi.mocked(mockClient.customers.updateExternal).mockResolvedValue(
+				mockCustomer,
+			);
+
+			const ctx = {
+				body: { email: "new@example.com" },
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.updateExternal).toHaveBeenCalledWith({
+				externalId: "user-123",
+				customerUpdateExternalID: {
+					email: "new@example.com",
+				},
+			});
+		});
+
+		it("should skip Polar API call when neither email nor name is in request body", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({ id: "user-123" });
+
+			const ctx = {
+				body: { username: "newusername" },
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.updateExternal).not.toHaveBeenCalled();
+		});
+
+		it("should skip Polar API call when body is missing", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+
+			const ctx = {
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.updateExternal).not.toHaveBeenCalled();
 		});
 
 		it("should not update customer when createCustomerOnSignUp is disabled", async () => {
@@ -506,6 +612,30 @@ describe("customer hooks", () => {
 			// Should not throw, just log the error
 			await hook(mockUser, ctx);
 
+			expect(ctx.context.logger.error).not.toHaveBeenCalled();
+		});
+
+		it("should handle API errors when email or name changed", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+
+			vi.mocked(mockClient.customers.updateExternal).mockRejectedValue(
+				mockApiError(404, "Customer not found"),
+			);
+
+			const ctx = {
+				body: { email: "test@example.com" },
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar customer update failed. Error: Customer not found",
 			);
@@ -531,6 +661,30 @@ describe("customer hooks", () => {
 
 			await hook(mockUser, ctx);
 
+			expect(ctx.context.logger.error).not.toHaveBeenCalled();
+		});
+
+		it("should handle non-Error exceptions when email or name changed", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+
+			vi.mocked(mockClient.customers.updateExternal).mockRejectedValue(
+				"Unknown error",
+			);
+
+			const ctx = {
+				body: { name: "New Name" },
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar customer update failed. Error: Unknown error",
 			);
@@ -549,6 +703,30 @@ describe("customer hooks", () => {
 			);
 
 			const ctx = {
+				context: { logger: { error: vi.fn() } },
+			} as any;
+
+			const hook = onUserUpdate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(ctx.context.logger.error).not.toHaveBeenCalled();
+		});
+
+		it("should handle network timeouts when email or name changed", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser();
+
+			vi.mocked(mockClient.customers.updateExternal).mockRejectedValue(
+				new Error("Network timeout"),
+			);
+
+			const ctx = {
+				body: { name: "New Name" },
 				context: { logger: { error: vi.fn() } },
 			} as any;
 
