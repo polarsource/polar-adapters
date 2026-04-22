@@ -2,7 +2,8 @@ import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
 import type { PolarEmbedCheckout as PolarEmbedCheckoutType } from "@polar-sh/checkout/embed";
 import type { BetterAuthClientPlugin } from "better-auth";
 import type { BetterFetchOption } from "better-auth/client";
-import type { CheckoutParams, polar } from "./index";
+import type { CheckoutParams } from "./plugins/checkout";
+import type { polar } from "./server";
 
 export type { PolarEmbedCheckoutType as PolarEmbedCheckout };
 
