@@ -1,5 +1,14 @@
 # @polar-sh/adapter-utils
 
+## 0.4.6
+
+### Patch Changes
+
+- 9b0cf46: Update @polar-sh/sdk to 0.46.5
+- fbb9c4c: Update @polar-sh/sdk to 0.46.7
+- a89b1ee: Update @polar-sh/sdk to 0.47.0
+- 19b0f48: Update @polar-sh/sdk to 0.46.6
+
 ## 0.4.5
 
 ### Patch Changes

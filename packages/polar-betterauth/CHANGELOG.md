@@ -1,5 +1,15 @@
 # @polar-sh/hono
 
+## 1.8.4
+
+### Patch Changes
+
+- 6f675f4: Fix circular dependency between `client.ts` and `index.ts` that caused type inference issues for `$InferServerPlugin`
+- 9b0cf46: Update @polar-sh/sdk to 0.46.5
+- fbb9c4c: Update @polar-sh/sdk to 0.46.7
+- a89b1ee: Update @polar-sh/sdk to 0.47.0
+- 19b0f48: Update @polar-sh/sdk to 0.46.6
+
 ## 1.8.3
 
 ### Patch Changes
