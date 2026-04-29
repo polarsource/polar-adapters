@@ -1,0 +1,56 @@
+{
+  "name": "@polar-sh/encore",
+  "version": "0.1.0",
+  "description": "Polar.sh adapter for Encore.ts - Handle payments, subscriptions, and benefits",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "tsup ./src/index.ts --format esm,cjs --dts --clean --sourcemap",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsc --watch",
+    "check": "biome check --write ./src"
+  },
+  "keywords": [
+    "encore",
+    "polar",
+    "payments",
+    "subscriptions",
+    "merchant-of-record",
+    "checkout",
+    "stripe"
+  ],
+  "author": "Polar",
+  "license": "MIT",
+  "peerDependencies": {
+    "encore.dev": "^1.0.0"
+  },
+  "dependencies": {
+    "@polar-sh/sdk": "^0.41.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "^20.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.8"
+  }
+}
