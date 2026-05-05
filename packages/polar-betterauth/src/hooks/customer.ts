@@ -96,12 +96,28 @@ export const onUserUpdate =
 					return;
 				}
 
+				const body =
+					context.body && typeof context.body === "object"
+						? (context.body as Record<string, unknown>)
+						: {};
+
+				const customerUpdate: { email?: string; name?: string | null } = {};
+
+				if ("email" in body) {
+					customerUpdate.email = user.email;
+				}
+
+				if ("name" in body) {
+					customerUpdate.name = user.name;
+				}
+
+				if (Object.keys(customerUpdate).length === 0) {
+					return;
+				}
+
 				await options.client.customers.updateExternal({
 					externalId: user.id,
-					customerUpdateExternalID: {
-						email: user.email,
-						name: user.name,
-					},
+					customerUpdateExternalID: customerUpdate,
 				});
 			} catch (e: unknown) {
 				if (e instanceof Error) {
