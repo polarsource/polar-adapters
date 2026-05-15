@@ -221,6 +221,13 @@ export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
 						...eventHandlers,
 					});
 				} catch (e: unknown) {
+					if (e instanceof APIError) {
+						ctx.context.logger.error(
+							`Polar webhook failed. Error: ${e.message}`,
+						);
+						throw e;
+					}
+
 					if (e instanceof Error) {
 						ctx.context.logger.error(
 							`Polar webhook failed. Error: ${e.message}`,
@@ -229,7 +236,7 @@ export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
 						ctx.context.logger.error(`Polar webhook failed. Error: ${e}`);
 					}
 
-					throw new APIError("BAD_REQUEST", {
+					throw new APIError("INTERNAL_SERVER_ERROR", {
 						message: "Webhook error: See server logs for more information.",
 					});
 				}

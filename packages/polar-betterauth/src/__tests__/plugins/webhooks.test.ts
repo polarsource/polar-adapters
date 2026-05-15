@@ -242,9 +242,10 @@ describe("webhooks plugin", () => {
 				context: { logger: { error: vi.fn() } },
 			};
 
-			await expect(handler(ctx)).rejects.toThrow(
-				"Webhook error: See server logs for more information.",
-			);
+			await expect(handler(ctx)).rejects.toMatchObject({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Webhook error: See server logs for more information.",
+			});
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar webhook failed. Error: Handler processing failed",
 			);
@@ -260,11 +261,31 @@ describe("webhooks plugin", () => {
 				context: { logger: { error: vi.fn() } },
 			};
 
-			await expect(handler(ctx)).rejects.toThrow(
-				"Webhook error: See server logs for more information.",
-			);
+			await expect(handler(ctx)).rejects.toMatchObject({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Webhook error: See server logs for more information.",
+			});
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar webhook failed. Error: Unknown error",
+			);
+		});
+
+		it("should preserve explicit APIError status from webhook handlers", async () => {
+			const mockEvent = { type: "checkout.created", data: {} };
+			const apiError = new APIError("FORBIDDEN", {
+				message: "Webhook handler rejected the event",
+			});
+			vi.mocked(validateEvent).mockReturnValue(mockEvent);
+			vi.mocked(handleWebhookPayload).mockRejectedValue(apiError);
+
+			const ctx = {
+				request: mockRequest,
+				context: { logger: { error: vi.fn() } },
+			};
+
+			await expect(handler(ctx)).rejects.toBe(apiError);
+			expect(ctx.context.logger.error).toHaveBeenCalledWith(
+				"Polar webhook failed. Error: Webhook handler rejected the event",
 			);
 		});
 
