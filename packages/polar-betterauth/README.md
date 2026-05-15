@@ -465,6 +465,25 @@ Add the secret to your environment.
 POLAR_WEBHOOK_SECRET=...
 ```
 
+Webhook handlers should throw when event processing fails. Unexpected handler
+errors return an internal server error response. To choose a specific non-2xx
+status, throw Better Auth's `APIError` from the handler.
+
+```typescript
+import { APIError } from "better-auth/api";
+
+webhooks({
+  secret: process.env.POLAR_WEBHOOK_SECRET,
+  onOrderPaid: async (payload) => {
+    if (!canProcessOrder(payload.data.id)) {
+      throw new APIError("FORBIDDEN", {
+        message: "Order cannot be processed",
+      });
+    }
+  },
+});
+```
+
 The plugin supports handlers for all Polar webhook events:
 
 - `onPayload` - Catch-all handler for any incoming Webhook event
