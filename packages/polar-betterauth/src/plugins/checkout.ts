@@ -6,6 +6,7 @@ import {
 } from "better-auth/api";
 import * as z from "zod/v4";
 import type { Product } from "../types";
+import { PresentmentCurrency } from "@polar-sh/sdk/models/components/presentmentcurrency.js";
 
 export interface CheckoutOptions {
 	/**
@@ -65,118 +66,127 @@ export const CheckoutParams = z.object({
 	allowTrial: z.boolean().optional(),
 	trialInterval: z.enum(["day", "week", "month", "year"]).optional(),
 	trialIntervalCount: z.number().int().min(1).max(1000).optional(),
+
+	currency: z.enum(Object.values(PresentmentCurrency)).optional().nullable(),
+	customerIpAddress: z.string().optional().nullable(),
+	isBusinessCustomer: z.boolean().optional(),
+	customerTaxId: z.string().optional().nullable(),
 });
 
 export type CheckoutParams = z.infer<typeof CheckoutParams>;
 
 export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
-	(polar: Polar) => {
-		return {
-			checkout: createAuthEndpoint(
-				"/checkout",
-				{
-					method: "POST",
-					body: CheckoutParams,
-				},
-				async (ctx) => {
-					const session = await getSessionFromCtx(ctx);
+		(polar: Polar) => {
+			return {
+				checkout: createAuthEndpoint(
+					"/checkout",
+					{
+						method: "POST",
+						body: CheckoutParams,
+					},
+					async (ctx) => {
+						const session = await getSessionFromCtx(ctx);
 
-					let productIds: string[] = [];
+						let productIds: string[] = [];
 
-					if (ctx.body.slug) {
-						const resolvedProducts = await (typeof checkoutOptions.products ===
-						"function"
-							? checkoutOptions.products()
-							: checkoutOptions.products);
+						if (ctx.body.slug) {
+							const resolvedProducts = await (typeof checkoutOptions.products ===
+								"function"
+								? checkoutOptions.products()
+								: checkoutOptions.products);
 
-						const productId = resolvedProducts?.find(
-							(product) => product.slug === ctx.body.slug,
-						)?.productId;
+							const productId = resolvedProducts?.find(
+								(product) => product.slug === ctx.body.slug,
+							)?.productId;
 
-						if (!productId) {
-							throw new APIError("BAD_REQUEST", {
-								message: "Product not found",
-							});
+							if (!productId) {
+								throw new APIError("BAD_REQUEST", {
+									message: "Product not found",
+								});
+							}
+
+							productIds = [productId];
+						} else {
+							productIds = Array.isArray(ctx.body.products)
+								? ctx.body.products.filter((id) => id !== undefined)
+								: [ctx.body.products].filter((id) => id !== undefined);
 						}
 
-						productIds = [productId];
-					} else {
-						productIds = Array.isArray(ctx.body.products)
-							? ctx.body.products.filter((id) => id !== undefined)
-							: [ctx.body.products].filter((id) => id !== undefined);
-					}
+						if (checkoutOptions.authenticatedUsersOnly) {
+							if (!session?.user.id) {
+								throw new APIError("UNAUTHORIZED", {
+									message: "You must be logged in to checkout",
+								});
+							}
 
-					if (checkoutOptions.authenticatedUsersOnly) {
-						if (!session?.user.id) {
-							throw new APIError("UNAUTHORIZED", {
-								message: "You must be logged in to checkout",
-							});
+							if (session.user["isAnonymous"]) {
+								throw new APIError("UNAUTHORIZED", {
+									message: "Anonymous users are not allowed to checkout",
+								});
+							}
 						}
 
-						if (session.user["isAnonymous"]) {
-							throw new APIError("UNAUTHORIZED", {
-								message: "Anonymous users are not allowed to checkout",
-							});
-						}
-					}
+						const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
+						const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
 
-					const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
-					const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
-
-					try {
-						const checkout = await polar.checkouts.create({
-							externalCustomerId: session?.user.id,
-							products: productIds,
-							successUrl: successUrl
-								? new URL(
+						try {
+							const checkout = await polar.checkouts.create({
+								isBusinessCustomer: ctx.body.isBusinessCustomer,
+								customerTaxId: ctx.body.customerTaxId,
+								currency: ctx.body.currency,
+								customerIpAddress: ctx.body.customerIpAddress,
+								externalCustomerId: session?.user.id,
+								products: productIds,
+								successUrl: successUrl
+									? new URL(
 										successUrl,
 										ctx.request?.url ?? ctx.context.baseURL,
 									).toString()
-								: undefined,
-							metadata: ctx.body.referenceId
-								? {
+									: undefined,
+								metadata: ctx.body.referenceId
+									? {
 										referenceId: ctx.body.referenceId,
 										...ctx.body.metadata,
 									}
-								: ctx.body.metadata,
-							customFieldData: ctx.body.customFieldData,
-							allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
-							discountId: ctx.body.discountId,
-							embedOrigin: ctx.body.embedOrigin,
-							allowTrial: ctx.body.allowTrial,
-							trialInterval: ctx.body.trialInterval,
-							trialIntervalCount: ctx.body.trialIntervalCount,
-							returnUrl: returnUrl
-								? new URL(
+									: ctx.body.metadata,
+								customFieldData: ctx.body.customFieldData,
+								allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
+								discountId: ctx.body.discountId,
+								embedOrigin: ctx.body.embedOrigin,
+								allowTrial: ctx.body.allowTrial,
+								trialInterval: ctx.body.trialInterval,
+								trialIntervalCount: ctx.body.trialIntervalCount,
+								returnUrl: returnUrl
+									? new URL(
 										returnUrl,
 										ctx.request?.url ?? ctx.context.baseURL,
 									).toString()
-								: undefined,
-						});
+									: undefined,
+							});
 
-						const redirectUrl = new URL(checkout.url);
+							const redirectUrl = new URL(checkout.url);
 
-						if (checkoutOptions.theme) {
-							redirectUrl.searchParams.set("theme", checkoutOptions.theme);
+							if (checkoutOptions.theme) {
+								redirectUrl.searchParams.set("theme", checkoutOptions.theme);
+							}
+
+							return ctx.json({
+								url: redirectUrl.toString(),
+								redirect: ctx.body.redirect ?? true,
+							});
+						} catch (e: unknown) {
+							if (e instanceof Error) {
+								ctx.context.logger.error(
+									`Polar checkout creation failed. Error: ${e.message}`,
+								);
+							}
+
+							throw new APIError("INTERNAL_SERVER_ERROR", {
+								message: "Checkout creation failed",
+							});
 						}
-
-						return ctx.json({
-							url: redirectUrl.toString(),
-							redirect: ctx.body.redirect ?? true,
-						});
-					} catch (e: unknown) {
-						if (e instanceof Error) {
-							ctx.context.logger.error(
-								`Polar checkout creation failed. Error: ${e.message}`,
-							);
-						}
-
-						throw new APIError("INTERNAL_SERVER_ERROR", {
-							message: "Checkout creation failed",
-						});
-					}
-				},
-			),
+					},
+				),
+			};
 		};
-	};
