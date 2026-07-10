@@ -133,6 +133,7 @@ export const onUserDelete =
 					if (existingCustomer) {
 						await options.client.customers.delete({
 							id: existingCustomer.id,
+							anonymize: options.anonymizeCustomerOnDelete ?? false,
 						});
 					}
 				}

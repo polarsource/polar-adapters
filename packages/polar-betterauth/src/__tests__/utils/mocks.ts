@@ -20,6 +20,7 @@ export const createMockPolarClient = (): Polar =>
 			get: vi.fn(),
 			getStateExternal: vi.fn(),
 			list: vi.fn(),
+			delete: vi.fn(),
 		},
 		customerSessions: {
 			create: vi.fn(),

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	onAfterUserCreate,
 	onBeforeUserCreate,
+	onUserDelete,
 	onUserUpdate,
 } from "../../hooks/customer";
 import { createTestPolarOptions, mockApiError } from "../utils/helpers";
@@ -558,6 +559,167 @@ describe("customer hooks", () => {
 
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar customer update failed. Error: Network timeout",
+			);
+		});
+	});
+
+	describe("onUserDelete", () => {
+		it("should anonymize the customer when anonymizeCustomerOnDelete is enabled", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+				anonymizeCustomerOnDelete: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				email: "test@example.com",
+			});
+
+			const existingCustomer = {
+				...createMockCustomer(),
+				id: "customer-456",
+			};
+
+			vi.mocked(mockClient.customers.list).mockResolvedValue({
+				result: {
+					items: [existingCustomer],
+					pagination: { totalCount: 1, maxPage: 1 },
+				},
+				next: vi.fn(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.delete).toHaveBeenCalledWith({
+				id: "customer-456",
+				anonymize: true,
+			});
+		});
+
+		it("should default anonymize to false when the option is not set", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				email: "test@example.com",
+			});
+
+			const existingCustomer = {
+				...createMockCustomer(),
+				id: "customer-456",
+			};
+
+			vi.mocked(mockClient.customers.list).mockResolvedValue({
+				result: {
+					items: [existingCustomer],
+					pagination: { totalCount: 1, maxPage: 1 },
+				},
+				next: vi.fn(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.delete).toHaveBeenCalledWith({
+				id: "customer-456",
+				anonymize: false,
+			});
+		});
+
+		it("should not delete when no matching customer exists", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+				anonymizeCustomerOnDelete: true,
+			});
+
+			const mockUser = createMockUser({ email: "test@example.com" });
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.delete).not.toHaveBeenCalled();
+		});
+
+		it("should not delete when createCustomerOnSignUp is disabled", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: false,
+			});
+
+			const mockUser = createMockUser();
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.list).not.toHaveBeenCalled();
+			expect(mockClient.customers.delete).not.toHaveBeenCalled();
+		});
+
+		it("should not delete when context is missing", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+				anonymizeCustomerOnDelete: true,
+			});
+
+			const mockUser = createMockUser();
+			const hook = onUserDelete(options);
+
+			await hook(mockUser); // No context provided
+
+			expect(mockClient.customers.list).not.toHaveBeenCalled();
+			expect(mockClient.customers.delete).not.toHaveBeenCalled();
+		});
+
+		it("should log and swallow errors during customer deletion", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+				anonymizeCustomerOnDelete: true,
+			});
+
+			const mockUser = createMockUser({ email: "test@example.com" });
+
+			const existingCustomer = {
+				...createMockCustomer(),
+				id: "customer-456",
+			};
+
+			vi.mocked(mockClient.customers.list).mockResolvedValue({
+				result: {
+					items: [existingCustomer],
+					pagination: { totalCount: 1, maxPage: 1 },
+				},
+				next: vi.fn(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			vi.mocked(mockClient.customers.delete).mockRejectedValue(
+				new Error("Internal server error"),
+			);
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			// Should not throw, just log the error
+			await hook(mockUser, ctx);
+
+			expect(ctx.context.logger.error).toHaveBeenCalledWith(
+				"Polar customer delete failed. Error: Internal server error",
 			);
 		});
 	});
