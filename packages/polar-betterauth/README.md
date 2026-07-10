@@ -147,6 +147,7 @@ const auth = betterAuth({
 
 - `createCustomerOnSignUp`: Automatically create a Polar customer when a user signs up
 - `getCustomerCreateParams`: Custom function to provide additional customer creation metadata
+- `anonymizeCustomerOnDelete`: Also anonymize the Polar customer's personal data (hashed email and name, cleared billing address, removed OAuth data) for GDPR compliance when the customer is deleted on user deletion
 
 ### Customers
 

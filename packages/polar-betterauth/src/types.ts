@@ -37,6 +37,13 @@ export interface PolarOptions {
 	 */
 	createCustomerOnSignUp?: boolean;
 	/**
+	 * Also anonymize the Polar customer's personal data (hashed email and name,
+	 * cleared billing address, removed OAuth data) for GDPR compliance when the
+	 * customer is deleted on user deletion. Only applies when
+	 * `createCustomerOnSignUp` is enabled.
+	 */
+	anonymizeCustomerOnDelete?: boolean;
+	/**
 	 * A custom function to get the customer create
 	 * params
 	 * @param data - data containing user and session
