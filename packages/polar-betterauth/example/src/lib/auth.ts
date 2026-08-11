@@ -17,9 +17,6 @@ export const auth = betterAuth({
 	},
 	plugins: [
 		organization({
-			// Mirror organizations to Polar team customers and the member
-			// roster to Polar members. better-auth is the source of truth;
-			// Polar follows.
 			organizationHooks: polarOrgHooks({
 				client: polarSDK,
 				onSyncError: (error, { hook, organizationId }) => {
@@ -57,9 +54,6 @@ export const auth = betterAuth({
 					onOrganizationUpdated: async (payload) => {
 						console.log(payload);
 					},
-					// Member events are notification-only: the roster sync is
-					// one-way (better-auth -> Polar), so never mutate
-					// better-auth memberships from these.
 					onMemberCreated: async (payload) => {
 						console.log("Polar member created", payload);
 					},

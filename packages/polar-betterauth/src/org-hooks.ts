@@ -211,7 +211,6 @@ export const polarOrgHooks = (
 		},
 		afterUpdateMemberRole: async (data) => {
 			try {
-				// Explicit update to owner is Polar's ownership transfer
 				await options.client.customers.members.updateExternal({
 					externalId: data.organization.id,
 					memberExternalId: data.user.id,

@@ -8,10 +8,6 @@ import {
 	resolvePrincipal,
 } from "../principal";
 
-const OrganizationScopeQuery = {
-	organizationId: z.string().optional(),
-};
-
 const createPortalSession = (
 	polar: Polar,
 	principal: BillingPrincipal,
@@ -47,7 +43,11 @@ export const portal =
 							redirect: z.boolean().optional(),
 						})
 						.optional(),
-					query: z.object(OrganizationScopeQuery).optional(),
+					query: z
+						.object({
+							organizationId: z.string().optional(),
+						})
+						.optional(),
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
@@ -95,7 +95,11 @@ export const portal =
 				"/customer/state",
 				{
 					method: "GET",
-					query: z.object(OrganizationScopeQuery).optional(),
+					query: z
+						.object({
+							organizationId: z.string().optional(),
+						})
+						.optional(),
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
@@ -130,7 +134,7 @@ export const portal =
 						.object({
 							page: z.coerce.number().optional(),
 							limit: z.coerce.number().optional(),
-							...OrganizationScopeQuery,
+							organizationId: z.string().optional(),
 						})
 						.optional(),
 					use: [sessionMiddleware],
@@ -179,7 +183,7 @@ export const portal =
 							page: z.coerce.number().optional(),
 							limit: z.coerce.number().optional(),
 							active: z.coerce.boolean().optional(),
-							...OrganizationScopeQuery,
+							organizationId: z.string().optional(),
 						})
 						.optional(),
 					use: [sessionMiddleware],
@@ -261,7 +265,7 @@ export const portal =
 							page: z.coerce.number().optional(),
 							limit: z.coerce.number().optional(),
 							productBillingType: z.enum(["recurring", "one_time"]).optional(),
-							...OrganizationScopeQuery,
+							organizationId: z.string().optional(),
 						})
 						.optional(),
 					use: [sessionMiddleware],

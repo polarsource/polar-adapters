@@ -101,7 +101,6 @@ export const checkout =
 					});
 
 					if (principal?.kind === "team") {
-						// Missing team customers would otherwise become individual ones.
 						await ensureTeamCustomer(polar, ctx, principal.externalCustomerId);
 					}
 

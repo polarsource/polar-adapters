@@ -67,7 +67,6 @@ export const onAfterUserCreate =
 				const existingCustomer = existingCustomers.items[0];
 
 				if (existingCustomer && existingCustomer.externalId !== user.id) {
-					// Don't rebind a customer already linked to another user
 					if (existingCustomer.externalId == null) {
 						await options.client.customers.update({
 							id: existingCustomer.id,
