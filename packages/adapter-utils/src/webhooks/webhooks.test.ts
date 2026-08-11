@@ -290,4 +290,30 @@ describe("webhooks", () => {
 
     expect(onRevoke).not.toHaveBeenCalled();
   });
+
+  it.each(["member.created", "member.updated", "member.deleted"] as const)(
+    "should dispatch %s to its handler",
+    async (type) => {
+      const handlers = {
+        "member.created": vi.fn(),
+        "member.updated": vi.fn(),
+        "member.deleted": vi.fn(),
+      };
+
+      await handleWebhookPayload({ type, data: {} } as any, {
+        webhookSecret: "test",
+        onMemberCreated: handlers["member.created"],
+        onMemberUpdated: handlers["member.updated"],
+        onMemberDeleted: handlers["member.deleted"],
+      });
+
+      expect(handlers[type]).toHaveBeenCalledWith({ type, data: {} });
+
+      for (const [other, handler] of Object.entries(handlers)) {
+        if (other !== type) {
+          expect(handler).not.toHaveBeenCalled();
+        }
+      }
+    },
+  );
 });

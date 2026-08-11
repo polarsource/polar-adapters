@@ -26,6 +26,9 @@ import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
 import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload";
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
+import type { WebhookMemberCreatedPayload } from "@polar-sh/sdk/models/components/webhookmembercreatedpayload";
+import type { WebhookMemberDeletedPayload } from "@polar-sh/sdk/models/components/webhookmemberdeletedpayload";
+import type { WebhookMemberUpdatedPayload } from "@polar-sh/sdk/models/components/webhookmemberupdatedpayload";
 
 export interface WebhooksConfig {
 	webhookSecret: string;
@@ -79,6 +82,9 @@ export interface WebhooksConfig {
 	onCustomerStateChanged?: (
 		payload: WebhookCustomerStateChangedPayload,
 	) => Promise<void>;
+	onMemberCreated?: (payload: WebhookMemberCreatedPayload) => Promise<void>;
+	onMemberUpdated?: (payload: WebhookMemberUpdatedPayload) => Promise<void>;
+	onMemberDeleted?: (payload: WebhookMemberDeletedPayload) => Promise<void>;
 }
 
 export const handleWebhookPayload = async (
@@ -220,6 +226,21 @@ export const handleWebhookPayload = async (
 		case "refund.updated":
 			if (eventHandlers.onRefundUpdated) {
 				promises.push(eventHandlers.onRefundUpdated(payload));
+			}
+			break;
+		case "member.created":
+			if (eventHandlers.onMemberCreated) {
+				promises.push(eventHandlers.onMemberCreated(payload));
+			}
+			break;
+		case "member.updated":
+			if (eventHandlers.onMemberUpdated) {
+				promises.push(eventHandlers.onMemberUpdated(payload));
+			}
+			break;
+		case "member.deleted":
+			if (eventHandlers.onMemberDeleted) {
+				promises.push(eventHandlers.onMemberDeleted(payload));
 			}
 			break;
 	}

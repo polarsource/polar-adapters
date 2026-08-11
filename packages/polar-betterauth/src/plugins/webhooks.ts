@@ -11,6 +11,9 @@ import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
 import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload";
+import type { WebhookMemberCreatedPayload } from "@polar-sh/sdk/models/components/webhookmembercreatedpayload";
+import type { WebhookMemberDeletedPayload } from "@polar-sh/sdk/models/components/webhookmemberdeletedpayload";
+import type { WebhookMemberUpdatedPayload } from "@polar-sh/sdk/models/components/webhookmemberupdatedpayload";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload";
 import type { WebhookOrderPaidPayload } from "@polar-sh/sdk/models/components/webhookorderpaidpayload";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload";
@@ -164,6 +167,19 @@ export interface WebhooksOptions {
 	onCustomerStateChanged?: (
 		payload: WebhookCustomerStateChangedPayload,
 	) => Promise<void>;
+	/**
+	 * Webhook for member created. Member events are notification-only —
+	 * never mutate better-auth memberships from them (sync is one-way).
+	 */
+	onMemberCreated?: (payload: WebhookMemberCreatedPayload) => Promise<void>;
+	/**
+	 * Webhook for member updated
+	 */
+	onMemberUpdated?: (payload: WebhookMemberUpdatedPayload) => Promise<void>;
+	/**
+	 * Webhook for member deleted
+	 */
+	onMemberDeleted?: (payload: WebhookMemberDeletedPayload) => Promise<void>;
 }
 
 export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
