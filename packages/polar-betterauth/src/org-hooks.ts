@@ -7,9 +7,18 @@ type AfterCreateOrganizationData = Parameters<
 	NonNullable<OrganizationHooks["afterCreateOrganization"]>
 >[0];
 
+type MembershipData = {
+	member: { role: string };
+	user: {
+		id: string;
+		email: string;
+		name?: string | null;
+	};
+	organization: { id: string };
+};
+
 export type PolarMemberRole = "owner" | "billing_manager" | "member";
 
-/** Map better-auth org roles to Polar member roles (multi-role → highest). */
 export const defaultMapRole = (role: string): PolarMemberRole => {
 	const roles = role.split(",").map((r) => r.trim());
 
@@ -24,7 +33,6 @@ export const defaultMapRole = (role: string): PolarMemberRole => {
 	return "member";
 };
 
-/** Create a Polar member mirror if one does not already exist. */
 export const ensureMemberMirror = async (
 	client: Polar,
 	organizationId: string,
@@ -71,7 +79,7 @@ export interface PolarOrgHooksOptions {
 	}>;
 	/**
 	 * Called when Polar sync fails. Failures never block the better-auth
-	 * operation; defaults to console.error.
+	 * operation, defaults to console.error.
 	 */
 	onSyncError?: (
 		error: unknown,
@@ -111,16 +119,6 @@ export const polarOrgHooks = (
 				error,
 			);
 		}
-	};
-
-	type MembershipData = {
-		member: { role: string };
-		user: {
-			id: string;
-			email: string;
-			name?: string | null;
-		};
-		organization: { id: string };
 	};
 
 	const syncAddMember = async (hook: string, data: MembershipData) => {

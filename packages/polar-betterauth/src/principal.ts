@@ -21,6 +21,7 @@ export type BillingPrincipal =
 			isAnonymous: boolean;
 	  };
 
+//TODO: Make this more type safe
 export type PrincipalContext = GenericEndpointContext;
 
 export interface ResolvePrincipalOptions {

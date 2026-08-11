@@ -34,6 +34,7 @@ export interface CheckoutOptions {
 export const CheckoutParams = z.object({
 	products: z.union([z.array(z.string()), z.string()]).optional(),
 	slug: z.string().optional(),
+	//TODO: I'm not sure if this is the best pattern to act as an organization.
 	/**
 	 * Bill the organization's Polar team customer instead of the user.
 	 * Requires an owner or admin role in the organization.
