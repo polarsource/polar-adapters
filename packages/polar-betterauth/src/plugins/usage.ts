@@ -5,11 +5,13 @@ import {
 	sessionMiddleware,
 } from "better-auth/api";
 import * as z from "zod/v4";
+import { resolvePrincipal } from "../principal";
 import type { Product } from "../types";
 
 export interface UsageOptions {
 	/**
-	 * Products to use for topping up credits
+	 * @deprecated This option has never been used by the plugin and will be
+	 * removed in the next major version.
 	 */
 	creditProducts?: Product[] | (() => Promise<Product[]>);
 }
@@ -24,18 +26,21 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 				query: z.object({
 					page: z.coerce.number().optional(),
 					limit: z.coerce.number().optional(),
+					organizationId: z.string().optional(),
 				}),
 			},
 			async (ctx) => {
-				if (!ctx.context.session.user.id) {
-					throw new APIError("BAD_REQUEST", {
-						message: "User not found",
-					});
-				}
+				const principal = await resolvePrincipal(ctx, {
+					organizationId: ctx.query?.organizationId,
+				});
 
 				try {
 					const customerSession = await polar.customerSessions.create({
-						externalCustomerId: ctx.context.session.user.id,
+						externalCustomerId: principal.externalCustomerId,
+						externalMemberId:
+							principal.kind === "team"
+								? principal.externalMemberId
+								: undefined,
 					});
 
 					const customerMeters = await polar.customerPortal.customerMeters.list(
@@ -70,15 +75,14 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 						z.string(),
 						z.union([z.string(), z.number(), z.boolean()]),
 					),
+					organizationId: z.string().optional(),
 				}),
 				use: [sessionMiddleware],
 			},
 			async (ctx) => {
-				if (!ctx.context.session.user.id) {
-					throw new APIError("BAD_REQUEST", {
-						message: "User not found",
-					});
-				}
+				const principal = await resolvePrincipal(ctx, {
+					organizationId: ctx.body.organizationId,
+				});
 
 				try {
 					const ingestion = await polar.events.ingest({
@@ -86,7 +90,7 @@ export const usage = (_usageOptions?: UsageOptions) => (polar: Polar) => {
 							{
 								name: ctx.body.event,
 								metadata: ctx.body.metadata,
-								externalCustomerId: ctx.context.session.user.id,
+								externalCustomerId: principal.externalCustomerId,
 							},
 						],
 					});

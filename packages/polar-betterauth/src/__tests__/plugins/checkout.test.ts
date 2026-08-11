@@ -319,7 +319,9 @@ describe("checkout plugin", () => {
 				context: { logger: { error: vi.fn() } },
 			};
 
-			await expect(handler(ctx)).rejects.toThrow("Checkout creation failed");
+			await expect(handler(ctx)).rejects.toThrow(
+				"Checkout creation failed: Invalid product",
+			);
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				expect.stringContaining("Polar checkout creation failed"),
 			);

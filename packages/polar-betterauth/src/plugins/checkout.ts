@@ -5,6 +5,7 @@ import {
 	getSessionFromCtx,
 } from "better-auth/api";
 import * as z from "zod/v4";
+import { ensureTeamCustomer, resolvePrincipal } from "../principal";
 import type { Product } from "../types";
 
 export interface CheckoutOptions {
@@ -33,6 +34,15 @@ export interface CheckoutOptions {
 export const CheckoutParams = z.object({
 	products: z.union([z.array(z.string()), z.string()]).optional(),
 	slug: z.string().optional(),
+	/**
+	 * Bill the organization's Polar team customer instead of the user.
+	 * Requires an owner or admin role in the organization.
+	 */
+	organizationId: z.string().optional(),
+	/**
+	 * @deprecated Use `organizationId` instead — it creates a real customer
+	 * relationship rather than a metadata correlation.
+	 */
 	referenceId: z.string().optional(),
 	customFieldData: z
 		.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
@@ -80,7 +90,19 @@ export const checkout =
 					body: CheckoutParams,
 				},
 				async (ctx) => {
-					const session = await getSessionFromCtx(ctx);
+					// checkout has no sessionMiddleware — load the session for the resolver
+					ctx.context.session = await getSessionFromCtx(ctx);
+
+					const principal = await resolvePrincipal(ctx, {
+						organizationId: ctx.body.organizationId,
+						requireBillingRole: true,
+						optional: true,
+					});
+
+					if (principal?.kind === "team") {
+						// Missing team customers would otherwise become individual ones.
+						await ensureTeamCustomer(polar, ctx, principal.externalCustomerId);
+					}
 
 					let productIds: string[] = [];
 
@@ -108,13 +130,13 @@ export const checkout =
 					}
 
 					if (checkoutOptions.authenticatedUsersOnly) {
-						if (!session?.user.id) {
+						if (!principal) {
 							throw new APIError("UNAUTHORIZED", {
 								message: "You must be logged in to checkout",
 							});
 						}
 
-						if (session.user["isAnonymous"]) {
+						if (principal.isAnonymous) {
 							throw new APIError("UNAUTHORIZED", {
 								message: "Anonymous users are not allowed to checkout",
 							});
@@ -126,7 +148,7 @@ export const checkout =
 
 					try {
 						const checkout = await polar.checkouts.create({
-							externalCustomerId: session?.user.id,
+							externalCustomerId: principal?.externalCustomerId,
 							products: productIds,
 							successUrl: successUrl
 								? new URL(
@@ -173,7 +195,10 @@ export const checkout =
 						}
 
 						throw new APIError("INTERNAL_SERVER_ERROR", {
-							message: "Checkout creation failed",
+							message:
+								e instanceof Error
+									? `Checkout creation failed: ${e.message}`
+									: "Checkout creation failed",
 						});
 					}
 				},

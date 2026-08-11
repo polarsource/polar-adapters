@@ -313,6 +313,44 @@ describe("portal plugin", () => {
 			handler = endpoints.state.handler;
 		});
 
+		it("should scope state to an organization for members", async () => {
+			vi.mocked(mockClient.customers.getStateExternal).mockResolvedValue(
+				{} as never,
+			);
+
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+					adapter: {
+						findOne: vi.fn().mockResolvedValue({ role: "member" }),
+					},
+				},
+				query: { organizationId: "org-1" },
+				json: vi.fn(),
+			};
+
+			await handler(ctx);
+
+			expect(mockClient.customers.getStateExternal).toHaveBeenCalledWith({
+				externalId: "org-1",
+			});
+		});
+
+		it("should reject organization state for non-members", async () => {
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+					adapter: { findOne: vi.fn().mockResolvedValue(null) },
+				},
+				query: { organizationId: "org-1" },
+			};
+
+			await expect(handler(ctx)).rejects.toThrow(
+				"You are not a member of this organization",
+			);
+			expect(mockClient.customers.getStateExternal).not.toHaveBeenCalled();
+		});
+
 		it("should get customer state", async () => {
 			const mockState = {
 				customer: { id: "customer-123", email: "test@example.com" },
@@ -511,15 +549,25 @@ describe("portal plugin", () => {
 				mockSubscriptions,
 			);
 
+			const findOne = vi.fn().mockResolvedValue({ id: "member-1" });
 			const ctx = {
 				context: {
 					session: { user: { id: "user-123" } },
+					adapter: { findOne },
 				},
 				query: { referenceId: "ref-123", page: 1, limit: 10 },
 				json: vi.fn(),
 			};
 
 			await handler(ctx);
+
+			expect(findOne).toHaveBeenCalledWith({
+				model: "member",
+				where: [
+					{ field: "organizationId", value: "ref-123" },
+					{ field: "userId", value: "user-123" },
+				],
+			});
 
 			expect(mockClient.subscriptions.list).toHaveBeenCalledWith({
 				page: 1,
@@ -531,6 +579,40 @@ describe("portal plugin", () => {
 			expect(ctx.json).toHaveBeenCalledWith(mockSubscriptions);
 		});
 
+		it("should reject reference ID lookup for non-members", async () => {
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+					adapter: { findOne: vi.fn().mockResolvedValue(null) },
+				},
+				query: { referenceId: "ref-123" },
+			};
+
+			await expect(handler(ctx)).rejects.toThrow(
+				"You are not a member of this organization",
+			);
+
+			expect(mockClient.subscriptions.list).not.toHaveBeenCalled();
+		});
+
+		it("should reject reference ID lookup when member lookup fails", async () => {
+			const ctx = {
+				context: {
+					session: { user: { id: "user-123" } },
+					adapter: {
+						findOne: vi.fn().mockRejectedValue(new Error("no member model")),
+					},
+				},
+				query: { referenceId: "ref-123" },
+			};
+
+			await expect(handler(ctx)).rejects.toThrow(
+				"You are not a member of this organization",
+			);
+
+			expect(mockClient.subscriptions.list).not.toHaveBeenCalled();
+		});
+
 		it("should handle API errors for reference ID lookup", async () => {
 			vi.mocked(mockClient.subscriptions.list).mockRejectedValue(
 				mockApiError(400, "Subscription lookup failed"),
@@ -540,6 +622,7 @@ describe("portal plugin", () => {
 				context: {
 					session: { user: { id: "user-123" } },
 					logger: { error: vi.fn() },
+					adapter: { findOne: vi.fn().mockResolvedValue({ id: "member-1" }) },
 				},
 				query: { referenceId: "ref-123" },
 			};
