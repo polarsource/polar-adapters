@@ -35,6 +35,7 @@
     "test": "vitest",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:contract": "POLAR_CONTRACT_TESTS=1 vitest run src/__tests__/contract",
     "build": "tsup ./src/index.ts ./src/client.ts --format esm,cjs --dts --clean --sourcemap",
     "dev": "npm run build -- --watch",
     "check": "biome check --write ./src"

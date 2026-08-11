@@ -20,28 +20,21 @@ describe("polar plugin", () => {
 		vi.clearAllMocks();
 
 		vi.mocked(checkout).mockReturnValue(
-			vi.fn().mockReturnValue({
-				"checkout/create": vi.fn(),
-			}),
+			vi.fn().mockReturnValue({ "checkout/create": vi.fn() }),
 		);
 
 		vi.mocked(portal).mockReturnValue(
-			vi.fn().mockReturnValue({
-				"portal/url": vi.fn(),
-				"portal/customer": vi.fn(),
-			}),
+			vi
+				.fn()
+				.mockReturnValue({ "portal/url": vi.fn(), "portal/customer": vi.fn() }),
 		);
 
 		vi.mocked(usage).mockReturnValue(
-			vi.fn().mockReturnValue({
-				"usage/ingest": vi.fn(),
-			}),
+			vi.fn().mockReturnValue({ "usage/ingest": vi.fn() }),
 		);
 
 		vi.mocked(webhooks).mockReturnValue(
-			vi.fn().mockReturnValue({
-				"webhooks/handler": vi.fn(),
-			}),
+			vi.fn().mockReturnValue({ "webhooks/handler": vi.fn() }),
 		);
 	});
 
