@@ -12,9 +12,12 @@ export const onBeforeUserCreate =
 				}
 
 				const params = options.getCustomerCreateParams
-					? await options.getCustomerCreateParams({
-							user,
-						})
+					? await options.getCustomerCreateParams(
+							{
+								user,
+							},
+							context.request,
+						)
 					: {};
 
 				if (!user.email) {
@@ -63,14 +66,19 @@ export const onAfterUserCreate =
 					await options.client.customers.list({ email: user.email });
 				const existingCustomer = existingCustomers.items[0];
 
-				if (existingCustomer) {
-					if (existingCustomer.externalId !== user.id) {
+				if (existingCustomer && existingCustomer.externalId !== user.id) {
+					// Don't rebind a customer already linked to another user
+					if (existingCustomer.externalId == null) {
 						await options.client.customers.update({
 							id: existingCustomer.id,
 							customerUpdate: {
 								externalId: user.id,
 							},
 						});
+					} else {
+						context.context.logger.warn(
+							`Polar customer with email ${user.email} is already linked to another user (externalId: ${existingCustomer.externalId}). Skipping externalId update for user ${user.id}.`,
+						);
 					}
 				}
 			} catch (e: unknown) {
@@ -130,7 +138,7 @@ export const onUserDelete =
 					const { result: existingCustomers } =
 						await options.client.customers.list({ email: user.email });
 					const existingCustomer = existingCustomers.items[0];
-					if (existingCustomer) {
+					if (existingCustomer && existingCustomer.externalId === user.id) {
 						await options.client.customers.delete({
 							id: existingCustomer.id,
 						});

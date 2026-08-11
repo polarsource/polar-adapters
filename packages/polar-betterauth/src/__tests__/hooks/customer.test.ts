@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	onAfterUserCreate,
 	onBeforeUserCreate,
+	onUserDelete,
 	onUserUpdate,
 } from "../../hooks/customer";
 import { createTestPolarOptions, mockApiError } from "../utils/helpers";
@@ -120,14 +121,21 @@ describe("customer hooks", () => {
 
 			vi.mocked(mockClient.customers.create).mockResolvedValue(mockCustomer);
 
-			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const mockRequest = new Request("http://localhost/sign-up");
+			const ctx = {
+				context: { logger: { error: vi.fn() } },
+				request: mockRequest,
+			} as any;
 			const hook = onBeforeUserCreate(options);
 
 			await hook(mockUser, ctx);
 
-			expect(mockGetCustomerCreateParams).toHaveBeenCalledWith({
-				user: mockUser,
-			});
+			expect(mockGetCustomerCreateParams).toHaveBeenCalledWith(
+				{
+					user: mockUser,
+				},
+				mockRequest,
+			);
 
 			expect(mockClient.customers.create).toHaveBeenCalledWith({
 				email: mockUser.email,
@@ -271,7 +279,7 @@ describe("customer hooks", () => {
 			});
 		});
 
-		it("should update existing customer with different external ID", async () => {
+		it("should link existing customer without external ID", async () => {
 			const options = createTestPolarOptions({
 				client: mockClient,
 				createCustomerOnSignUp: true,
@@ -285,7 +293,7 @@ describe("customer hooks", () => {
 			const existingCustomer = {
 				...createMockCustomer(),
 				id: "customer-456",
-				externalId: "different-user-id",
+				externalId: null,
 			};
 
 			vi.mocked(mockClient.customers.list).mockResolvedValue({
@@ -312,6 +320,42 @@ describe("customer hooks", () => {
 					externalId: "user-123",
 				},
 			});
+		});
+
+		it("should not rebind a customer already linked to another user", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				email: "test@example.com",
+			});
+
+			const existingCustomer = {
+				...createMockCustomer(),
+				id: "customer-456",
+				externalId: "different-user-id",
+			};
+
+			vi.mocked(mockClient.customers.list).mockResolvedValue({
+				result: {
+					items: [existingCustomer],
+					pagination: { totalCount: 1, maxPage: 1 },
+				},
+				next: vi.fn(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			const warn = vi.fn();
+			const ctx = { context: { logger: { error: vi.fn(), warn } } } as any;
+			const hook = onAfterUserCreate(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.update).not.toHaveBeenCalled();
+			expect(warn).toHaveBeenCalled();
 		});
 
 		it("should not update existing customer with same external ID", async () => {
@@ -559,6 +603,78 @@ describe("customer hooks", () => {
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar customer update failed. Error: Network timeout",
 			);
+		});
+	});
+
+	describe("onUserDelete", () => {
+		it("should delete the customer linked to the user", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				email: "test@example.com",
+			});
+
+			const existingCustomer = {
+				...createMockCustomer(),
+				id: "customer-456",
+				externalId: "user-123",
+			};
+
+			vi.mocked(mockClient.customers.list).mockResolvedValue({
+				result: {
+					items: [existingCustomer],
+					pagination: { totalCount: 1, maxPage: 1 },
+				},
+				next: vi.fn(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.delete).toHaveBeenCalledWith({
+				id: "customer-456",
+			});
+		});
+
+		it("should not delete a customer linked to another user", async () => {
+			const options = createTestPolarOptions({
+				client: mockClient,
+				createCustomerOnSignUp: true,
+			});
+
+			const mockUser = createMockUser({
+				id: "user-123",
+				email: "test@example.com",
+			});
+
+			const existingCustomer = {
+				...createMockCustomer(),
+				id: "customer-456",
+				externalId: "different-user-id",
+			};
+
+			vi.mocked(mockClient.customers.list).mockResolvedValue({
+				result: {
+					items: [existingCustomer],
+					pagination: { totalCount: 1, maxPage: 1 },
+				},
+				next: vi.fn(),
+				[Symbol.asyncIterator]: vi.fn(),
+			});
+
+			const ctx = { context: { logger: { error: vi.fn() } } } as any;
+			const hook = onUserDelete(options);
+
+			await hook(mockUser, ctx);
+
+			expect(mockClient.customers.delete).not.toHaveBeenCalled();
 		});
 	});
 });
