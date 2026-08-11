@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import {
 	polar,
+	polarOrgHooks,
 	checkout,
 	webhooks,
 	usage,
@@ -15,7 +16,17 @@ export const auth = betterAuth({
 		enabled: true,
 	},
 	plugins: [
-		organization(),
+		organization({
+			// Mirror organizations to Polar team customers and the member
+			// roster to Polar members. better-auth is the source of truth;
+			// Polar follows.
+			organizationHooks: polarOrgHooks({
+				client: polarSDK,
+				onSyncError: (error, { hook, organizationId }) => {
+					console.error(`Polar sync failed in ${hook} for ${organizationId}`, error);
+				},
+			}),
+		}),
 		polar({
 			client: polarSDK,
 			createCustomerOnSignUp: true,
@@ -45,6 +56,15 @@ export const auth = betterAuth({
 					secret: process.env["POLAR_WEBHOOK_SECRET"] as string,
 					onOrganizationUpdated: async (payload) => {
 						console.log(payload);
+					},
+					// Member events are notification-only: the roster sync is
+					// one-way (better-auth -> Polar), so never mutate
+					// better-auth memberships from these.
+					onMemberCreated: async (payload) => {
+						console.log("Polar member created", payload);
+					},
+					onMemberDeleted: async (payload) => {
+						console.log("Polar member deleted", payload);
 					},
 				}),
 			],
