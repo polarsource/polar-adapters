@@ -18,8 +18,16 @@ export const createMockPolarClient = (): Polar =>
 			update: vi.fn(),
 			updateExternal: vi.fn(),
 			get: vi.fn(),
+			getExternal: vi.fn(),
 			getStateExternal: vi.fn(),
 			list: vi.fn(),
+			delete: vi.fn(),
+			members: {
+				createExternal: vi.fn(),
+				getExternal: vi.fn(),
+				updateExternal: vi.fn(),
+				deleteExternal: vi.fn(),
+			},
 		},
 		customerSessions: {
 			create: vi.fn(),
@@ -94,6 +102,10 @@ export const createMockBetterAuthContext = () => ({
 	path: "/test",
 	params: {},
 	query: {},
+	context: {
+		logger: { error: vi.fn(), warn: vi.fn() },
+		adapter: { findOne: vi.fn(), findMany: vi.fn() },
+	},
 });
 
 export const createMockProduct = () => ({
