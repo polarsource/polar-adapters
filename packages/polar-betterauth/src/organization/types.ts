@@ -1,15 +1,12 @@
 import type { CustomerTeamCreate } from "@polar-sh/sdk/models/components/customerteamcreate.js";
+import type { MemberRole } from "@polar-sh/sdk/models/components/memberrole.js";
 import type { User } from "better-auth";
-import type { Organization } from "better-auth/plugins/organization";
+import type { Member, Organization } from "better-auth/plugins/organization";
 
-export const POLAR_MEMBER_ROLES = [
-	"member",
-	"billing_manager",
-	"owner",
-] as const;
-
-export type PolarMemberRole = (typeof POLAR_MEMBER_ROLES)[number];
+export type PolarMemberRole = (typeof MemberRole)[keyof typeof MemberRole];
 export type PolarNonOwnerMemberRole = Exclude<PolarMemberRole, "owner">;
+
+type BetterAuthOrganizationUser = Pick<User, "id" | "email" | "name">;
 
 export interface BetterAuthRoleMappingInput {
 	/**
@@ -43,25 +40,15 @@ export interface PolarOrganizationMemberRoleInput {
 	/** Parsed and de-duplicated Better Auth roles. */
 	roles: readonly string[];
 	organizationId: string;
-	user: {
-		id: string;
-		email: string;
-		name?: string | null;
-	};
+	user: BetterAuthOrganizationUser;
 }
 
-export interface BetterAuthOrganizationMemberMirror {
-	id: string;
-	organizationId: string;
-	userId: string;
-	role: string;
-	createdAt: Date;
-	user: {
-		id: string;
-		email: string;
-		name?: string | null;
-	};
-}
+export type BetterAuthOrganizationMemberMirror = Pick<
+	Member,
+	"id" | "organizationId" | "userId" | "role" | "createdAt"
+> & {
+	user: BetterAuthOrganizationUser;
+};
 
 export interface PolarOrganizationRoleSyncOptions
 	extends BetterAuthRoleMappingOptions {

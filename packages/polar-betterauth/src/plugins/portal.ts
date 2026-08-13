@@ -3,6 +3,7 @@ import { APIError } from "better-auth/api";
 import { createAuthEndpoint, sessionMiddleware } from "better-auth/api";
 import * as z from "zod/v4";
 import { resolveBillingPrincipal } from "../principal";
+import type { PolarOptions } from "../types";
 
 const OrganizationQuery = z.object({
 	organizationId: z.string().min(1).optional(),
@@ -18,7 +19,7 @@ export interface PortalConfig {
 
 export const portal =
 	({ returnUrl, theme }: PortalConfig = {}) =>
-	(polar: Polar, rootOptions?: { organization?: { enabled: boolean } }) => {
+	(polar: Polar, rootOptions?: Pick<PolarOptions, "organization">) => {
 		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
 
 		return {

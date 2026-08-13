@@ -6,7 +6,7 @@ import {
 } from "better-auth/api";
 import * as z from "zod/v4";
 import { resolveBillingPrincipal } from "../principal";
-import type { Product } from "../types";
+import type { PolarOptions, Product } from "../types";
 
 export interface UsageOptions {
 	/**
@@ -17,7 +17,7 @@ export interface UsageOptions {
 
 export const usage =
 	(_usageOptions?: UsageOptions) =>
-	(polar: Polar, rootOptions?: { organization?: { enabled: boolean } }) => {
+	(polar: Polar, rootOptions?: Pick<PolarOptions, "organization">) => {
 		return {
 			meters: createAuthEndpoint(
 				"/usage/meters/list",

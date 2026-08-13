@@ -3,7 +3,6 @@ import type { Member as PolarMember } from "@polar-sh/sdk/models/components/memb
 import type { MemberUpdate } from "@polar-sh/sdk/models/components/memberupdate.js";
 import { HTTPValidationError } from "@polar-sh/sdk/models/errors/httpvalidationerror.js";
 import { ResourceNotFound } from "@polar-sh/sdk/models/errors/resourcenotfound.js";
-import type { User } from "better-auth";
 import type { Organization } from "better-auth/plugins/organization";
 import type { PolarOrganizationAPI } from "./polar-api";
 import {
@@ -18,6 +17,10 @@ import type {
 	PolarOrganizationOptions,
 	PolarOrganizationRoleSyncOptions,
 } from "./types";
+
+type PolarOrganizationCustomerData = Parameters<
+	NonNullable<PolarOrganizationOptions["getCustomerCreateParams"]>
+>[0];
 
 export class PolarOrganizationCustomerTypeError extends Error {
 	constructor(externalCustomerId: string) {
@@ -124,10 +127,7 @@ const reconcileCustomerName = async (
 export const ensureTeamCustomer = async (
 	api: PolarOrganizationAPI,
 	organizationOptions: PolarOrganizationOptions,
-	data: {
-		organization: Organization & Record<string, unknown>;
-		owner: User & Record<string, unknown>;
-	},
+	data: PolarOrganizationCustomerData,
 ) => {
 	const existingCustomer = await findTeamCustomer(api, data.organization.id);
 	if (existingCustomer) {
