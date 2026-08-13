@@ -28,7 +28,7 @@ export const auth = betterAuth({
 			},
 			organization: {
 				enabled: true,
-				async getCustomerCreateParams({ organization, owner }) {
+				async getTeamCustomerCreateParams({ organization, owner }) {
 					return {
 						metadata: {
 							source: "better-auth",

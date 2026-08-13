@@ -1,9 +1,8 @@
+import type { Polar } from "@polar-sh/sdk";
 import type { AuthContext, BetterAuthPlugin, User } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import type { Member, Organization } from "better-auth/plugins/organization";
 import type { PolarOptions } from "../types";
-import { createPolarOrganizationAPI } from "./polar-api";
-import type { PolarOrganizationAPI } from "./polar-api";
 import { parseBetterAuthRoles } from "./roles";
 import {
 	PolarOrganizationTeamCustomerNotFoundError,
@@ -137,7 +136,7 @@ const roleSyncOptions = (
 /** Sequential by design: a profile update must not fan out without bounds. */
 export const synchronizeUserOrganizationProfiles = async (
 	authContext: AuthContext,
-	api: PolarOrganizationAPI,
+	client: Polar,
 	user: User,
 	options?: PolarOrganizationRoleSyncOptions,
 ) => {
@@ -151,7 +150,7 @@ export const synchronizeUserOrganizationProfiles = async (
 			membership.organizationId,
 		);
 		const result = await updateMemberMirror(
-			api,
+			client,
 			roleSyncOptions(authContext, options),
 			{
 				organizationId: membership.organizationId,
@@ -179,7 +178,7 @@ export const synchronizeUserOrganizationProfiles = async (
  */
 export const removeOrganizationMemberMirror = async (input: {
 	authContext: AuthContext;
-	api: PolarOrganizationAPI;
+	client: Polar;
 	organizationId: string;
 	userId: string;
 	roleOptions?: PolarOrganizationRoleSyncOptions;
@@ -189,7 +188,7 @@ export const removeOrganizationMemberMirror = async (input: {
 		input.organizationId,
 	);
 	return removeMemberMirror(
-		input.api,
+		input.client,
 		roleSyncOptions(input.authContext, input.roleOptions),
 		{
 			organizationId: input.organizationId,
@@ -258,7 +257,7 @@ export const synchronizeOrganizationLeave = async (
 	try {
 		await removeOrganizationMemberMirror({
 			authContext: context.context,
-			api: createPolarOrganizationAPI(options.client),
+			client: options.client,
 			...membership,
 			roleOptions: {
 				mapMemberRole: options.organization?.mapMemberRole,
@@ -296,7 +295,7 @@ export const createOrganizationLifecycleHooks = (
 
 export const synchronizeUserDeletionMemberships = async (
 	authContext: AuthContext,
-	api: PolarOrganizationAPI,
+	client: Polar,
 	user: User,
 	options?: PolarOrganizationRoleSyncOptions,
 ) => {
@@ -307,7 +306,7 @@ export const synchronizeUserDeletionMemberships = async (
 	for (const membership of memberships) {
 		await removeOrganizationMemberMirror({
 			authContext,
-			api,
+			client,
 			organizationId: membership.organizationId,
 			userId: user.id,
 			roleOptions: options,

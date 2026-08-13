@@ -5,7 +5,6 @@ import {
 	synchronizeUserDeletionMemberships,
 	synchronizeUserOrganizationProfiles,
 } from "../organization/lifecycle";
-import { createPolarOrganizationAPI } from "../organization/polar-api";
 import type { PolarOptions } from "../types";
 
 const isAnonymousUser = (user: Partial<User>) =>
@@ -137,7 +136,7 @@ export const onUserUpdate =
 		try {
 			await synchronizeUserOrganizationProfiles(
 				authContext,
-				createPolarOrganizationAPI(options.client),
+				options.client,
 				user,
 				{ mapMemberRole: options.organization.mapMemberRole },
 			);
@@ -172,7 +171,7 @@ export const onBeforeUserDelete =
 		try {
 			await synchronizeUserDeletionMemberships(
 				authContext,
-				createPolarOrganizationAPI(options.client),
+				options.client,
 				user,
 				{ mapMemberRole: options.organization.mapMemberRole },
 			);

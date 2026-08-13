@@ -59,7 +59,7 @@ const auth = betterAuth({
             createCustomerOnSignUp: true,
             organization: {
                 enabled: true,
-                getCustomerCreateParams: async ({ organization, owner }) => ({
+                getTeamCustomerCreateParams: async ({ organization, owner }) => ({
                     metadata: {
                         source: "better-auth",
                         createdBy: owner.id,
@@ -147,7 +147,7 @@ const auth = betterAuth({
       }),
       organization: {
         enabled: true,
-        getCustomerCreateParams: async ({ organization, owner }) => ({
+        getTeamCustomerCreateParams: async ({ organization, owner }) => ({
           metadata: {
             source: "better-auth",
             createdBy: owner.id,
@@ -170,7 +170,7 @@ const auth = betterAuth({
 
 - `createCustomerOnSignUp`: Automatically create a Polar customer when a user signs up
 - `getCustomerCreateParams`: Custom function to provide additional personal-customer creation metadata
-- `organization`: Explicit Better Auth organization synchronization configuration. Set `organization.enabled` to `true`; `organization.getCustomerCreateParams` can add team-customer fields such as metadata or billing details.
+- `organization`: Explicit Better Auth organization synchronization configuration. Set `organization.enabled` to `true`; `organization.getTeamCustomerCreateParams` can add team-customer fields such as metadata or billing details.
 
 ### Customers
 
@@ -190,7 +190,7 @@ The current mapping is deterministic:
 | Organization creator `user.id` | Initial owner member `externalId` |
 | `organization.name` | Team customer `name` |
 
-On organization creation, the adapter creates or reuses a team customer and supplies the creator as its explicit owner. The team customer has no email by default, avoiding collisions when one user owns several organizations. `organization.getCustomerCreateParams` may add metadata, locale, address, tax, or other supported team-customer fields, but cannot override `type`, `externalId`, `name`, or owner identity. Organization name changes update the team customer.
+On organization creation, the adapter creates or reuses a team customer and supplies the creator as its explicit owner. The team customer has no email by default, avoiding collisions when one user owns several organizations. `organization.getTeamCustomerCreateParams` may add metadata, locale, address, tax, or other supported team-customer fields, but cannot override `type`, `externalId`, `name`, or owner identity. Organization name changes update the team customer.
 
 This requires Polar's member model to be enabled. The Polar organization access token needs `customers:read`, `customers:write`, `members:read`, and `members:write` scopes.
 
@@ -198,7 +198,7 @@ Better Auth users map to Polar member `externalId` values using `user.id` within
 
 Polar permits one owner. The adapter retains the current valid Better Auth owner as Polar's canonical owner; if a transfer is required, it deterministically selects the earliest eligible owner. Additional Better Auth `owner` roles and `admin` map to `billing_manager`; other roles map to `member`. `organization.mapMemberRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
 
-Organization deletion in Better Auth does **not** delete the Polar team customer or its billing data. Cross-system writes are not transactional: synchronization errors propagate, but an earlier Better Auth or Polar write cannot be rolled back. Synchronization is external-ID idempotent and safe to retry. An internal reconciliation helper repairs customer/member state; it is not exported as public API or exposed as an HTTP endpoint.
+Organization deletion in Better Auth does **not** delete the Polar team customer or its billing data. Cross-system writes are not transactional: synchronization errors propagate, but an earlier Better Auth or Polar write cannot be rolled back. Polar synchronization operations use deterministic external IDs and reconcile existing records instead of duplicating them.
 
 Organization billing is always selected explicitly; the active Better Auth organization is never used implicitly. Pass `organizationId` in:
 
