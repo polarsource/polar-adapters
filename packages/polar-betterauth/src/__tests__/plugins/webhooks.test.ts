@@ -71,6 +71,9 @@ describe("webhooks plugin", () => {
 				onSubscriptionCanceled: vi.fn(),
 				onCustomerCreated: vi.fn(),
 				onCustomerUpdated: vi.fn(),
+				onMemberCreated: vi.fn(),
+				onMemberUpdated: vi.fn(),
+				onMemberDeleted: vi.fn(),
 			};
 
 			const plugin = webhooks(options);
@@ -290,6 +293,9 @@ describe("webhooks plugin", () => {
 				onCheckoutCreated: vi.fn(),
 				onOrderPaid: vi.fn(),
 				onSubscriptionActive: vi.fn(),
+				onMemberCreated: vi.fn(),
+				onMemberUpdated: vi.fn(),
+				onMemberDeleted: vi.fn(),
 			};
 
 			const plugin = webhooks(mockHandlers);
@@ -316,6 +322,9 @@ describe("webhooks plugin", () => {
 					onCheckoutCreated: mockHandlers.onCheckoutCreated,
 					onOrderPaid: mockHandlers.onOrderPaid,
 					onSubscriptionActive: mockHandlers.onSubscriptionActive,
+					onMemberCreated: mockHandlers.onMemberCreated,
+					onMemberUpdated: mockHandlers.onMemberUpdated,
+					onMemberDeleted: mockHandlers.onMemberDeleted,
 				}),
 			);
 		});

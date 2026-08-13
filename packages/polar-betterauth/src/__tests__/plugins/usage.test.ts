@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { usage } from "../../plugins/usage";
+import { resolveBillingPrincipal } from "../../principal";
 import { mockApiError } from "../utils/helpers";
 import { createMockPolarClient } from "../utils/mocks";
+
+vi.mock("../../principal", () => ({
+	resolveBillingPrincipal: vi.fn(),
+}));
 
 vi.mock("better-auth/api", () => ({
 	APIError: class APIError extends Error {
@@ -404,6 +409,95 @@ describe("usage plugin", () => {
 			expect(ctx.context.logger.error).toHaveBeenCalledWith(
 				"Polar ingestion failed. Error: Network timeout",
 			);
+		});
+	});
+
+	describe("organization billing", () => {
+		const teamPrincipal = {
+			kind: "team" as const,
+			externalCustomerId: "organization-123",
+			externalMemberId: "user-123",
+			betterAuthRole: "member",
+			isAnonymous: false as const,
+		};
+		const context = { session: { user: { id: "user-123" } } };
+
+		beforeEach(() => {
+			vi.mocked(resolveBillingPrincipal).mockResolvedValue(teamPrincipal);
+		});
+
+		it("lists organization meters with a member-scoped session", async () => {
+			const endpoints = usage()(mockClient);
+			const query = endpoints.meters.config.query.parse({
+				organizationId: "organization-123",
+			});
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue({
+				token: "session-token-123",
+			});
+			vi.mocked(
+				mockClient.customerPortal.customerMeters.list,
+			).mockResolvedValue({ items: [] });
+
+			await endpoints.meters.handler({ context, query, json: vi.fn() });
+
+			expect(resolveBillingPrincipal).toHaveBeenCalledWith({
+				context,
+				session: context.session,
+				organizationId: "organization-123",
+				authorization: "member",
+			});
+			expect(mockClient.customerSessions.create).toHaveBeenCalledWith({
+				externalCustomerId: "organization-123",
+				externalMemberId: "user-123",
+			});
+		});
+
+		it("attributes organization usage without changing caller metadata", async () => {
+			const endpoints = usage()(mockClient);
+			const body = endpoints.ingestion.config.body.parse({
+				organizationId: "organization-123",
+				event: "api_call",
+				metadata: {
+					externalCustomerId: "metadata-value",
+					externalMemberId: "metadata-member",
+				},
+			});
+			vi.mocked(mockClient.events.ingest).mockResolvedValue({ success: true });
+
+			await endpoints.ingestion.handler({ context, body, json: vi.fn() });
+
+			expect(mockClient.events.ingest).toHaveBeenCalledWith({
+				events: [
+					{
+						name: "api_call",
+						metadata: {
+							externalCustomerId: "metadata-value",
+							externalMemberId: "metadata-member",
+						},
+						externalCustomerId: "organization-123",
+						externalMemberId: "user-123",
+					},
+				],
+			});
+		});
+
+		it("rejects unauthorized organization usage before calling Polar", async () => {
+			const endpoints = usage()(mockClient);
+			vi.mocked(resolveBillingPrincipal).mockRejectedValue(
+				new APIError("FORBIDDEN", { message: "Not a member" }),
+			);
+
+			await expect(
+				endpoints.ingestion.handler({
+					context,
+					body: {
+						organizationId: "organization-123",
+						event: "api_call",
+						metadata: {},
+					},
+				}),
+			).rejects.toThrow("Not a member");
+			expect(mockClient.events.ingest).not.toHaveBeenCalled();
 		});
 	});
 });

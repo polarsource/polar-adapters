@@ -1,0 +1,190 @@
+import type { AuthContext } from "better-auth";
+import {
+	type OrganizationOptions,
+	getOrgAdapter,
+} from "better-auth/plugins/organization";
+import type { PolarOptions } from "../types";
+import { createPolarOrganizationAPI } from "./polar-api";
+import {
+	ensureMemberMirror,
+	ensureTeamCustomer,
+	reconcileOwner,
+	removeMemberMirror,
+	updateTeamCustomer,
+} from "./sync";
+import type {
+	BetterAuthOrganizationMemberMirror,
+	PolarOrganizationRoleSyncOptions,
+} from "./types";
+
+type OrganizationHooks = NonNullable<OrganizationOptions["organizationHooks"]>;
+type AfterCreateOrganizationData = Parameters<
+	NonNullable<OrganizationHooks["afterCreateOrganization"]>
+>[0];
+type AfterUpdateOrganizationData = Parameters<
+	NonNullable<OrganizationHooks["afterUpdateOrganization"]>
+>[0];
+type AfterAddMemberData = Parameters<
+	NonNullable<OrganizationHooks["afterAddMember"]>
+>[0];
+type AfterAcceptInvitationData = Parameters<
+	NonNullable<OrganizationHooks["afterAcceptInvitation"]>
+>[0];
+type AfterUpdateMemberRoleData = Parameters<
+	NonNullable<OrganizationHooks["afterUpdateMemberRole"]>
+>[0];
+type AfterRemoveMemberData = Parameters<
+	NonNullable<OrganizationHooks["afterRemoveMember"]>
+>[0];
+
+const isOrganizationOptions = (value: unknown): value is OrganizationOptions =>
+	typeof value === "object" && value !== null;
+
+/**
+ * Compose Polar's customer, roster, and single-owner synchronization into
+ * Better Auth's organization lifecycle hooks. Application after-hooks run
+ * first; Polar synchronization runs only after they succeed.
+ */
+export const installOrganizationHooks = (
+	ctx: AuthContext,
+	options: PolarOptions,
+) => {
+	const organizationOptions = options.organization;
+	if (!organizationOptions?.enabled) {
+		return;
+	}
+
+	const organizationPlugin = ctx.getPlugin("organization");
+	if (!organizationPlugin) {
+		throw new Error(
+			"Polar organization support requires Better Auth's organization plugin",
+		);
+	}
+
+	const api = createPolarOrganizationAPI(options.client);
+	const betterAuthOrganizationOptions = organizationPlugin.options;
+	if (!isOrganizationOptions(betterAuthOrganizationOptions)) {
+		throw new Error("Better Auth's organization plugin has invalid options");
+	}
+	const existingHooks = betterAuthOrganizationOptions.organizationHooks ?? {};
+	const roleSyncOptions: PolarOrganizationRoleSyncOptions = {
+		creatorRole: betterAuthOrganizationOptions.creatorRole ?? "owner",
+		mapMemberRole: organizationOptions.mapMemberRole,
+	};
+	const organizationAdapter = getOrgAdapter(ctx, betterAuthOrganizationOptions);
+
+	const listOrganizationMembers = async (
+		organizationId: string,
+	): Promise<BetterAuthOrganizationMemberMirror[]> => {
+		let result = await organizationAdapter.listMembers({ organizationId });
+		if (result.members.length < result.total) {
+			result = await organizationAdapter.listMembers({
+				organizationId,
+				limit: result.total,
+			});
+		}
+		if (result.members.length < result.total) {
+			throw new Error(
+				`Better Auth returned only ${result.members.length} of ${result.total} members for organization "${organizationId}"`,
+			);
+		}
+
+		return result.members.map((member) => ({
+			id: member.id,
+			organizationId: member.organizationId,
+			userId: member.userId,
+			role: member.role,
+			createdAt: member.createdAt,
+			user: {
+				id: member.user.id,
+				email: member.user.email,
+				name: member.user.name,
+			},
+		}));
+	};
+
+	const syncCreatedOrganization = async (data: AfterCreateOrganizationData) => {
+		await ensureTeamCustomer(api, organizationOptions, {
+			organization: data.organization,
+			owner: data.user,
+		});
+		await reconcileOwner(api, roleSyncOptions, {
+			organizationId: data.organization.id,
+			members: await listOrganizationMembers(data.organization.id),
+		});
+	};
+
+	const syncUpdatedOrganization = async (data: AfterUpdateOrganizationData) => {
+		const updatedOrganization = data.organization;
+		if (!updatedOrganization) {
+			ctx.logger.warn(
+				"Polar organization update sync skipped because the Better Auth adapter returned no organization",
+			);
+			return;
+		}
+
+		await updateTeamCustomer(api, updatedOrganization);
+	};
+
+	const syncMember = async (
+		data: AfterAddMemberData | AfterAcceptInvitationData,
+		deferInitialCreator: boolean,
+	) => {
+		const members = await listOrganizationMembers(data.organization.id);
+		await ensureMemberMirror(api, roleSyncOptions, {
+			organizationId: data.organization.id,
+			user: data.user,
+			betterAuthRole: data.member.role,
+			members,
+			deferIfCustomerMissing:
+				deferInitialCreator &&
+				members.length === 1 &&
+				members[0]?.userId === data.member.userId,
+		});
+	};
+
+	const syncUpdatedMemberRole = async (data: AfterUpdateMemberRoleData) => {
+		await ensureMemberMirror(api, roleSyncOptions, {
+			organizationId: data.organization.id,
+			user: data.user,
+			betterAuthRole: data.member.role,
+			members: await listOrganizationMembers(data.organization.id),
+		});
+	};
+
+	const syncRemovedMember = async (data: AfterRemoveMemberData) => {
+		await removeMemberMirror(api, roleSyncOptions, {
+			organizationId: data.organization.id,
+			externalMemberId: data.member.userId,
+			members: await listOrganizationMembers(data.organization.id),
+		});
+	};
+
+	betterAuthOrganizationOptions.organizationHooks = {
+		...existingHooks,
+		afterCreateOrganization: async (data: AfterCreateOrganizationData) => {
+			await existingHooks.afterCreateOrganization?.(data);
+			await syncCreatedOrganization(data);
+		},
+		afterUpdateOrganization: async (data: AfterUpdateOrganizationData) => {
+			await existingHooks.afterUpdateOrganization?.(data);
+			await syncUpdatedOrganization(data);
+		},
+		afterAddMember: async (data: AfterAddMemberData) => {
+			await existingHooks.afterAddMember?.(data);
+			await syncMember(data, true);
+		},
+		afterAcceptInvitation: async (data: AfterAcceptInvitationData) => {
+			await existingHooks.afterAcceptInvitation?.(data);
+			await syncMember(data, false);
+		},
+		afterUpdateMemberRole: async (data: AfterUpdateMemberRoleData) => {
+			await existingHooks.afterUpdateMemberRole?.(data);
+			await syncUpdatedMemberRole(data);
+		},
+		afterRemoveMember: async (data: AfterRemoveMemberData) => {
+			await existingHooks.afterRemoveMember?.(data);
+			await syncRemovedMember(data);
+		},
+	};
+};

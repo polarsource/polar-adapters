@@ -204,6 +204,26 @@ describe("webhooks", () => {
     });
   });
 
+  it.each([
+    ["member.created", "onMemberCreated"],
+    ["member.updated", "onMemberUpdated"],
+    ["member.deleted", "onMemberDeleted"],
+  ] as const)("should dispatch %s", async (type, handlerName) => {
+    const handler = vi.fn();
+    const payload = { type, data: { id: "member-123" } };
+
+    await handleWebhookPayload(
+      payload as Parameters<typeof handleWebhookPayload>[0],
+      {
+        webhookSecret: "test",
+        [handlerName]: handler,
+      },
+    );
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith(payload);
+  });
+
   it("should handle webhook payload with benefit grant created", async () => {
     const onBenefitGrantCreated = vi.fn();
 

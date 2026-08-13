@@ -2,14 +2,17 @@ import type { BetterAuthPlugin } from "better-auth";
 import {
 	onAfterUserCreate,
 	onBeforeUserCreate,
+	onBeforeUserDelete,
 	onUserDelete,
 	onUserUpdate,
 } from "./hooks/customer";
+import { installOrganizationHooks } from "./organization/hooks";
+import { createOrganizationLifecycleHooks } from "./organization/lifecycle";
 import type { PolarEndpoints, PolarOptions } from "./types";
 
 export const polar = <O extends PolarOptions>(options: O) => {
 	const plugins = options.use
-		.map((use) => use(options.client))
+		.map((use) => use(options.client, options))
 		.reduce((acc, plugin) => {
 			Object.assign(acc, plugin);
 			return acc;
@@ -20,7 +23,10 @@ export const polar = <O extends PolarOptions>(options: O) => {
 		endpoints: {
 			...plugins,
 		},
-		init() {
+		hooks: createOrganizationLifecycleHooks(options),
+		init(ctx) {
+			installOrganizationHooks(ctx, options);
+
 			return {
 				options: {
 					databaseHooks: {
@@ -30,9 +36,10 @@ export const polar = <O extends PolarOptions>(options: O) => {
 								after: onAfterUserCreate(options),
 							},
 							update: {
-								after: onUserUpdate(options),
+								after: onUserUpdate(options, ctx),
 							},
 							delete: {
+								before: onBeforeUserDelete(options, ctx),
 								after: onUserDelete(options),
 							},
 						},

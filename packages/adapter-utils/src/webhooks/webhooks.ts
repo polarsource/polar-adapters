@@ -1,4 +1,3 @@
-import type { validateEvent } from "@polar-sh/sdk/webhooks";
 import type { WebhookBenefitCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitcreatedpayload";
 import type { WebhookBenefitGrantCreatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantcreatedpayload";
 import type { WebhookBenefitGrantRevokedPayload } from "@polar-sh/sdk/models/components/webhookbenefitgrantrevokedpayload";
@@ -6,6 +5,13 @@ import type { WebhookBenefitGrantUpdatedPayload } from "@polar-sh/sdk/models/com
 import type { WebhookBenefitUpdatedPayload } from "@polar-sh/sdk/models/components/webhookbenefitupdatedpayload";
 import type { WebhookCheckoutCreatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutcreatedpayload";
 import type { WebhookCheckoutUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutupdatedpayload";
+import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload";
+import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
+import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
+import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload";
+import type { WebhookMemberCreatedPayload } from "@polar-sh/sdk/models/components/webhookmembercreatedpayload";
+import type { WebhookMemberDeletedPayload } from "@polar-sh/sdk/models/components/webhookmemberdeletedpayload";
+import type { WebhookMemberUpdatedPayload } from "@polar-sh/sdk/models/components/webhookmemberupdatedpayload";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload";
 import type { WebhookOrderPaidPayload } from "@polar-sh/sdk/models/components/webhookorderpaidpayload";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload";
@@ -21,11 +27,8 @@ import type { WebhookSubscriptionCreatedPayload } from "@polar-sh/sdk/models/com
 import type { WebhookSubscriptionRevokedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionrevokedpayload";
 import type { WebhookSubscriptionUncanceledPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionuncanceledpayload";
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload";
+import type { validateEvent } from "@polar-sh/sdk/webhooks";
 import type { Entitlements } from "../entitlement/entitlement";
-import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload";
-import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
-import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload";
-import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
 
 export interface WebhooksConfig {
 	webhookSecret: string;
@@ -79,6 +82,9 @@ export interface WebhooksConfig {
 	onCustomerStateChanged?: (
 		payload: WebhookCustomerStateChangedPayload,
 	) => Promise<void>;
+	onMemberCreated?: (payload: WebhookMemberCreatedPayload) => Promise<void>;
+	onMemberUpdated?: (payload: WebhookMemberUpdatedPayload) => Promise<void>;
+	onMemberDeleted?: (payload: WebhookMemberDeletedPayload) => Promise<void>;
 }
 
 export const handleWebhookPayload = async (
@@ -205,6 +211,21 @@ export const handleWebhookPayload = async (
 		case "customer.state_changed":
 			if (eventHandlers.onCustomerStateChanged) {
 				promises.push(eventHandlers.onCustomerStateChanged(payload));
+			}
+			break;
+		case "member.created":
+			if (eventHandlers.onMemberCreated) {
+				promises.push(eventHandlers.onMemberCreated(payload));
+			}
+			break;
+		case "member.updated":
+			if (eventHandlers.onMemberUpdated) {
+				promises.push(eventHandlers.onMemberUpdated(payload));
+			}
+			break;
+		case "member.deleted":
+			if (eventHandlers.onMemberDeleted) {
+				promises.push(eventHandlers.onMemberDeleted(payload));
 			}
 			break;
 		case "order.refunded":

@@ -74,8 +74,8 @@ describe("polar plugin", () => {
 
 		expect(plugin.endpoints).toHaveProperty("checkout/create");
 		expect(plugin.endpoints).toHaveProperty("portal/url");
-		expect(mockCheckoutPlugin).toHaveBeenCalledWith(mockClient);
-		expect(mockPortalPlugin).toHaveBeenCalledWith(mockClient);
+		expect(mockCheckoutPlugin).toHaveBeenCalledWith(mockClient, options);
+		expect(mockPortalPlugin).toHaveBeenCalledWith(mockClient, options);
 	});
 
 	it("should initialize with database hooks", () => {
@@ -96,6 +96,23 @@ describe("polar plugin", () => {
 		);
 		expect(initResult.options.databaseHooks.user.update).toHaveProperty(
 			"after",
+		);
+	});
+
+	it("should validate the Better Auth organization plugin during init", () => {
+		const options = createTestPolarOptions({
+			client: mockClient,
+			organization: { enabled: true },
+			use: [checkout()],
+		});
+		const plugin = polar(options);
+		const context = {
+			getPlugin: vi.fn().mockReturnValue(null),
+			logger: { error: vi.fn(), warn: vi.fn() },
+		};
+
+		expect(() => plugin.init(context as never)).toThrow(
+			"Polar organization support requires Better Auth's organization plugin",
 		);
 	});
 

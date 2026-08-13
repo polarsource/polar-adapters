@@ -5,6 +5,7 @@ import {
 	getSessionFromCtx,
 } from "better-auth/api";
 import * as z from "zod/v4";
+import { resolveBillingPrincipal } from "../principal";
 import type { Product } from "../types";
 
 export interface CheckoutOptions {
@@ -34,6 +35,7 @@ export const CheckoutParams = z.object({
 	products: z.union([z.array(z.string()), z.string()]).optional(),
 	slug: z.string().optional(),
 	referenceId: z.string().optional(),
+	organizationId: z.string().min(1).optional(),
 	customFieldData: z
 		.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
 		.optional(),
@@ -71,7 +73,7 @@ export type CheckoutParams = z.infer<typeof CheckoutParams>;
 
 export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
-	(polar: Polar) => {
+	(polar: Polar, rootOptions?: { organization?: { enabled: boolean } }) => {
 		return {
 			checkout: createAuthEndpoint(
 				"/checkout",
@@ -121,12 +123,22 @@ export const checkout =
 						}
 					}
 
+					const principal = ctx.body.organizationId
+						? await resolveBillingPrincipal({
+								context: ctx.context,
+								session,
+								organizationId: ctx.body.organizationId,
+								organizationEnabled: rootOptions?.organization?.enabled,
+								authorization: "billing",
+							})
+						: undefined;
 					const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
 					const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
 
 					try {
 						const checkout = await polar.checkouts.create({
-							externalCustomerId: session?.user.id,
+							externalCustomerId:
+								principal?.externalCustomerId ?? session?.user.id,
 							products: productIds,
 							successUrl: successUrl
 								? new URL(

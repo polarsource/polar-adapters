@@ -1,13 +1,22 @@
-import type { GenericEndpointContext, User } from "better-auth";
+import type { AuthContext, GenericEndpointContext, User } from "better-auth";
 import { APIError } from "better-auth/api";
+import {
+	logLifecycleFailure,
+	synchronizeUserDeletionMemberships,
+	synchronizeUserOrganizationProfiles,
+} from "../organization/lifecycle";
+import { createPolarOrganizationAPI } from "../organization/polar-api";
 import type { PolarOptions } from "../types";
+
+const isAnonymousUser = (user: Partial<User>) =>
+	"isAnonymous" in user && user.isAnonymous === true;
 
 export const onBeforeUserCreate =
 	(options: PolarOptions) =>
 	async (user: Partial<User>, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
-				if (user.isAnonymous) {
+				if (isAnonymousUser(user)) {
 					return;
 				}
 
@@ -54,7 +63,7 @@ export const onAfterUserCreate =
 	(options: PolarOptions) =>
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
-			if (user.isAnonymous) {
+			if (isAnonymousUser(user)) {
 				return;
 			}
 
@@ -88,21 +97,21 @@ export const onAfterUserCreate =
 	};
 
 export const onUserUpdate =
-	(options: PolarOptions) =>
+	(options: PolarOptions, initContext?: AuthContext) =>
 	async (user: User, context: GenericEndpointContext | null) => {
+		// Preserve the existing personal-customer behavior, including its
+		// best-effort error handling, independently from organization support.
 		if (context && options.createCustomerOnSignUp) {
 			try {
-				if (user.isAnonymous) {
-					return;
+				if (!isAnonymousUser(user)) {
+					await options.client.customers.updateExternal({
+						externalId: user.id,
+						customerUpdateExternalID: {
+							email: user.email,
+							name: user.name,
+						},
+					});
 				}
-
-				await options.client.customers.updateExternal({
-					externalId: user.id,
-					customerUpdateExternalID: {
-						email: user.email,
-						name: user.name,
-					},
-				});
 			} catch (e: unknown) {
 				if (e instanceof Error) {
 					context.context.logger.error(
@@ -115,6 +124,68 @@ export const onUserUpdate =
 				}
 			}
 		}
+
+		if (!options.organization?.enabled) {
+			return;
+		}
+		const authContext = context?.context ?? initContext;
+		if (!authContext) {
+			throw new Error(
+				"Polar organization profile synchronization requires a Better Auth context",
+			);
+		}
+		try {
+			await synchronizeUserOrganizationProfiles(
+				authContext,
+				createPolarOrganizationAPI(options.client),
+				user,
+				{ mapMemberRole: options.organization.mapMemberRole },
+			);
+		} catch (error) {
+			logLifecycleFailure(
+				authContext,
+				"user.update.members",
+				undefined,
+				user.id,
+				error,
+			);
+			throw error;
+		}
+	};
+
+/**
+ * Membership rows are still queryable here. Better Auth may cascade them
+ * before the user `after` hook runs, so organization cleanup cannot move later.
+ */
+export const onBeforeUserDelete =
+	(options: PolarOptions, initContext?: AuthContext) =>
+	async (user: User, context: GenericEndpointContext | null) => {
+		if (!options.organization?.enabled) {
+			return;
+		}
+		const authContext = context?.context ?? initContext;
+		if (!authContext) {
+			throw new Error(
+				"Polar organization member deletion requires a Better Auth context",
+			);
+		}
+		try {
+			await synchronizeUserDeletionMemberships(
+				authContext,
+				createPolarOrganizationAPI(options.client),
+				user,
+				{ mapMemberRole: options.organization.mapMemberRole },
+			);
+		} catch (error) {
+			logLifecycleFailure(
+				authContext,
+				"user.delete.members",
+				undefined,
+				user.id,
+				error,
+			);
+			throw error;
+		}
 	};
 
 export const onUserDelete =
@@ -122,7 +193,7 @@ export const onUserDelete =
 	async (user: User, context: GenericEndpointContext | null) => {
 		if (context && options.createCustomerOnSignUp) {
 			try {
-				if (user.isAnonymous) {
+				if (isAnonymousUser(user)) {
 					return;
 				}
 
