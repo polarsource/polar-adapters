@@ -6,7 +6,7 @@ import {
 } from "better-auth/api";
 import * as z from "zod/v4";
 import { resolveBillingPrincipal } from "../principal";
-import type { Product } from "../types";
+import type { PolarOptions, Product } from "../types";
 
 export interface CheckoutOptions {
 	/**
@@ -73,7 +73,7 @@ export type CheckoutParams = z.infer<typeof CheckoutParams>;
 
 export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
-	(polar: Polar, rootOptions?: { organization?: { enabled: boolean } }) => {
+	(polar: Polar, rootOptions?: Pick<PolarOptions, "organization">) => {
 		return {
 			checkout: createAuthEndpoint(
 				"/checkout",

@@ -1,5 +1,6 @@
-import type { AuthContext } from "better-auth";
+import type { AuthContext, User } from "better-auth";
 import { APIError } from "better-auth/api";
+import type { AnonymousSession } from "better-auth/plugins/anonymous";
 import type { Member } from "better-auth/plugins/organization";
 import {
 	mapBetterAuthRoleToPolar,
@@ -25,10 +26,8 @@ export type BillingPrincipal =
 	  };
 
 export interface BillingPrincipalSession {
-	user: {
-		id: string;
-		isAnonymous?: boolean | null | undefined;
-	};
+	user: Pick<User, "id"> &
+		Partial<Pick<AnonymousSession["user"], "isAnonymous">>;
 }
 
 export interface BillingAuthorizationInput {
