@@ -2,6 +2,11 @@ import type { Polar } from "@polar-sh/sdk";
 import { APIError } from "better-auth/api";
 import { createAuthEndpoint, sessionMiddleware } from "better-auth/api";
 import * as z from "zod/v4";
+import { resolveBillingPrincipal } from "../principal";
+
+const OrganizationQuery = z.object({
+	organizationId: z.string().min(1).optional(),
+});
 
 export interface PortalConfig {
 	returnUrl?: string;
@@ -13,7 +18,7 @@ export interface PortalConfig {
 
 export const portal =
 	({ returnUrl, theme }: PortalConfig = {}) =>
-	(polar: Polar) => {
+	(polar: Polar, rootOptions?: { organization?: { enabled: boolean } }) => {
 		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
 
 		return {
@@ -26,6 +31,7 @@ export const portal =
 							redirect: z.boolean().optional(),
 						})
 						.optional(),
+					query: OrganizationQuery.optional(),
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
@@ -41,9 +47,23 @@ export const portal =
 						});
 					}
 
+					const principal = ctx.query?.organizationId
+						? await resolveBillingPrincipal({
+								context: ctx.context,
+								session: ctx.context.session,
+								organizationId: ctx.query.organizationId,
+								organizationEnabled: rootOptions?.organization?.enabled,
+								authorization: "member",
+							})
+						: undefined;
+
 					try {
 						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+							externalCustomerId:
+								principal?.externalCustomerId ?? ctx.context.session.user.id,
+							...(principal?.kind === "team"
+								? { externalMemberId: principal.externalMemberId }
+								: {}),
 							returnUrl: retUrl ? decodeURI(retUrl.toString()) : undefined,
 						});
 
@@ -74,6 +94,7 @@ export const portal =
 				"/customer/state",
 				{
 					method: "GET",
+					query: OrganizationQuery.optional(),
 					use: [sessionMiddleware],
 				},
 				async (ctx) => {
@@ -83,9 +104,20 @@ export const portal =
 						});
 					}
 
+					const principal = ctx.query?.organizationId
+						? await resolveBillingPrincipal({
+								context: ctx.context,
+								session: ctx.context.session,
+								organizationId: ctx.query.organizationId,
+								organizationEnabled: rootOptions?.organization?.enabled,
+								authorization: "member",
+							})
+						: undefined;
+
 					try {
 						const state = await polar.customers.getStateExternal({
-							externalId: ctx.context.session?.user.id,
+							externalId:
+								principal?.externalCustomerId ?? ctx.context.session.user.id,
 						});
 
 						return ctx.json(state);
@@ -108,6 +140,7 @@ export const portal =
 					method: "GET",
 					query: z
 						.object({
+							organizationId: z.string().min(1).optional(),
 							page: z.coerce.number().optional(),
 							limit: z.coerce.number().optional(),
 						})
@@ -121,9 +154,23 @@ export const portal =
 						});
 					}
 
+					const principal = ctx.query?.organizationId
+						? await resolveBillingPrincipal({
+								context: ctx.context,
+								session: ctx.context.session,
+								organizationId: ctx.query.organizationId,
+								organizationEnabled: rootOptions?.organization?.enabled,
+								authorization: "member",
+							})
+						: undefined;
+
 					try {
 						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+							externalCustomerId:
+								principal?.externalCustomerId ?? ctx.context.session.user.id,
+							...(principal?.kind === "team"
+								? { externalMemberId: principal.externalMemberId }
+								: {}),
 						});
 
 						const benefits = await polar.customerPortal.benefitGrants.list(
@@ -154,6 +201,7 @@ export const portal =
 					method: "GET",
 					query: z
 						.object({
+							organizationId: z.string().min(1).optional(),
 							referenceId: z.string().optional(),
 							page: z.coerce.number().optional(),
 							limit: z.coerce.number().optional(),
@@ -166,6 +214,22 @@ export const portal =
 					if (!ctx.context.session.user.id) {
 						throw new APIError("BAD_REQUEST", {
 							message: "User not found",
+						});
+					}
+
+					const principal = ctx.query?.organizationId
+						? await resolveBillingPrincipal({
+								context: ctx.context,
+								session: ctx.context.session,
+								organizationId: ctx.query.organizationId,
+								organizationEnabled: rootOptions?.organization?.enabled,
+								authorization: "member",
+							})
+						: undefined;
+
+					if (ctx.query?.organizationId && ctx.query.referenceId) {
+						throw new APIError("BAD_REQUEST", {
+							message: "organizationId cannot be combined with referenceId",
 						});
 					}
 
@@ -197,7 +261,11 @@ export const portal =
 
 					try {
 						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+							externalCustomerId:
+								principal?.externalCustomerId ?? ctx.context.session.user.id,
+							...(principal?.kind === "team"
+								? { externalMemberId: principal.externalMemberId }
+								: {}),
 						});
 
 						const subscriptions = await polar.customerPortal.subscriptions.list(
@@ -229,6 +297,7 @@ export const portal =
 					method: "GET",
 					query: z
 						.object({
+							organizationId: z.string().min(1).optional(),
 							page: z.coerce.number().optional(),
 							limit: z.coerce.number().optional(),
 							productBillingType: z.enum(["recurring", "one_time"]).optional(),
@@ -243,9 +312,23 @@ export const portal =
 						});
 					}
 
+					const principal = ctx.query?.organizationId
+						? await resolveBillingPrincipal({
+								context: ctx.context,
+								session: ctx.context.session,
+								organizationId: ctx.query.organizationId,
+								organizationEnabled: rootOptions?.organization?.enabled,
+								authorization: "member",
+							})
+						: undefined;
+
 					try {
 						const customerSession = await polar.customerSessions.create({
-							externalCustomerId: ctx.context.session?.user.id,
+							externalCustomerId:
+								principal?.externalCustomerId ?? ctx.context.session.user.id,
+							...(principal?.kind === "team"
+								? { externalMemberId: principal.externalMemberId }
+								: {}),
 						});
 
 						const orders = await polar.customerPortal.orders.list(

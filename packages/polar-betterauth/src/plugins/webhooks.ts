@@ -11,6 +11,9 @@ import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
 import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload";
+import type { WebhookMemberCreatedPayload } from "@polar-sh/sdk/models/components/webhookmembercreatedpayload";
+import type { WebhookMemberDeletedPayload } from "@polar-sh/sdk/models/components/webhookmemberdeletedpayload";
+import type { WebhookMemberUpdatedPayload } from "@polar-sh/sdk/models/components/webhookmemberupdatedpayload";
 import type { WebhookOrderCreatedPayload } from "@polar-sh/sdk/models/components/webhookordercreatedpayload";
 import type { WebhookOrderPaidPayload } from "@polar-sh/sdk/models/components/webhookorderpaidpayload";
 import type { WebhookOrderRefundedPayload } from "@polar-sh/sdk/models/components/webhookorderrefundedpayload";
@@ -164,6 +167,24 @@ export interface WebhooksOptions {
 	onCustomerStateChanged?: (
 		payload: WebhookCustomerStateChangedPayload,
 	) => Promise<void>;
+	/**
+	 * Notification that a Polar member was created.
+	 *
+	 * Do not mutate Better Auth organization membership from this callback.
+	 */
+	onMemberCreated?: (payload: WebhookMemberCreatedPayload) => Promise<void>;
+	/**
+	 * Notification that a Polar member was updated.
+	 *
+	 * Do not mutate Better Auth organization membership from this callback.
+	 */
+	onMemberUpdated?: (payload: WebhookMemberUpdatedPayload) => Promise<void>;
+	/**
+	 * Notification that a Polar member was deleted.
+	 *
+	 * Do not mutate Better Auth organization membership from this callback.
+	 */
+	onMemberDeleted?: (payload: WebhookMemberDeletedPayload) => Promise<void>;
 }
 
 export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
@@ -216,10 +237,18 @@ export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
 				}
 
 				try {
-					await handleWebhookPayload(event, {
+					// adapter-utils intentionally remains on SDK 0.47 while this package
+					// validates with 0.49. Both versions expose the same webhook event
+					// contract here, but their generated OpenEnum brands are nominally
+					// incompatible to TypeScript.
+					const adapterPayload = event as Parameters<
+						typeof handleWebhookPayload
+					>[0];
+					const adapterConfig = {
 						webhookSecret: secret,
 						...eventHandlers,
-					});
+					} as Parameters<typeof handleWebhookPayload>[1];
+					await handleWebhookPayload(adapterPayload, adapterConfig);
 				} catch (e: unknown) {
 					if (e instanceof Error) {
 						ctx.context.logger.error(

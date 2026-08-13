@@ -1,6 +1,7 @@
 import type { Polar } from "@polar-sh/sdk";
 
 import type { UnionToIntersection, User } from "better-auth";
+import type { PolarOrganizationOptions } from "./organization/types";
 import type { checkout } from "./plugins/checkout";
 import type { portal } from "./plugins/portal";
 import type { usage } from "./plugins/usage";
@@ -17,11 +18,15 @@ export type Product = {
 	slug: string;
 };
 
-export type PolarPlugin =
+export type PolarPlugin = (
+	client: Polar,
+	options?: PolarOptions,
+) => ReturnType<
 	| ReturnType<typeof checkout>
 	| ReturnType<typeof usage>
 	| ReturnType<typeof portal>
-	| ReturnType<typeof webhooks>;
+	| ReturnType<typeof webhooks>
+>;
 
 export type PolarPlugins = [PolarPlugin, ...PolarPlugin[]];
 
@@ -50,6 +55,12 @@ export interface PolarOptions {
 	) => Promise<{
 		metadata?: Record<string, string | number | boolean>;
 	}>;
+	/**
+	 * Mirror Better Auth organizations to Polar team customers.
+	 *
+	 * Organization support is disabled when omitted.
+	 */
+	organization?: PolarOrganizationOptions;
 	/**
 	 * Use Polar plugins
 	 */

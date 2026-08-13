@@ -6,10 +6,11 @@ A [Better Auth](https://github.com/better-auth/better-auth) plugin for integrati
 
 - Checkout Integration
 - Customer Portal
-- Automatic Customer creation on signup
+- Automatic personal customer creation on signup
+- Explicit Better Auth organization → Polar team-customer synchronization
 - Event Ingestion & Customer Meters for flexible Usage Based Billing
-- Handle Polar Webhooks securely with signature verification
-- Reference System to associate purchases with organizations
+- Handle Polar Webhooks securely with signature verification, including member events
+- Generic `referenceId` metadata for legacy checkout/subscription filtering
 
 ## Installation
 
@@ -37,6 +38,7 @@ The Polar plugin comes with a handful additional plugins which adds functionalit
 
 ```typescript
 import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
 import { polar, checkout, portal, usage, webhooks } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 
@@ -51,9 +53,19 @@ const polarClient = new Polar({
 const auth = betterAuth({
     // ... Better Auth config
     plugins: [
+        organization(),
         polar({
             client: polarClient,
             createCustomerOnSignUp: true,
+            organization: {
+                enabled: true,
+                getCustomerCreateParams: async ({ organization, owner }) => ({
+                    metadata: {
+                        source: "better-auth",
+                        createdBy: owner.id,
+                    },
+                }),
+            },
             use: [
                 checkout({
                     products: [
@@ -95,7 +107,7 @@ import { organizationClient } from "better-auth/client/plugins";
 // This is all that is needed
 // All Polar plugins, etc. should be attached to the server-side BetterAuth config
 export const authClient = createAuthClient({
-  plugins: [polarClient()],
+  plugins: [organizationClient(), polarClient()],
 });
 ```
 
@@ -111,6 +123,7 @@ import {
   webhooks,
 } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
+import { organization } from "better-auth/plugins";
 
 const polarClient = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
@@ -123,6 +136,7 @@ const polarClient = new Polar({
 const auth = betterAuth({
   // ... Better Auth config
   plugins: [
+    organization(),
     polar({
       client: polarClient,
       createCustomerOnSignUp: true,
@@ -131,6 +145,15 @@ const auth = betterAuth({
           myCustomProperty: 123,
         },
       }),
+      organization: {
+        enabled: true,
+        getCustomerCreateParams: async ({ organization, owner }) => ({
+          metadata: {
+            source: "better-auth",
+            createdBy: owner.id,
+          },
+        }),
+      },
       use: [
         // This is where you add Polar plugins
       ],
@@ -146,13 +169,43 @@ const auth = betterAuth({
 ### Optional Options
 
 - `createCustomerOnSignUp`: Automatically create a Polar customer when a user signs up
-- `getCustomerCreateParams`: Custom function to provide additional customer creation metadata
+- `getCustomerCreateParams`: Custom function to provide additional personal-customer creation metadata
+- `organization`: Explicit Better Auth organization synchronization configuration. Set `organization.enabled` to `true`; `organization.getCustomerCreateParams` can add team-customer fields such as metadata or billing details.
 
 ### Customers
 
 When `createCustomerOnSignUp` is enabled, a new Polar Customer is automatically created when a new User is added in the Better-Auth Database.
 
 All new customers are created with an associated `externalId`, which is the ID of your User in the Database. This allows us to skip any Polar <-> User mapping in your Database.
+
+### Organization synchronization
+
+Organization synchronization is opt-in and requires both Better Auth's `organization()` plugin and `organization: { enabled: true }` on `polar()`. Enabling it without the Better Auth plugin fails during startup.
+
+The current mapping is deterministic:
+
+| Better Auth | Polar |
+| --- | --- |
+| `organization.id` | Team customer `externalId` |
+| Organization creator `user.id` | Initial owner member `externalId` |
+| `organization.name` | Team customer `name` |
+
+On organization creation, the adapter creates or reuses a team customer and supplies the creator as its explicit owner. The team customer has no email by default, avoiding collisions when one user owns several organizations. `organization.getCustomerCreateParams` may add metadata, locale, address, tax, or other supported team-customer fields, but cannot override `type`, `externalId`, `name`, or owner identity. Organization name changes update the team customer.
+
+This requires Polar's member model to be enabled. The Polar organization access token needs `customers:read`, `customers:write`, `members:read`, and `members:write` scopes.
+
+Better Auth users map to Polar member `externalId` values using `user.id` within each team customer. Direct additions and accepted invitations are mirrored, and profile, role, removal, self-leave, and user-deletion paths are synchronized. Better Auth remains the roster source of truth.
+
+Polar permits one owner. The adapter retains the current valid Better Auth owner as Polar's canonical owner; if a transfer is required, it deterministically selects the earliest eligible owner. Additional Better Auth `owner` roles and `admin` map to `billing_manager`; other roles map to `member`. `organization.mapMemberRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
+
+Organization deletion in Better Auth does **not** delete the Polar team customer or its billing data. Cross-system writes are not transactional: synchronization errors propagate, but an earlier Better Auth or Polar write cannot be rolled back. Synchronization is external-ID idempotent and safe to retry. An internal reconciliation helper repairs customer/member state; it is not exported as public API or exposed as an HTTP endpoint.
+
+Organization billing is always selected explicitly; the active Better Auth organization is never used implicitly. Pass `organizationId` in:
+
+- the POST body for checkout and usage ingestion;
+- the query for portal (GET or POST), customer state, benefits, subscriptions, orders, and usage meters.
+
+The adapter verifies the authenticated user's Better Auth membership before calling Polar. Organization checkout requires a billing-capable role. Team portal and meter requests create a member-scoped customer session with `externalCustomerId = organization.id` and `externalMemberId = user.id`; usage events carry both IDs. Omitting `organizationId` preserves personal-customer behavior.
 
 ## Checkout Plugin
 
@@ -226,22 +279,27 @@ checkout.addEventListener("success", (event) => {
 });
 ```
 
-### Organization Support
+### Reference metadata
 
-This plugin supports the Organization plugin. If you pass the organization ID to the Checkout referenceId, you will be able to keep track of purchases made from organization members.
+`referenceId` is generic metadata copied to the checkout and resulting billing objects. It does not select a Polar team customer, authorize Better Auth organization membership, or establish an organization relationship.
 
 ```typescript
-const organizationId = (await authClient.organization.list())?.data?.[0]?.id,
-
 await authClient.checkout({
-    // Any Polar Product ID can be passed here
-    products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
-    // Or, if you setup "products" in the Checkout Config, you can pass the slug
-    slug: 'pro',
-    // Reference ID will be saved as `referenceId` in the metadata of the checkout, order & subscription object
-    referenceId: organizationId
+  products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
+  referenceId: "your-application-reference",
 });
 ```
+
+If an existing integration used a Better Auth organization ID as `referenceId`, treat it as legacy reporting metadata only. Enable `organization.enabled`, then migrate organization checkout to the explicit, membership-authorized field:
+
+```typescript
+await authClient.checkout({
+  slug: "pro",
+  organizationId,
+});
+```
+
+Do not send both `organizationId` and `referenceId` when listing subscriptions; that combination is rejected.
 
 ## Portal Plugin
 
@@ -275,6 +333,11 @@ The following method will redirect the user to the Polar Customer Portal, where 
 
 ```typescript
 await authClient.customer.portal();
+
+// Explicit organization portal access (membership is checked server-side)
+await authClient.customer.portal({
+  query: { organizationId },
+});
 ```
 
 ### Customer State
@@ -283,6 +346,10 @@ The portal plugin also adds a convenient state-method for retrieving the general
 
 ```typescript
 const { data: customerState } = await authClient.customer.state();
+
+const { data: organizationState } = await authClient.customer.state({
+  query: { organizationId },
+});
 ```
 
 The customer state object contains:
@@ -344,29 +411,33 @@ const { data: subscriptions } = await authClient.customer.subscriptions.list({
 });
 ```
 
-**Important** - Organization Support
+**Legacy `referenceId` filtering**
 
-This will **not** return subscriptions made by a parent organization to the authenticated user.
-
-However, you can pass a `referenceId` to this method. This will return all subscriptions associated with that referenceId instead of subscriptions associated with the user.
-
-So in order to figure out if a user should have access, pass the user's organization ID to see if there is an active subscription for that organization.
+Passing `referenceId` switches this method to a Polar organization-level metadata query. It is not a Better Auth organization authorization boundary and must not be used to grant access based only on a caller-provided organization ID.
 
 ```typescript
-const organizationId = (await authClient.organization.list())?.data?.[0]?.id,
-
 const { data: subscriptions } = await authClient.customer.subscriptions.list({
-    query: {
-	    page: 1,
-		limit: 10,
-		active: true,
-        referenceId: organizationId
-    },
+  query: {
+    page: 1,
+    limit: 10,
+    active: true,
+    referenceId: "your-application-reference",
+  },
 });
+```
 
-const userShouldHaveAccess = subscriptions.some(
-    sub => // Your logic to check subscription product or whatever.
-)
+For organization subscriptions, use `query.organizationId` instead. The adapter authorizes membership and uses a member-scoped Polar customer session:
+
+```typescript
+const { data: subscriptions } =
+  await authClient.customer.subscriptions.list({
+    query: {
+      organizationId,
+      page: 1,
+      limit: 10,
+      active: true,
+    },
+  });
 ```
 
 ## Usage Plugin
@@ -403,6 +474,8 @@ const { data: ingested } = await authClient.usage.ingest({
   metadata: {
     uploadedFiles: 12,
   },
+  // Optional: attributes the event to the team customer and this member.
+  organizationId,
 });
 ```
 
@@ -426,6 +499,8 @@ const { data: customerMeters } = await authClient.usage.meters.list({
   query: {
     page: 1,
     limit: 10,
+    // Optional: creates a member-scoped team customer session.
+    organizationId,
   },
 });
 ```
@@ -492,4 +567,9 @@ The plugin supports handlers for all Polar webhook events:
 - `onCustomerCreated` - Triggered when a customer is created
 - `onCustomerUpdated` - Triggered when a customer is updated
 - `onCustomerDeleted` - Triggered when a customer is deleted
-- `onCustomerStateChanged` - Triggered when a customer is created
+- `onCustomerStateChanged` - Triggered when customer state changes
+- `onMemberCreated` - Triggered when a Polar member is created
+- `onMemberUpdated` - Triggered when a Polar member is updated
+- `onMemberDeleted` - Triggered when a Polar member is deleted
+
+Member webhook callbacks are notification-only. Better Auth is the organization roster source of truth: never create, update, or delete Better Auth memberships from these callbacks. Webhook delivery and ownership-related member events may be reordered or repeated, so handlers must be idempotent.

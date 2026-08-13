@@ -1,0 +1,25 @@
+{
+  "name": "better-auth-polar-hono",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src.ts",
+    "start": "tsx src.ts",
+    "migrate": "better-auth migrate --config ./auth.ts --yes"
+  },
+  "dependencies": {
+    "@better-auth/cli": "1.4.18",
+    "@hono/node-server": "^2.1.0",
+    "@polar-sh/better-auth": "workspace:*",
+    "@polar-sh/sdk": "^0.49.0",
+    "better-auth": "1.4.18",
+    "dotenv": "^17.2.3",
+    "hono": "^4.13.1",
+    "tsx": "^4.20.6",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}

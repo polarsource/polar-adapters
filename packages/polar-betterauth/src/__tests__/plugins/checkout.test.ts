@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { checkout } from "../../plugins/checkout";
+import { CheckoutParams, checkout } from "../../plugins/checkout";
+import { resolveBillingPrincipal } from "../../principal";
 import { mockApiError, mockApiResponse } from "../utils/helpers";
 import {
 	createMockBetterAuthContext,
 	createMockCheckout,
 	createMockPolarClient,
 } from "../utils/mocks";
+
+vi.mock("../../principal", () => ({
+	resolveBillingPrincipal: vi.fn(),
+}));
 
 vi.mock("better-auth/api", () => ({
 	APIError: class APIError extends Error {
@@ -115,6 +120,105 @@ describe("checkout plugin", () => {
 				url: expect.stringContaining("theme=dark"),
 				redirect: true,
 			});
+			expect(resolveBillingPrincipal).not.toHaveBeenCalled();
+		});
+
+		it("should create an organization checkout for a billing member", async () => {
+			const mockCheckout = createMockCheckout();
+			const session = { user: { id: "user-123" } };
+			vi.mocked(getSessionFromCtx).mockResolvedValue(session);
+			vi.mocked(resolveBillingPrincipal).mockResolvedValue({
+				kind: "team",
+				externalCustomerId: "organization-123",
+				externalMemberId: "user-123",
+				betterAuthRole: "owner",
+				isAnonymous: false,
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const ctx = {
+				...mockContext,
+				context: mockContext,
+				body: {
+					products: ["prod-123"],
+					organizationId: "organization-123",
+					metadata: { source: "app" },
+				},
+				json: vi.fn(),
+			};
+
+			await handler(ctx);
+
+			expect(resolveBillingPrincipal).toHaveBeenCalledWith({
+				context: ctx.context,
+				session,
+				organizationId: "organization-123",
+				authorization: "billing",
+			});
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					externalCustomerId: "organization-123",
+					metadata: { source: "app" },
+				}),
+			);
+		});
+
+		it("rejects unauthorized organization checkout before calling Polar", async () => {
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(resolveBillingPrincipal).mockRejectedValue(
+				new APIError("FORBIDDEN", {
+					message: "Organization billing access requires a billing role",
+				}),
+			);
+
+			await expect(
+				handler({
+					...mockContext,
+					context: mockContext,
+					body: {
+						products: ["prod-123"],
+						organizationId: "organization-123",
+					},
+				}),
+			).rejects.toThrow("Organization billing access requires a billing role");
+			expect(mockClient.checkouts.create).not.toHaveBeenCalled();
+		});
+
+		it("rejects anonymous organization checkout before calling Polar", async () => {
+			vi.mocked(getSessionFromCtx).mockResolvedValue(null);
+			vi.mocked(resolveBillingPrincipal).mockRejectedValue(
+				new APIError("UNAUTHORIZED", {
+					message: "Authentication is required to access organization billing",
+				}),
+			);
+
+			await expect(
+				handler({
+					...mockContext,
+					context: mockContext,
+					body: {
+						products: ["prod-123"],
+						organizationId: "organization-123",
+					},
+				}),
+			).rejects.toThrow(
+				"Authentication is required to access organization billing",
+			);
+			expect(resolveBillingPrincipal).toHaveBeenCalledWith(
+				expect.objectContaining({ session: null }),
+			);
+			expect(mockClient.checkouts.create).not.toHaveBeenCalled();
+		});
+
+		it("parses organizationId as an explicit checkout field", () => {
+			const parsed = CheckoutParams.parse({
+				products: ["prod-123"],
+				organizationId: "organization-123",
+			});
+
+			expect(parsed.organizationId).toBe("organization-123");
 		});
 
 		it("should create checkout with single product ID", async () => {

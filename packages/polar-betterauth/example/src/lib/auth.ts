@@ -1,14 +1,14 @@
-import { betterAuth } from "better-auth";
 import {
-	polar,
 	checkout,
-	webhooks,
-	usage,
+	polar,
 	portal,
+	usage,
+	webhooks,
 } from "@polar-sh/better-auth";
+import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
 import Database from "better-sqlite3";
 import { polarSDK } from "./polar";
-import { organization } from "better-auth/plugins";
 
 export const auth = betterAuth({
 	emailAndPassword: {
@@ -25,6 +25,18 @@ export const auth = betterAuth({
 						hello: "world",
 					},
 				};
+			},
+			organization: {
+				enabled: true,
+				async getCustomerCreateParams({ organization, owner }) {
+					return {
+						metadata: {
+							source: "better-auth",
+							betterAuthOrganizationId: organization.id,
+							createdBy: owner.id,
+						},
+					};
+				},
 			},
 			use: [
 				checkout({
@@ -43,8 +55,16 @@ export const auth = betterAuth({
 				}),
 				webhooks({
 					secret: process.env["POLAR_WEBHOOK_SECRET"] as string,
-					onOrganizationUpdated: async (payload) => {
-						console.log(payload);
+					onMemberCreated: async (payload) => {
+						// Notification only: do not mutate Better Auth memberships here.
+						void payload;
+					},
+					onMemberUpdated: async (payload) => {
+						// Make production webhook handlers idempotent.
+						void payload;
+					},
+					onMemberDeleted: async (payload) => {
+						void payload;
 					},
 				}),
 			],

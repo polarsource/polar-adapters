@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { portal } from "../../plugins/portal";
+import { resolveBillingPrincipal } from "../../principal";
 import { mockApiError } from "../utils/helpers";
 import { createMockPolarClient } from "../utils/mocks";
+
+vi.mock("../../principal", () => ({
+	resolveBillingPrincipal: vi.fn(),
+}));
 
 vi.mock("better-auth/api", () => ({
 	APIError: class APIError extends Error {
@@ -659,6 +664,119 @@ describe("portal plugin", () => {
 			};
 
 			await expect(handler(ctx)).rejects.toThrow("Orders list failed");
+		});
+	});
+
+	describe("organization billing", () => {
+		const teamPrincipal = {
+			kind: "team" as const,
+			externalCustomerId: "organization-123",
+			externalMemberId: "user-123",
+			betterAuthRole: "member",
+			isAnonymous: false as const,
+		};
+		const context = { session: { user: { id: "user-123" } } };
+
+		beforeEach(() => {
+			vi.mocked(resolveBillingPrincipal).mockResolvedValue(teamPrincipal);
+			vi.mocked(mockClient.customerSessions.create).mockResolvedValue({
+				token: "session-token-123",
+				customerPortalUrl: "https://polar.sh/portal/session-123",
+			});
+		});
+
+		it("selects organizationId from the portal query", async () => {
+			const endpoints = portal()(mockClient);
+			const parsed = endpoints.portal.config.query.parse({
+				organizationId: "organization-123",
+			});
+			const ctx = { context, query: parsed, json: vi.fn() };
+
+			await endpoints.portal.handler(ctx);
+
+			expect(resolveBillingPrincipal).toHaveBeenCalledWith({
+				context,
+				session: context.session,
+				organizationId: "organization-123",
+				authorization: "member",
+			});
+			expect(mockClient.customerSessions.create).toHaveBeenCalledWith({
+				externalCustomerId: "organization-123",
+				externalMemberId: "user-123",
+			});
+		});
+
+		it("uses the organization customer for state", async () => {
+			const endpoints = portal()(mockClient);
+			vi.mocked(mockClient.customers.getStateExternal).mockResolvedValue({});
+
+			await endpoints.state.handler({
+				context,
+				query: { organizationId: "organization-123" },
+				json: vi.fn(),
+			});
+
+			expect(mockClient.customers.getStateExternal).toHaveBeenCalledWith({
+				externalId: "organization-123",
+			});
+		});
+
+		it.each([
+			["benefits", "benefitGrants"],
+			["subscriptions", "subscriptions"],
+			["orders", "orders"],
+		] as const)(
+			"uses a member-scoped session for organization %s",
+			async (endpointName, resourceName) => {
+				const endpoints = portal()(mockClient);
+				vi.mocked(
+					mockClient.customerPortal[resourceName].list,
+				).mockResolvedValue({
+					items: [],
+				});
+
+				await endpoints[endpointName].handler({
+					context,
+					query: { organizationId: "organization-123" },
+					json: vi.fn(),
+				});
+
+				expect(mockClient.customerSessions.create).toHaveBeenCalledWith({
+					externalCustomerId: "organization-123",
+					externalMemberId: "user-123",
+				});
+			},
+		);
+
+		it("rejects organizationId with the legacy referenceId path", async () => {
+			const endpoints = portal()(mockClient);
+
+			await expect(
+				endpoints.subscriptions.handler({
+					context,
+					query: {
+						organizationId: "organization-123",
+						referenceId: "reference-123",
+					},
+				}),
+			).rejects.toThrow("organizationId cannot be combined with referenceId");
+			expect(mockClient.subscriptions.list).not.toHaveBeenCalled();
+			expect(mockClient.customerSessions.create).not.toHaveBeenCalled();
+		});
+
+		it("rejects a non-member before calling Polar", async () => {
+			const endpoints = portal()(mockClient);
+			vi.mocked(resolveBillingPrincipal).mockRejectedValue(
+				new APIError("FORBIDDEN", { message: "Not a member" }),
+			);
+
+			await expect(
+				endpoints.state.handler({
+					context,
+					query: { organizationId: "organization-123" },
+				}),
+			).rejects.toThrow("Not a member");
+			expect(mockClient.customers.getStateExternal).not.toHaveBeenCalled();
 		});
 	});
 });

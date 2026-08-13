@@ -18,8 +18,18 @@ export const createMockPolarClient = (): Polar =>
 			update: vi.fn(),
 			updateExternal: vi.fn(),
 			get: vi.fn(),
+			getExternal: vi.fn(),
 			getStateExternal: vi.fn(),
 			list: vi.fn(),
+			members: {
+				createExternal: vi.fn(),
+				deleteExternal: vi.fn(),
+				getExternal: vi.fn(),
+				updateExternal: vi.fn(),
+			},
+		},
+		members: {
+			listMembers: vi.fn(),
 		},
 		customerSessions: {
 			create: vi.fn(),
