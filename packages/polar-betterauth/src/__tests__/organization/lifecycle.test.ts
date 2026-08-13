@@ -8,7 +8,6 @@ import {
 	synchronizeUserDeletionMemberships,
 	synchronizeUserOrganizationProfiles,
 } from "../../organization/lifecycle";
-import { createPolarOrganizationAPI } from "../../organization/polar-api";
 import {
 	PolarOrganizationTeamCustomerNotFoundError,
 	removeMemberMirror,
@@ -143,11 +142,7 @@ describe("organization lifecycle gaps", () => {
 	it("synchronizes a profile across every organization sequentially", async () => {
 		const { context } = createAuthContext();
 
-		await synchronizeUserOrganizationProfiles(
-			context,
-			createPolarOrganizationAPI(client),
-			user,
-		);
+		await synchronizeUserOrganizationProfiles(context, client, user);
 
 		expect(updateMemberMirror).toHaveBeenCalledTimes(2);
 		expect(vi.mocked(updateMemberMirror).mock.calls[0]?.[2]).toMatchObject({
@@ -172,11 +167,7 @@ describe("organization lifecycle gaps", () => {
 		vi.mocked(updateMemberMirror).mockResolvedValueOnce("deferred");
 
 		await expect(
-			synchronizeUserOrganizationProfiles(
-				context,
-				createPolarOrganizationAPI(client),
-				user,
-			),
+			synchronizeUserOrganizationProfiles(context, client, user),
 		).rejects.toBeInstanceOf(PolarOrganizationTeamCustomerNotFoundError);
 	});
 
@@ -228,11 +219,7 @@ describe("organization lifecycle gaps", () => {
 	it("uses the user delete before-state for every membership", async () => {
 		const { context } = createAuthContext();
 
-		await synchronizeUserDeletionMemberships(
-			context,
-			createPolarOrganizationAPI(client),
-			user,
-		);
+		await synchronizeUserDeletionMemberships(context, client, user);
 
 		expect(removeMemberMirror).toHaveBeenCalledTimes(2);
 		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[2].members).toEqual(
@@ -251,11 +238,7 @@ describe("organization lifecycle gaps", () => {
 		vi.mocked(removeMemberMirror).mockRejectedValueOnce(invariantError);
 
 		await expect(
-			synchronizeUserDeletionMemberships(
-				context,
-				createPolarOrganizationAPI(client),
-				user,
-			),
+			synchronizeUserDeletionMemberships(context, client, user),
 		).rejects.toBe(invariantError);
 		expect(client.customers.members.deleteExternal).not.toHaveBeenCalled();
 	});

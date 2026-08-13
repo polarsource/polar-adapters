@@ -72,7 +72,7 @@ export interface PolarOrganizationOptions {
 	 * Identity fields are always supplied by the integration and cannot be
 	 * overridden by this callback.
 	 */
-	getCustomerCreateParams?: (data: {
+	getTeamCustomerCreateParams?: (data: {
 		organization: Organization & Record<string, unknown>;
 		owner: User & Record<string, unknown>;
 	}) => Promise<PolarOrganizationCustomerCreateParams>;

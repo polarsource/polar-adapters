@@ -1,7 +1,6 @@
 import type { Member as PolarMember } from "@polar-sh/sdk/models/components/member.js";
 import { ResourceNotFound } from "@polar-sh/sdk/models/errors/resourcenotfound.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPolarOrganizationAPI } from "../../organization/polar-api";
 import {
 	PolarOrganizationMemberExternalIdError,
 	PolarOrganizationOwnerInvariantError,
@@ -171,7 +170,6 @@ const createHarness = (
 	);
 
 	return {
-		api: createPolarOrganizationAPI(client),
 		client,
 		members,
 	};
@@ -189,7 +187,7 @@ describe("organization member and owner synchronization", () => {
 
 		await expect(
 			ensureMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -215,7 +213,7 @@ describe("organization member and owner synchronization", () => {
 
 		await expect(
 			ensureMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -237,7 +235,7 @@ describe("organization member and owner synchronization", () => {
 
 		await expect(
 			ensureMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -262,8 +260,8 @@ describe("organization member and owner synchronization", () => {
 			betterAuthRole: admin.role,
 			members: [owner, admin],
 		};
-		await ensureMemberMirror(harness.api, {}, input);
-		await ensureMemberMirror(harness.api, {}, input);
+		await ensureMemberMirror(harness.client, {}, input);
+		await ensureMemberMirror(harness.client, {}, input);
 
 		expect(harness.members.get(`${organizationId}:admin`)?.role).toBe(
 			"billing_manager",
@@ -290,7 +288,7 @@ describe("organization member and owner synchronization", () => {
 		});
 
 		await ensureMemberMirror(
-			harness.api,
+			harness.client,
 			{},
 			{
 				organizationId,
@@ -300,7 +298,7 @@ describe("organization member and owner synchronization", () => {
 			},
 		);
 		await ensureMemberMirror(
-			harness.api,
+			harness.client,
 			{},
 			{
 				organizationId: secondOrganizationId,
@@ -332,7 +330,7 @@ describe("organization member and owner synchronization", () => {
 		});
 
 		const result = await reconcileOwner(
-			harness.api,
+			harness.client,
 			{},
 			{
 				organizationId,
@@ -360,7 +358,7 @@ describe("organization member and owner synchronization", () => {
 		});
 
 		const result = await reconcileOwner(
-			harness.api,
+			harness.client,
 			{},
 			{
 				organizationId,
@@ -387,7 +385,7 @@ describe("organization member and owner synchronization", () => {
 		});
 
 		await removeMemberMirror(
-			harness.api,
+			harness.client,
 			{},
 			{
 				organizationId,
@@ -421,7 +419,7 @@ describe("organization member and owner synchronization", () => {
 
 		await expect(
 			removeMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -432,7 +430,7 @@ describe("organization member and owner synchronization", () => {
 		).resolves.toBe("deleted");
 		await expect(
 			removeMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -448,7 +446,7 @@ describe("organization member and owner synchronization", () => {
 		).mockRejectedValueOnce(failure);
 		await expect(
 			removeMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -466,7 +464,7 @@ describe("organization member and owner synchronization", () => {
 
 		await expect(
 			reconcileOwner(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -476,7 +474,7 @@ describe("organization member and owner synchronization", () => {
 		).rejects.toBeInstanceOf(PolarOrganizationOwnerInvariantError);
 		await expect(
 			removeMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,
@@ -499,7 +497,7 @@ describe("organization member and owner synchronization", () => {
 		const mapMemberRole = vi.fn().mockReturnValue("billing_manager");
 
 		await reconcileOwner(
-			harness.api,
+			harness.client,
 			{ mapMemberRole },
 			{
 				organizationId,
@@ -539,7 +537,7 @@ describe("organization member and owner synchronization", () => {
 
 		await expect(
 			ensureMemberMirror(
-				harness.api,
+				harness.client,
 				{},
 				{
 					organizationId,

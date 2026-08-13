@@ -4,7 +4,6 @@ import { HTTPValidationError } from "@polar-sh/sdk/models/errors/httpvalidatione
 import { ResourceNotFound } from "@polar-sh/sdk/models/errors/resourcenotfound.js";
 import type { Organization } from "better-auth/plugins/organization";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPolarOrganizationAPI } from "../../organization/polar-api";
 import {
 	PolarOrganizationCustomerTypeError,
 	ensureTeamCustomer,
@@ -104,7 +103,7 @@ describe("organization customer synchronization", () => {
 		vi.mocked(client.customers.create).mockResolvedValue(createTeamCustomer());
 
 		await ensureTeamCustomer(
-			createPolarOrganizationAPI(client),
+			client,
 			{ enabled: true },
 			{
 				organization,
@@ -130,7 +129,7 @@ describe("organization customer synchronization", () => {
 		);
 
 		await ensureTeamCustomer(
-			createPolarOrganizationAPI(client),
+			client,
 			{ enabled: true },
 			{
 				organization,
@@ -151,7 +150,7 @@ describe("organization customer synchronization", () => {
 		);
 
 		await ensureTeamCustomer(
-			createPolarOrganizationAPI(client),
+			client,
 			{ enabled: true },
 			{
 				organization,
@@ -168,7 +167,7 @@ describe("organization customer synchronization", () => {
 	it("does not allow custom parameters to override identity fields", async () => {
 		vi.mocked(client.customers.getExternal).mockRejectedValue(notFound());
 		vi.mocked(client.customers.create).mockResolvedValue(createTeamCustomer());
-		const getCustomerCreateParams = vi.fn().mockResolvedValue({
+		const getTeamCustomerCreateParams = vi.fn().mockResolvedValue({
 			type: "individual",
 			externalId: "other-organization",
 			name: "Other name",
@@ -180,8 +179,8 @@ describe("organization customer synchronization", () => {
 		});
 
 		await ensureTeamCustomer(
-			createPolarOrganizationAPI(client),
-			{ enabled: true, getCustomerCreateParams },
+			client,
+			{ enabled: true, getTeamCustomerCreateParams },
 			{ organization, owner },
 		);
 
@@ -205,7 +204,7 @@ describe("organization customer synchronization", () => {
 		vi.mocked(client.customers.create).mockRejectedValue(externalIdConflict());
 
 		await ensureTeamCustomer(
-			createPolarOrganizationAPI(client),
+			client,
 			{ enabled: true },
 			{
 				organization,
@@ -223,7 +222,7 @@ describe("organization customer synchronization", () => {
 
 		await expect(
 			ensureTeamCustomer(
-				createPolarOrganizationAPI(client),
+				client,
 				{ enabled: true },
 				{
 					organization,
@@ -239,7 +238,7 @@ describe("organization customer synchronization", () => {
 
 		await expect(
 			ensureTeamCustomer(
-				createPolarOrganizationAPI(client),
+				client,
 				{ enabled: true },
 				{
 					organization,
@@ -255,7 +254,7 @@ describe("organization customer synchronization", () => {
 			createTeamCustomer({ name: "New name" }),
 		);
 
-		await updateTeamCustomer(createPolarOrganizationAPI(client), {
+		await updateTeamCustomer(client, {
 			...organization,
 			name: "New name",
 		});

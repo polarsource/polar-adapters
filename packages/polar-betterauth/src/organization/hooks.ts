@@ -1,10 +1,9 @@
-import type { AuthContext } from "better-auth";
+import type { AuthContext, BetterAuthPlugin } from "better-auth";
 import {
 	type OrganizationOptions,
 	getOrgAdapter,
 } from "better-auth/plugins/organization";
 import type { PolarOptions } from "../types";
-import { createPolarOrganizationAPI } from "./polar-api";
 import {
 	ensureMemberMirror,
 	ensureTeamCustomer,
@@ -16,6 +15,11 @@ import type {
 	BetterAuthOrganizationMemberMirror,
 	PolarOrganizationRoleSyncOptions,
 } from "./types";
+
+type BetterAuthOrganizationPlugin = BetterAuthPlugin & {
+	id: "organization";
+	options: OrganizationOptions;
+};
 
 type OrganizationHooks = NonNullable<OrganizationOptions["organizationHooks"]>;
 type AfterCreateOrganizationData = Parameters<
@@ -37,9 +41,6 @@ type AfterRemoveMemberData = Parameters<
 	NonNullable<OrganizationHooks["afterRemoveMember"]>
 >[0];
 
-const isOrganizationOptions = (value: unknown): value is OrganizationOptions =>
-	typeof value === "object" && value !== null;
-
 /**
  * Compose Polar's customer, roster, and single-owner synchronization into
  * Better Auth's organization lifecycle hooks. Application after-hooks run
@@ -54,23 +55,25 @@ export const installOrganizationHooks = (
 		return;
 	}
 
-	const organizationPlugin = ctx.getPlugin("organization");
+	const organizationPlugin =
+		ctx.getPlugin<BetterAuthOrganizationPlugin>("organization");
+
 	if (!organizationPlugin) {
 		throw new Error(
 			"Polar organization support requires Better Auth's organization plugin",
 		);
 	}
 
-	const api = createPolarOrganizationAPI(options.client);
+	const client = options.client;
 	const betterAuthOrganizationOptions = organizationPlugin.options;
-	if (!isOrganizationOptions(betterAuthOrganizationOptions)) {
-		throw new Error("Better Auth's organization plugin has invalid options");
-	}
+
 	const existingHooks = betterAuthOrganizationOptions.organizationHooks ?? {};
+
 	const roleSyncOptions: PolarOrganizationRoleSyncOptions = {
 		creatorRole: betterAuthOrganizationOptions.creatorRole ?? "owner",
 		mapMemberRole: organizationOptions.mapMemberRole,
 	};
+
 	const organizationAdapter = getOrgAdapter(ctx, betterAuthOrganizationOptions);
 
 	const listOrganizationMembers = async (
@@ -104,11 +107,12 @@ export const installOrganizationHooks = (
 	};
 
 	const syncCreatedOrganization = async (data: AfterCreateOrganizationData) => {
-		await ensureTeamCustomer(api, organizationOptions, {
+		await ensureTeamCustomer(client, organizationOptions, {
 			organization: data.organization,
 			owner: data.user,
 		});
-		await reconcileOwner(api, roleSyncOptions, {
+
+		await reconcileOwner(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			members: await listOrganizationMembers(data.organization.id),
 		});
@@ -123,7 +127,7 @@ export const installOrganizationHooks = (
 			return;
 		}
 
-		await updateTeamCustomer(api, updatedOrganization);
+		await updateTeamCustomer(client, updatedOrganization);
 	};
 
 	const syncMember = async (
@@ -131,7 +135,7 @@ export const installOrganizationHooks = (
 		deferInitialCreator: boolean,
 	) => {
 		const members = await listOrganizationMembers(data.organization.id);
-		await ensureMemberMirror(api, roleSyncOptions, {
+		await ensureMemberMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			user: data.user,
 			betterAuthRole: data.member.role,
@@ -144,7 +148,7 @@ export const installOrganizationHooks = (
 	};
 
 	const syncUpdatedMemberRole = async (data: AfterUpdateMemberRoleData) => {
-		await ensureMemberMirror(api, roleSyncOptions, {
+		await ensureMemberMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			user: data.user,
 			betterAuthRole: data.member.role,
@@ -153,7 +157,7 @@ export const installOrganizationHooks = (
 	};
 
 	const syncRemovedMember = async (data: AfterRemoveMemberData) => {
-		await removeMemberMirror(api, roleSyncOptions, {
+		await removeMemberMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			externalMemberId: data.member.userId,
 			members: await listOrganizationMembers(data.organization.id),
