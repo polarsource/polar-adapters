@@ -186,6 +186,7 @@ describe("organization hook installation", () => {
 
 		expect(applicationHook).toHaveBeenCalledOnce();
 		expect(client.customers.create).toHaveBeenCalledOnce();
+		expect(client.members.listMembers).not.toHaveBeenCalled();
 		const applicationCallOrder = applicationHook.mock.invocationCallOrder[0];
 		const polarCallOrder = vi.mocked(client.customers.create).mock
 			.invocationCallOrder[0];

@@ -1,4 +1,4 @@
-import type { AuthContext, User } from "better-auth";
+import type { AuthContext } from "better-auth";
 import type { Member, Organization } from "better-auth/plugins/organization";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -9,7 +9,6 @@ import {
 	synchronizeUserOrganizationProfiles,
 } from "../../organization/lifecycle";
 import {
-	PolarOrganizationTeamCustomerNotFoundError,
 	removeMemberMirror,
 	updateMemberMirror,
 } from "../../organization/sync";
@@ -135,40 +134,35 @@ describe("organization lifecycle gaps", () => {
 	beforeEach(() => {
 		client = createMockPolarClient();
 		vi.clearAllMocks();
-		vi.mocked(updateMemberMirror).mockResolvedValue("synchronized");
-		vi.mocked(removeMemberMirror).mockResolvedValue("deleted");
+		vi.mocked(updateMemberMirror).mockResolvedValue();
+		vi.mocked(removeMemberMirror).mockResolvedValue();
 	});
 
-	it("synchronizes a profile across every organization sequentially", async () => {
+	it("synchronizes a profile across every organization concurrently", async () => {
 		const { context } = createAuthContext();
 
 		await synchronizeUserOrganizationProfiles(context, client, user);
 
 		expect(updateMemberMirror).toHaveBeenCalledTimes(2);
-		expect(vi.mocked(updateMemberMirror).mock.calls[0]?.[2]).toMatchObject({
+		expect(vi.mocked(updateMemberMirror).mock.calls[0]?.[1]).toMatchObject({
 			organizationId: "org-a",
 			user,
-			betterAuthRole: "owner",
 		});
-		expect(vi.mocked(updateMemberMirror).mock.calls[1]?.[2]).toMatchObject({
+		expect(vi.mocked(updateMemberMirror).mock.calls[1]?.[1]).toMatchObject({
 			organizationId: "org-b",
 			user,
-			betterAuthRole: "admin",
 		});
-		const firstFinished =
-			vi.mocked(updateMemberMirror).mock.invocationCallOrder[0];
-		const secondStarted =
-			vi.mocked(updateMemberMirror).mock.invocationCallOrder[1];
-		expect(firstFinished).toBeLessThan(secondStarted ?? 0);
 	});
 
-	it("treats an absent team mirror as a propagated reconciliation error", async () => {
+	it("propagates member profile synchronization errors", async () => {
 		const { context } = createAuthContext();
-		vi.mocked(updateMemberMirror).mockResolvedValueOnce("deferred");
+		const failure = new Error("Polar unavailable");
+		vi.mocked(updateMemberMirror).mockRejectedValueOnce(failure);
 
 		await expect(
 			synchronizeUserOrganizationProfiles(context, client, user),
-		).rejects.toBeInstanceOf(PolarOrganizationTeamCustomerNotFoundError);
+		).rejects.toBe(failure);
+		expect(updateMemberMirror).toHaveBeenCalledTimes(2);
 	});
 
 	it("cleans up self-leave exactly once and supplies the remaining owner roster", async () => {
@@ -195,6 +189,25 @@ describe("organization lifecycle gaps", () => {
 				}),
 			]),
 		});
+	});
+
+	it("rejects a malformed organization leave result", async () => {
+		const { context } = createAuthContext();
+		const options = createTestPolarOptions({
+			client,
+			organization: { enabled: true },
+		});
+
+		await expect(
+			synchronizeOrganizationLeave(options, {
+				context: Object.assign(context, {
+					returned: { organizationId: "org-a" },
+				}),
+			}),
+		).rejects.toThrow(
+			"Better Auth organization leave returned no deleted membership",
+		);
+		expect(removeMemberMirror).not.toHaveBeenCalled();
 	});
 
 	it("matches only /organization/leave, not admin removal or deletion", () => {
@@ -233,13 +246,14 @@ describe("organization lifecycle gaps", () => {
 	it("propagates sole-owner deletion failures without deleting a member", async () => {
 		const { context } = createAuthContext();
 		const invariantError = new Error(
-			"Cannot reconcile Polar owner: Better Auth has no owner successor",
+			"Cannot synchronize Polar owner: Better Auth has no owner successor",
 		);
 		vi.mocked(removeMemberMirror).mockRejectedValueOnce(invariantError);
 
 		await expect(
 			synchronizeUserDeletionMemberships(context, client, user),
 		).rejects.toBe(invariantError);
+		expect(removeMemberMirror).toHaveBeenCalledTimes(2);
 		expect(client.customers.members.deleteExternal).not.toHaveBeenCalled();
 	});
 });

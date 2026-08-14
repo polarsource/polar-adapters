@@ -14,7 +14,7 @@ export interface BetterAuthRoleMappingInput {
 	 */
 	role: string;
 	/**
-	 * Whether ownership reconciliation selected this member as Polar's sole owner.
+	 * Whether this member was selected as Polar's sole owner.
 	 */
 	isCanonicalOwner: boolean;
 }
@@ -38,7 +38,7 @@ export interface PolarOrganizationMemberRoleInput {
 	/** Better Auth's raw, potentially comma-separated role value. */
 	role: string;
 	/** Parsed and de-duplicated Better Auth roles. */
-	roles: readonly string[];
+	roles: ReadonlySet<string>;
 	organizationId: string;
 	user: BetterAuthOrganizationUser;
 }

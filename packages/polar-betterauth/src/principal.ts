@@ -2,10 +2,7 @@ import type { AuthContext, User } from "better-auth";
 import { APIError } from "better-auth/api";
 import type { AnonymousSession } from "better-auth/plugins/anonymous";
 import type { Member } from "better-auth/plugins/organization";
-import {
-	mapBetterAuthRoleToPolar,
-	parseBetterAuthRoles,
-} from "./organization/roles";
+import { mapBetterAuthRoleToPolar } from "./organization/roles";
 import type { BetterAuthRoleMappingOptions } from "./organization/types";
 
 export type BillingAuthorization = "member" | "billing";
@@ -30,19 +27,6 @@ export interface BillingPrincipalSession {
 		Partial<Pick<AnonymousSession["user"], "isAnonymous">>;
 }
 
-export interface BillingAuthorizationInput {
-	authorization: BillingAuthorization;
-	organizationId: string;
-	userId: string;
-	betterAuthRole: string;
-	roles: readonly string[];
-	defaultAuthorized: boolean;
-}
-
-export type BillingAuthorizationCallback = (
-	input: BillingAuthorizationInput,
-) => boolean | Promise<boolean>;
-
 export interface ResolveBillingPrincipalInput {
 	/** Better Auth context whose adapter understands logical plugin model names. */
 	context: {
@@ -58,8 +42,6 @@ export interface ResolveBillingPrincipalInput {
 	authorization?: BillingAuthorization | undefined;
 	/** Role names used by the default billing authorization policy. */
 	roleMapping?: BetterAuthRoleMappingOptions | undefined;
-	/** Optional final policy override. Membership is always verified first. */
-	authorize?: BillingAuthorizationCallback | undefined;
 }
 
 const isBillingRole = (
@@ -80,7 +62,7 @@ const isBillingRole = (
  * Resolve the Polar billing identity and authorize explicit organization access.
  *
  * This function performs local Better Auth authorization only. It deliberately
- * does not infer an active organization or make Polar reconciliation/API calls.
+ * does not infer an active organization or make Polar repair/API calls.
  */
 export const resolveBillingPrincipal = async ({
 	context,
@@ -89,7 +71,6 @@ export const resolveBillingPrincipal = async ({
 	organizationEnabled,
 	authorization = "member",
 	roleMapping,
-	authorize,
 }: ResolveBillingPrincipalInput): Promise<BillingPrincipal> => {
 	if (organizationId === undefined) {
 		return {
@@ -137,20 +118,10 @@ export const resolveBillingPrincipal = async ({
 		});
 	}
 
-	const defaultAuthorized =
-		authorization === "member" || isBillingRole(membership.role, roleMapping);
-	const authorized = authorize
-		? await authorize({
-				authorization,
-				organizationId,
-				userId: session.user.id,
-				betterAuthRole: membership.role,
-				roles: parseBetterAuthRoles(membership.role),
-				defaultAuthorized,
-			})
-		: defaultAuthorized;
-
-	if (!authorized) {
+	if (
+		authorization === "billing" &&
+		!isBillingRole(membership.role, roleMapping)
+	) {
 		throw new APIError("FORBIDDEN", {
 			message: "Organization billing access requires a billing role",
 		});
