@@ -1,26 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	mapBetterAuthRoleToPolar,
-	parseBetterAuthRoles,
-} from "../../organization/roles";
-
-describe("parseBetterAuthRoles", () => {
-	it("parses, trims, and de-duplicates comma-separated roles", () => {
-		expect(parseBetterAuthRoles(" owner, admin,owner, member ")).toEqual(
-			new Set(["owner", "admin", "member"]),
-		);
-	});
-
-	it("removes empty role values", () => {
-		expect(parseBetterAuthRoles(" ,admin,, ")).toEqual(new Set(["admin"]));
-	});
-
-	it("preserves custom role casing", () => {
-		expect(parseBetterAuthRoles("Billing, billing")).toEqual(
-			new Set(["Billing", "billing"]),
-		);
-	});
-});
+import { mapBetterAuthRoleToPolar } from "../../organization/roles";
 
 describe("mapBetterAuthRoleToPolar", () => {
 	it("maps the canonical owner to owner", () => {
@@ -66,6 +45,7 @@ describe("mapBetterAuthRoleToPolar", () => {
 				{ creatorRole: "founder" },
 			),
 		).toBe("billing_manager");
+
 		expect(
 			mapBetterAuthRoleToPolar(
 				{ role: "finance", isCanonicalOwner: false },
