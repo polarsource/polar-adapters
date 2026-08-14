@@ -286,6 +286,24 @@ describe("resolveBillingPrincipal", () => {
 			});
 		});
 
+		it("authorizes Better Auth's custom creator role", async () => {
+			const { context } = createContext(createMembership({ role: "founder" }));
+
+			await expect(
+				resolveBillingPrincipal({
+					context,
+					session: createSession(),
+					organizationId: "organization-123",
+					organizationEnabled: true,
+					authorization: "billing",
+					roleMapping: { creatorRole: "founder" },
+				}),
+			).resolves.toMatchObject({
+				kind: "team",
+				betterAuthRole: "founder",
+			});
+		});
+
 		it("authorizes configured custom roles in a comma-separated role", async () => {
 			const { context } = createContext(
 				createMembership({ role: "member, finance" }),

@@ -196,7 +196,7 @@ This requires Polar's member model to be enabled. The Polar organization access 
 
 Better Auth users map to Polar member `externalId` values using `user.id` within each team customer. Direct additions and accepted invitations are mirrored, and profile, role, removal, self-leave, and user-deletion paths are synchronized. Better Auth remains the roster source of truth.
 
-Polar permits one owner. The adapter retains the current valid Better Auth owner as Polar's canonical owner; if a transfer is required, it deterministically selects the earliest eligible owner. Additional Better Auth `owner` roles and `admin` map to `billing_manager`; other roles map to `member`. `organization.mapMemberRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
+Polar permits one owner. The adapter reads Better Auth's configured `creatorRole` (defaulting to `owner`), retains the current valid creator-role member as Polar's canonical owner, and uses the same role for checkout authorization. If a transfer is required, it deterministically selects the earliest eligible owner. Additional creator-role members and `admin` map to `billing_manager`; other roles map to `member`. `organization.mapBetterAuthRoleToPolarRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
 
 Organization deletion in Better Auth does **not** delete the Polar team customer or its billing data. Cross-system writes are not transactional: synchronization errors propagate, but an earlier Better Auth or Polar write cannot be rolled back. Polar synchronization uses deterministic external IDs, and each lifecycle hook updates only the customer or members affected by that Better Auth operation.
 

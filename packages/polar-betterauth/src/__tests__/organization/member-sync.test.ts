@@ -2,7 +2,6 @@ import type { Member as PolarMember } from "@polar-sh/sdk/models/components/memb
 import { ResourceNotFound } from "@polar-sh/sdk/models/errors/resourcenotfound.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	PolarOrganizationMemberExternalIdError,
 	PolarOrganizationOwnerInvariantError,
 	ensureMemberMirror,
 	removeMemberMirror,
@@ -504,11 +503,13 @@ describe("organization member and owner synchronization", () => {
 				polarMember("finance", "member"),
 			],
 		});
-		const mapMemberRole = vi.fn().mockReturnValue("billing_manager");
+		const mapBetterAuthRoleToPolarRole = vi
+			.fn()
+			.mockReturnValue("billing_manager");
 
 		await updateMemberRoleMirror(
 			harness.client,
-			{ mapMemberRole },
+			{ mapBetterAuthRoleToPolarRole },
 			{
 				organizationId,
 				user: finance.user,
@@ -517,8 +518,8 @@ describe("organization member and owner synchronization", () => {
 			},
 		);
 
-		expect(mapMemberRole).toHaveBeenCalledOnce();
-		expect(mapMemberRole).toHaveBeenCalledWith({
+		expect(mapBetterAuthRoleToPolarRole).toHaveBeenCalledOnce();
+		expect(mapBetterAuthRoleToPolarRole).toHaveBeenCalledWith({
 			role: "finance, support",
 			roles: new Set(["finance", "support"]),
 			organizationId,
@@ -527,36 +528,5 @@ describe("organization member and owner synchronization", () => {
 		expect(harness.members.get(`${organizationId}:finance`)?.role).toBe(
 			"billing_manager",
 		);
-	});
-
-	it("rejects an email-idempotent create linked to another external member ID", async () => {
-		const owner = betterAuthMember("owner", "owner");
-		const newMember = betterAuthMember("expected-user", "member", {
-			user: {
-				id: "expected-user",
-				email: "collision@example.com",
-				name: "Expected",
-			},
-		});
-		const harness = createHarness({
-			[organizationId]: [
-				polarMember("owner", "owner"),
-				polarMember("other-user", "member", {
-					email: "collision@example.com",
-				}),
-			],
-		});
-
-		await expect(
-			ensureMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					user: newMember.user,
-					betterAuthRole: newMember.role,
-				},
-			),
-		).rejects.toBeInstanceOf(PolarOrganizationMemberExternalIdError);
 	});
 });

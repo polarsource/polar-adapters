@@ -71,7 +71,8 @@ export const installOrganizationHooks = (
 
 	const roleSyncOptions: PolarOrganizationRoleSyncOptions = {
 		creatorRole: betterAuthOrganizationOptions.creatorRole ?? "owner",
-		mapMemberRole: organizationOptions.mapMemberRole,
+		mapBetterAuthRoleToPolarRole:
+			organizationOptions.mapBetterAuthRoleToPolarRole,
 	};
 
 	const organizationAdapter = getOrgAdapter(ctx, betterAuthOrganizationOptions);
