@@ -14,88 +14,83 @@ type BetterAuthMember = Member & Record<string, unknown>;
 type BetterAuthUser = User & Record<string, unknown>;
 
 export interface OrganizationMemberState extends BetterAuthMember {
-	user: BetterAuthUser;
+  user: BetterAuthUser;
 }
 
 export class BetterAuthOrganizationStateError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = "BetterAuthOrganizationStateError";
-	}
+  constructor(message: string) {
+    super(message);
+    this.name = "BetterAuthOrganizationStateError";
+  }
 }
 
-/**
- * Read organization members through Better Auth's logical model names. Better
- * Auth's adapter layer maps these names and fields when an application uses a
- * custom organization schema.
- */
 const loadBetterAuthOrganizationMembers = async (
-	authContext: AuthContext,
-	organizationId: string,
+  authContext: AuthContext,
+  organizationId: string,
 ): Promise<OrganizationMemberState[]> => {
-	const members = await authContext.adapter.findMany<BetterAuthMember>({
-		model: "member",
-		where: [{ field: "organizationId", value: organizationId }],
-	});
-	if (members.length === 0) {
-		return [];
-	}
+  const members = await authContext.adapter.findMany<BetterAuthMember>({
+    model: "member",
+    where: [{ field: "organizationId", value: organizationId }],
+  });
+  if (members.length === 0) {
+    return [];
+  }
 
-	const users = await authContext.adapter.findMany<BetterAuthUser>({
-		model: "user",
-		where: [
-			{
-				field: "id",
-				operator: "in",
-				value: members.map((member) => member.userId),
-			},
-		],
-	});
-	const usersById = new Map(users.map((user) => [user.id, user]));
+  const users = await authContext.adapter.findMany<BetterAuthUser>({
+    model: "user",
+    where: [
+      {
+        field: "id",
+        operator: "in",
+        value: members.map((member) => member.userId),
+      },
+    ],
+  });
+  const usersById = new Map(users.map((user) => [user.id, user]));
 
-	return members.map((member) => {
-		const user = usersById.get(member.userId);
-		if (!user) {
-			throw new BetterAuthOrganizationStateError(
-				`Better Auth user "${member.userId}" for organization "${organizationId}" was not found`,
-			);
-		}
-		return { ...member, user };
-	});
+  return members.map((member) => {
+    const user = usersById.get(member.userId);
+    if (!user) {
+      throw new BetterAuthOrganizationStateError(
+        `Better Auth user "${member.userId}" for organization "${organizationId}" was not found`,
+      );
+    }
+    return { ...member, user };
+  });
 };
 
 export const listBetterAuthMembershipsForUser = (
-	authContext: AuthContext,
-	userId: string,
+  authContext: AuthContext,
+  userId: string,
 ) =>
-	authContext.adapter.findMany<BetterAuthMember>({
-		model: "member",
-		where: [{ field: "userId", value: userId }],
-	});
+  authContext.adapter.findMany<BetterAuthMember>({
+    model: "member",
+    where: [{ field: "userId", value: userId }],
+  });
 
 export const synchronizeUserOrganizationProfiles = async (
-	authContext: AuthContext,
-	client: Polar,
-	user: User,
+  authContext: AuthContext,
+  client: Polar,
+  user: User,
 ) => {
-	const memberships = await listBetterAuthMembershipsForUser(
-		authContext,
-		user.id,
-	);
+  const memberships = await listBetterAuthMembershipsForUser(
+    authContext,
+    user.id,
+  );
 
-	const results = await Promise.allSettled(
-		memberships.map((membership) =>
-			updateMemberMirror(client, {
-				organizationId: membership.organizationId,
-				user,
-			}),
-		),
-	);
+  const results = await Promise.allSettled(
+    memberships.map((membership) =>
+      updateMemberMirror(client, {
+        organizationId: membership.organizationId,
+        user,
+      }),
+    ),
+  );
 
-	const rejection = results.find((result) => result.status === "rejected");
-	if (rejection?.status === "rejected") {
-		throw rejection.reason;
-	}
+  const rejection = results.find((result) => result.status === "rejected");
+  if (rejection?.status === "rejected") {
+    throw rejection.reason;
+  }
 };
 
 /**
@@ -103,134 +98,134 @@ export const synchronizeUserOrganizationProfiles = async (
  * hook composer can call this same helper for any future bypass path.
  */
 export const removeOrganizationMemberMirror = async (input: {
-	authContext: AuthContext;
-	client: Polar;
-	organizationId: string;
-	userId: string;
-	roleOptions?: PolarOrganizationRoleSyncOptions;
+  authContext: AuthContext;
+  client: Polar;
+  organizationId: string;
+  userId: string;
+  roleOptions?: PolarOrganizationRoleSyncOptions;
 }) => {
-	const members = await loadBetterAuthOrganizationMembers(
-		input.authContext,
-		input.organizationId,
-	);
+  const members = await loadBetterAuthOrganizationMembers(
+    input.authContext,
+    input.organizationId,
+  );
 
-	await removeMemberMirror(
-		input.client,
-		{
-			creatorRole:
-				input.roleOptions?.creatorRole ??
-				getBetterAuthCreatorRole(input.authContext),
-			mapBetterAuthRoleToPolarRole:
-				input.roleOptions?.mapBetterAuthRoleToPolarRole,
-		},
-		{
-			organizationId: input.organizationId,
-			externalMemberId: input.userId,
-			members,
-		},
-	);
+  await removeMemberMirror(
+    input.client,
+    {
+      creatorRole:
+        input.roleOptions?.creatorRole ??
+        getBetterAuthCreatorRole(input.authContext),
+      mapBetterAuthRoleToPolarRole:
+        input.roleOptions?.mapBetterAuthRoleToPolarRole,
+    },
+    {
+      organizationId: input.organizationId,
+      externalMemberId: input.userId,
+      members,
+    },
+  );
 };
 
-const endpointResult = async (returned: unknown): Promise<unknown> => {
-	if (returned instanceof APIError) {
-		return null;
-	}
-	if (returned instanceof Response) {
-		if (!returned.ok) {
-			return null;
-		}
-		return returned.clone().json();
-	}
-	return returned;
+const getEndpointResult = async (returned: unknown): Promise<unknown> => {
+  if (returned instanceof APIError) {
+    return null;
+  }
+  if (returned instanceof Response) {
+    if (!returned.ok) {
+      return null;
+    }
+    return returned.clone().json();
+  }
+  return returned;
 };
 
 const leaveMembershipSchema = z.object({
-	organizationId: z.string(),
-	userId: z.string(),
+  organizationId: z.string(),
+  userId: z.string(),
 });
 
 const readLeaveMembership = async (returned: unknown) => {
-	const value = await endpointResult(returned);
+  const value = await getEndpointResult(returned);
 
-	if (value === null || value === undefined) {
-		return null;
-	}
+  if (value === null || value === undefined) {
+    return null;
+  }
 
-	const result = leaveMembershipSchema.safeParse(value);
+  const result = leaveMembershipSchema.safeParse(value);
 
-	if (!result.success) {
-		throw new BetterAuthOrganizationStateError(
-			"Better Auth organization leave returned no deleted membership",
-		);
-	}
+  if (!result.success) {
+    throw new BetterAuthOrganizationStateError(
+      "Better Auth organization leave returned no deleted membership",
+    );
+  }
 
-	return result.data;
+  return result.data;
 };
 
 export const synchronizeOrganizationLeave = async (
-	options: PolarOptions,
-	context: { context: AuthContext & { returned?: unknown } },
+  options: PolarOptions,
+  context: { context: AuthContext & { returned?: unknown } },
 ) => {
-	const membership = await readLeaveMembership(context.context["returned"]);
+  const membership = await readLeaveMembership(context.context["returned"]);
 
-	if (!membership) {
-		return;
-	}
+  if (!membership) {
+    return;
+  }
 
-	await removeOrganizationMemberMirror({
-		authContext: context.context,
-		client: options.client,
-		...membership,
-		roleOptions: {
-			mapBetterAuthRoleToPolarRole:
-				options.organization?.mapBetterAuthRoleToPolarRole,
-		},
-	});
+  await removeOrganizationMemberMirror({
+    authContext: context.context,
+    client: options.client,
+    ...membership,
+    roleOptions: {
+      mapBetterAuthRoleToPolarRole:
+        options.organization?.mapBetterAuthRoleToPolarRole,
+    },
+  });
 };
 
 export const createOrganizationLifecycleHooks = (
-	options: PolarOptions,
+  options: PolarOptions,
 ): BetterAuthPlugin["hooks"] | undefined => {
-	if (!options.organization?.enabled) {
-		return undefined;
-	}
-	return {
-		after: [
-			{
-				matcher: (context) => context.path === ORGANIZATION_LEAVE_PATH,
-				handler: createAuthMiddleware(async (context) => {
-					await synchronizeOrganizationLeave(options, context);
-				}),
-			},
-		],
-	};
+  if (!options.organization?.enabled) {
+    return undefined;
+  }
+  return {
+    after: [
+      {
+        matcher: (context) => context.path === ORGANIZATION_LEAVE_PATH,
+        handler: createAuthMiddleware(async (context) => {
+          await synchronizeOrganizationLeave(options, context);
+        }),
+      },
+    ],
+  };
 };
 
 export const synchronizeUserDeletionMemberships = async (
-	authContext: AuthContext,
-	client: Polar,
-	user: User,
-	options?: PolarOrganizationRoleSyncOptions,
+  authContext: AuthContext,
+  client: Polar,
+  user: User,
+  options?: PolarOrganizationRoleSyncOptions,
 ) => {
-	const memberships = await listBetterAuthMembershipsForUser(
-		authContext,
-		user.id,
-	);
+  const memberships = await listBetterAuthMembershipsForUser(
+    authContext,
+    user.id,
+  );
 
-	const results = await Promise.allSettled(
-		memberships.map((membership) =>
-			removeOrganizationMemberMirror({
-				authContext,
-				client,
-				organizationId: membership.organizationId,
-				userId: user.id,
-				roleOptions: options,
-			}),
-		),
-	);
+  const results = await Promise.allSettled(
+    memberships.map((membership) =>
+      removeOrganizationMemberMirror({
+        authContext,
+        client,
+        organizationId: membership.organizationId,
+        userId: user.id,
+        roleOptions: options,
+      }),
+    ),
+  );
 
-	const rejection = results.find((result) => result.status === "rejected");
-	if (rejection?.status === "rejected") {
-		throw rejection.reason;
-	}
+  const rejection = results.find((result) => result.status === "rejected");
+  if (rejection?.status === "rejected") {
+    throw rejection.reason;
+  }
 };

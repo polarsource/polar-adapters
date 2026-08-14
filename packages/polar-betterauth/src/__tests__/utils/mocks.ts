@@ -15,6 +15,7 @@ export const createMockPolarClient = (): Polar =>
 		},
 		customers: {
 			create: vi.fn(),
+			delete: vi.fn(),
 			update: vi.fn(),
 			updateExternal: vi.fn(),
 			get: vi.fn(),
