@@ -11,6 +11,7 @@ import {
 } from "./roles";
 import type {
 	BetterAuthOrganizationMemberMirror,
+	BetterAuthOrganizationUser,
 	PolarMemberRole,
 	PolarNonOwnerMemberRole,
 	PolarOrganizationOptions,
@@ -36,19 +37,6 @@ export class PolarOrganizationTeamCustomerNotFoundError extends Error {
 			`Polar team customer with external ID "${organizationId}" was not found`,
 		);
 		this.name = "PolarOrganizationTeamCustomerNotFoundError";
-	}
-}
-
-export class PolarOrganizationMemberExternalIdError extends Error {
-	constructor(
-		organizationId: string,
-		expectedExternalId: string,
-		actualExternalId: string | null,
-	) {
-		super(
-			`Polar member in organization "${organizationId}" has external ID ${JSON.stringify(actualExternalId)}; expected "${expectedExternalId}"`,
-		);
-		this.name = "PolarOrganizationMemberExternalIdError";
 	}
 }
 
@@ -175,20 +163,6 @@ const findMember = async (
 	}
 };
 
-const assertMemberExternalId = (
-	member: PolarMember,
-	organizationId: string,
-	expectedExternalId: string,
-) => {
-	if (member.externalId !== expectedExternalId) {
-		throw new PolarOrganizationMemberExternalIdError(
-			organizationId,
-			expectedExternalId,
-			member.externalId,
-		);
-	}
-};
-
 type MemberRoleData = Pick<
 	BetterAuthOrganizationMemberMirror,
 	"role" | "user" | "userId"
@@ -207,24 +181,18 @@ const ensureMemberRecord = async (
 	);
 
 	if (existingMember) {
-		assertMemberExternalId(existingMember, organizationId, member.userId);
 		return;
 	}
 
-	const createdMember = await client.customers.members.createExternal({
+	await client.customers.members.createExternal({
 		externalId: organizationId,
 		memberCreateFromCustomer: {
 			externalId: member.userId,
 			email: member.user.email,
-			name: member.user.name ?? null,
+			name: member.user.name,
 			role,
 		},
 	});
-
-	// Polar's create path can be idempotent by email. It cannot repair an
-	// absent/different external ID through MemberUpdate, so fail explicitly
-	// rather than silently linking the wrong actor.
-	assertMemberExternalId(createdMember, organizationId, member.userId);
 };
 
 const resolveNonOwnerRole = async (
@@ -232,7 +200,7 @@ const resolveNonOwnerRole = async (
 	organizationId: string,
 	member: MemberRoleData,
 ): Promise<PolarNonOwnerMemberRole> => {
-	if (!options.mapMemberRole) {
+	if (!options.mapBetterAuthRoleToPolarRole) {
 		const role = mapBetterAuthRoleToPolar(
 			{ role: member.role, isCanonicalOwner: false },
 			options,
@@ -243,7 +211,7 @@ const resolveNonOwnerRole = async (
 		return role;
 	}
 
-	const role = await options.mapMemberRole({
+	const role = await options.mapBetterAuthRoleToPolarRole({
 		role: member.role,
 		roles: parseBetterAuthRoles(member.role),
 		organizationId,
@@ -277,12 +245,11 @@ const updateMemberRole = async (
 	externalMemberId: string,
 	role: PolarMemberRole,
 ) => {
-	const updatedMember = await client.customers.members.updateExternal({
+	await client.customers.members.updateExternal({
 		externalId: organizationId,
 		memberExternalId: externalMemberId,
 		memberUpdate: { role },
 	});
-	assertMemberExternalId(updatedMember, organizationId, externalMemberId);
 };
 
 /** Transfer ownership only when the current Polar owner is no longer a Better Auth owner. */
@@ -387,7 +354,7 @@ export const ensureMemberMirror = async (
 	options: PolarOrganizationRoleSyncOptions,
 	data: {
 		organizationId: string;
-		user: { id: string; email: string; name?: string | null };
+		user: BetterAuthOrganizationUser;
 		betterAuthRole: string;
 		/** Only the initial creator hook may run before the team customer exists. */
 		deferIfCustomerMissing?: boolean;
@@ -413,7 +380,7 @@ export const updateMemberRoleMirror = async (
 	options: PolarOrganizationRoleSyncOptions,
 	data: {
 		organizationId: string;
-		user: { id: string; email: string; name?: string | null };
+		user: BetterAuthOrganizationUser;
 		betterAuthRole: string;
 		members: readonly BetterAuthOrganizationMemberMirror[];
 	},
@@ -436,7 +403,9 @@ export const updateMemberRoleMirror = async (
 		userId: data.user.id,
 		user: data.user,
 	};
+
 	const role = await resolveNonOwnerRole(options, data.organizationId, member);
+
 	await updateMemberRole(client, data.organizationId, data.user.id, role);
 };
 
@@ -444,18 +413,17 @@ export const updateMemberMirror = async (
 	client: Polar,
 	data: {
 		organizationId: string;
-		user: { id: string; email: string; name?: string | null };
+		user: BetterAuthOrganizationUser;
 	},
 ) => {
-	const updatedMember = await client.customers.members.updateExternal({
+	await client.customers.members.updateExternal({
 		externalId: data.organizationId,
 		memberExternalId: data.user.id,
 		memberUpdate: {
 			email: data.user.email,
-			name: data.user.name ?? null,
+			name: data.user.name,
 		},
 	});
-	assertMemberExternalId(updatedMember, data.organizationId, data.user.id);
 };
 
 export const removeMemberMirror = async (
@@ -470,6 +438,7 @@ export const removeMemberMirror = async (
 	const remainingMembers = data.members.filter(
 		(member) => member.userId !== data.externalMemberId,
 	);
+
 	await syncOwnerTransfer(client, options, {
 		organizationId: data.organizationId,
 		members: remainingMembers,
@@ -482,6 +451,7 @@ export const removeMemberMirror = async (
 		});
 	} catch (error) {
 		if (error instanceof ResourceNotFound) return;
+
 		throw error;
 	}
 };

@@ -6,7 +6,7 @@ import type { Member, Organization } from "better-auth/plugins/organization";
 export type PolarMemberRole = (typeof MemberRole)[keyof typeof MemberRole];
 export type PolarNonOwnerMemberRole = Exclude<PolarMemberRole, "owner">;
 
-type BetterAuthOrganizationUser = Pick<User, "id" | "email" | "name">;
+export type BetterAuthOrganizationUser = Pick<User, "id" | "email" | "name">;
 
 export interface BetterAuthRoleMappingInput {
 	/**
@@ -52,7 +52,7 @@ export type BetterAuthOrganizationMemberMirror = Pick<
 
 export interface PolarOrganizationRoleSyncOptions
 	extends BetterAuthRoleMappingOptions {
-	mapMemberRole?: (
+	mapBetterAuthRoleToPolarRole?: (
 		data: PolarOrganizationMemberRoleInput,
 	) => PolarNonOwnerMemberRole | Promise<PolarNonOwnerMemberRole>;
 }
@@ -82,7 +82,7 @@ export interface PolarOrganizationOptions {
 	 * Ownership is intentionally not exposed: the adapter alone selects Polar's
 	 * single canonical owner. Return `member` or `billing_manager` only.
 	 */
-	mapMemberRole?: (
+	mapBetterAuthRoleToPolarRole?: (
 		data: PolarOrganizationMemberRoleInput,
 	) => PolarNonOwnerMemberRole | Promise<PolarNonOwnerMemberRole>;
 }

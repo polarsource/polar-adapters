@@ -123,9 +123,13 @@ describe("checkout plugin", () => {
 			expect(resolveBillingPrincipal).not.toHaveBeenCalled();
 		});
 
-		it("should create an organization checkout for a billing member", async () => {
+		it("uses Better Auth's custom creator role for organization checkout authorization", async () => {
 			const mockCheckout = createMockCheckout();
 			const session = { user: { id: "user-123" } };
+			mockContext.getPlugin.mockReturnValue({
+				id: "organization",
+				options: { creatorRole: "founder" },
+			});
 			vi.mocked(getSessionFromCtx).mockResolvedValue(session);
 			vi.mocked(resolveBillingPrincipal).mockResolvedValue({
 				kind: "team",
@@ -154,6 +158,7 @@ describe("checkout plugin", () => {
 				session,
 				organizationId: "organization-123",
 				authorization: "billing",
+				roleMapping: { creatorRole: "founder" },
 			});
 			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
 				expect.objectContaining({

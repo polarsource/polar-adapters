@@ -5,6 +5,7 @@ import {
 	getSessionFromCtx,
 } from "better-auth/api";
 import * as z from "zod/v4";
+import { getBetterAuthCreatorRole } from "../organization/roles";
 import { resolveBillingPrincipal } from "../principal";
 import type { PolarOptions, Product } from "../types";
 
@@ -130,6 +131,9 @@ export const checkout =
 								organizationId: ctx.body.organizationId,
 								organizationEnabled: rootOptions?.organization?.enabled,
 								authorization: "billing",
+								roleMapping: {
+									creatorRole: getBetterAuthCreatorRole(ctx.context),
+								},
 							})
 						: undefined;
 					const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
