@@ -123,9 +123,9 @@ describe("organization customer synchronization", () => {
 		});
 	});
 
-	it("does not write when the existing team customer is current", async () => {
+	it("returns an existing team customer without updating it", async () => {
 		vi.mocked(client.customers.getExternal).mockResolvedValue(
-			createTeamCustomer(),
+			createTeamCustomer({ name: "Existing Polar name" }),
 		);
 
 		await ensureTeamCustomer(
@@ -139,29 +139,6 @@ describe("organization customer synchronization", () => {
 
 		expect(client.customers.create).not.toHaveBeenCalled();
 		expect(client.customers.updateExternal).not.toHaveBeenCalled();
-	});
-
-	it("reconciles the name of an existing team customer", async () => {
-		vi.mocked(client.customers.getExternal).mockResolvedValue(
-			createTeamCustomer({ name: "Old name" }),
-		);
-		vi.mocked(client.customers.updateExternal).mockResolvedValue(
-			createTeamCustomer(),
-		);
-
-		await ensureTeamCustomer(
-			client,
-			{ enabled: true },
-			{
-				organization,
-				owner,
-			},
-		);
-
-		expect(client.customers.updateExternal).toHaveBeenCalledWith({
-			externalId: organization.id,
-			customerUpdateExternalID: { name: organization.name },
-		});
 	});
 
 	it("does not allow custom parameters to override identity fields", async () => {

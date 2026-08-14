@@ -7,8 +7,8 @@ import type { PolarOptions } from "../types";
 import {
 	ensureMemberMirror,
 	ensureTeamCustomer,
-	reconcileOwner,
 	removeMemberMirror,
+	updateMemberRoleMirror,
 	updateTeamCustomer,
 } from "./sync";
 import type {
@@ -111,11 +111,6 @@ export const installOrganizationHooks = (
 			organization: data.organization,
 			owner: data.user,
 		});
-
-		await reconcileOwner(client, roleSyncOptions, {
-			organizationId: data.organization.id,
-			members: await listOrganizationMembers(data.organization.id),
-		});
 	};
 
 	const syncUpdatedOrganization = async (data: AfterUpdateOrganizationData) => {
@@ -134,33 +129,34 @@ export const installOrganizationHooks = (
 		data: AfterAddMemberData | AfterAcceptInvitationData,
 		deferInitialCreator: boolean,
 	) => {
-		const members = await listOrganizationMembers(data.organization.id);
+		const members = deferInitialCreator
+			? await listOrganizationMembers(data.organization.id)
+			: [];
 		await ensureMemberMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			user: data.user,
 			betterAuthRole: data.member.role,
-			members,
 			deferIfCustomerMissing:
-				deferInitialCreator &&
-				members.length === 1 &&
-				members[0]?.userId === data.member.userId,
+				members.length === 1 && members[0]?.userId === data.member.userId,
 		});
 	};
 
 	const syncUpdatedMemberRole = async (data: AfterUpdateMemberRoleData) => {
-		await ensureMemberMirror(client, roleSyncOptions, {
+		const members = await listOrganizationMembers(data.organization.id);
+		await updateMemberRoleMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			user: data.user,
 			betterAuthRole: data.member.role,
-			members: await listOrganizationMembers(data.organization.id),
+			members,
 		});
 	};
 
 	const syncRemovedMember = async (data: AfterRemoveMemberData) => {
+		const members = await listOrganizationMembers(data.organization.id);
 		await removeMemberMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			externalMemberId: data.member.userId,
-			members: await listOrganizationMembers(data.organization.id),
+			members,
 		});
 	};
 

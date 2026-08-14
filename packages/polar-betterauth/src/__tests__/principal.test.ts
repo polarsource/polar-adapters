@@ -305,50 +305,5 @@ describe("resolveBillingPrincipal", () => {
 				betterAuthRole: "member, finance",
 			});
 		});
-
-		it("allows an authorization callback to implement custom multi-role policy", async () => {
-			const authorize = vi.fn(async ({ roles }: { roles: readonly string[] }) =>
-				roles.includes("accountant"),
-			);
-			const { context } = createContext(
-				createMembership({ role: "member, accountant, member" }),
-			);
-
-			await expect(
-				resolveBillingPrincipal({
-					context,
-					session: createSession(),
-					organizationId: "organization-123",
-					organizationEnabled: true,
-					authorization: "billing",
-					authorize,
-				}),
-			).resolves.toMatchObject({ kind: "team" });
-			expect(authorize).toHaveBeenCalledWith({
-				authorization: "billing",
-				organizationId: "organization-123",
-				userId: "user-123",
-				betterAuthRole: "member, accountant, member",
-				roles: ["member", "accountant"],
-				defaultAuthorized: false,
-			});
-		});
-
-		it("never calls a custom policy before membership is verified", async () => {
-			const authorize = vi.fn(() => true);
-			const { context } = createContext(null);
-
-			await expect(
-				resolveBillingPrincipal({
-					context,
-					session: createSession(),
-					organizationId: "organization-123",
-					organizationEnabled: true,
-					authorization: "billing",
-					authorize,
-				}),
-			).rejects.toMatchObject({ status: "FORBIDDEN" });
-			expect(authorize).not.toHaveBeenCalled();
-		});
 	});
 });

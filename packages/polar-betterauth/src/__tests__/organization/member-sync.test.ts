@@ -5,8 +5,8 @@ import {
 	PolarOrganizationMemberExternalIdError,
 	PolarOrganizationOwnerInvariantError,
 	ensureMemberMirror,
-	reconcileOwner,
 	removeMemberMirror,
+	updateMemberRoleMirror,
 } from "../../organization/sync";
 import type { BetterAuthOrganizationMemberMirror } from "../../organization/types";
 import { createMockPolarClient } from "../utils/mocks";
@@ -193,11 +193,10 @@ describe("organization member and owner synchronization", () => {
 					organizationId,
 					user: owner.user,
 					betterAuthRole: owner.role,
-					members: [owner],
 					deferIfCustomerMissing: true,
 				},
 			),
-		).resolves.toBe("deferred");
+		).resolves.toBeUndefined();
 		expect(
 			harness.client.customers.members.createExternal,
 		).not.toHaveBeenCalled();
@@ -219,7 +218,6 @@ describe("organization member and owner synchronization", () => {
 					organizationId,
 					user: member.user,
 					betterAuthRole: member.role,
-					members: [owner, member],
 				},
 			),
 		).rejects.toThrow(
@@ -241,7 +239,6 @@ describe("organization member and owner synchronization", () => {
 					organizationId,
 					user: owner.user,
 					betterAuthRole: owner.role,
-					members: [owner],
 				},
 			),
 		).rejects.toBe(failure);
@@ -258,7 +255,6 @@ describe("organization member and owner synchronization", () => {
 			organizationId,
 			user: admin.user,
 			betterAuthRole: admin.role,
-			members: [owner, admin],
 		};
 		await ensureMemberMirror(harness.client, {}, input);
 		await ensureMemberMirror(harness.client, {}, input);
@@ -294,7 +290,6 @@ describe("organization member and owner synchronization", () => {
 				organizationId,
 				user: shared.user,
 				betterAuthRole: shared.role,
-				members: [firstOwner, shared],
 			},
 		);
 		await ensureMemberMirror(
@@ -304,10 +299,6 @@ describe("organization member and owner synchronization", () => {
 				organizationId: secondOrganizationId,
 				user: shared.user,
 				betterAuthRole: shared.role,
-				members: [
-					secondOwner,
-					{ ...shared, organizationId: secondOrganizationId },
-				],
 			},
 		);
 
@@ -329,16 +320,17 @@ describe("organization member and owner synchronization", () => {
 			],
 		});
 
-		const result = await reconcileOwner(
+		await updateMemberRoleMirror(
 			harness.client,
 			{},
 			{
 				organizationId,
+				user: secondOwner.user,
+				betterAuthRole: secondOwner.role,
 				members: [firstOwner, secondOwner],
 			},
 		);
 
-		expect(result.canonicalOwner.userId).toBe("first-owner");
 		expect(harness.members.get(`${organizationId}:first-owner`)?.role).toBe(
 			"owner",
 		);
@@ -347,32 +339,45 @@ describe("organization member and owner synchronization", () => {
 		);
 	});
 
-	it("transfers ownership on canonical-owner demotion and reconciles the old owner", async () => {
+	it("transfers ownership without updating unrelated members", async () => {
 		const oldOwner = betterAuthMember("old-owner", "member");
 		const successor = betterAuthMember("successor", "owner");
+		const unrelated = betterAuthMember("unrelated", "admin");
 		const harness = createHarness({
 			[organizationId]: [
 				polarMember("old-owner", "owner"),
 				polarMember("successor", "billing_manager"),
+				polarMember("unrelated", "member", { name: "Existing Polar name" }),
 			],
 		});
 
-		const result = await reconcileOwner(
+		await updateMemberRoleMirror(
 			harness.client,
 			{},
 			{
 				organizationId,
-				members: [oldOwner, successor],
+				user: oldOwner.user,
+				betterAuthRole: oldOwner.role,
+				members: [oldOwner, successor, unrelated],
 			},
 		);
-
-		expect(result.ownerTransferred).toBe(true);
 		expect(harness.members.get(`${organizationId}:successor`)?.role).toBe(
 			"owner",
 		);
 		expect(harness.members.get(`${organizationId}:old-owner`)?.role).toBe(
 			"member",
 		);
+		expect(harness.members.get(`${organizationId}:unrelated`)).toMatchObject({
+			name: "Existing Polar name",
+			role: "member",
+		});
+		expect(
+			vi
+				.mocked(harness.client.customers.members.updateExternal)
+				.mock.calls.some(
+					([call]) => call.memberExternalId === unrelated.userId,
+				),
+		).toBe(false);
 	});
 
 	it("promotes a successor before deleting the departing owner", async () => {
@@ -427,7 +432,7 @@ describe("organization member and owner synchronization", () => {
 					members: [owner],
 				},
 			),
-		).resolves.toBe("deleted");
+		).resolves.toBeUndefined();
 		await expect(
 			removeMemberMirror(
 				harness.client,
@@ -438,7 +443,7 @@ describe("organization member and owner synchronization", () => {
 					members: [owner],
 				},
 			),
-		).resolves.toBe("already-missing");
+		).resolves.toBeUndefined();
 
 		const failure = new Error("Forbidden");
 		vi.mocked(
@@ -463,11 +468,13 @@ describe("organization member and owner synchronization", () => {
 		});
 
 		await expect(
-			reconcileOwner(
+			updateMemberRoleMirror(
 				harness.client,
 				{},
 				{
 					organizationId,
+					user: betterAuthMember("owner", "member").user,
+					betterAuthRole: "member",
 					members: [betterAuthMember("owner", "member")],
 				},
 			),
@@ -492,15 +499,20 @@ describe("organization member and owner synchronization", () => {
 		const owner = betterAuthMember("owner", "owner");
 		const finance = betterAuthMember("finance", "finance, support");
 		const harness = createHarness({
-			[organizationId]: [polarMember("owner", "owner")],
+			[organizationId]: [
+				polarMember("owner", "owner"),
+				polarMember("finance", "member"),
+			],
 		});
 		const mapMemberRole = vi.fn().mockReturnValue("billing_manager");
 
-		await reconcileOwner(
+		await updateMemberRoleMirror(
 			harness.client,
 			{ mapMemberRole },
 			{
 				organizationId,
+				user: finance.user,
+				betterAuthRole: finance.role,
 				members: [owner, finance],
 			},
 		);
@@ -508,7 +520,7 @@ describe("organization member and owner synchronization", () => {
 		expect(mapMemberRole).toHaveBeenCalledOnce();
 		expect(mapMemberRole).toHaveBeenCalledWith({
 			role: "finance, support",
-			roles: ["finance", "support"],
+			roles: new Set(["finance", "support"]),
 			organizationId,
 			user: finance.user,
 		});
@@ -543,7 +555,6 @@ describe("organization member and owner synchronization", () => {
 					organizationId,
 					user: newMember.user,
 					betterAuthRole: newMember.role,
-					members: [owner, newMember],
 				},
 			),
 		).rejects.toBeInstanceOf(PolarOrganizationMemberExternalIdError);

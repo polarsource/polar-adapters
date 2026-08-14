@@ -2,27 +2,23 @@ import { describe, expect, it } from "vitest";
 import {
 	mapBetterAuthRoleToPolar,
 	parseBetterAuthRoles,
-	rankPolarMemberRole,
 } from "../../organization/roles";
 
 describe("parseBetterAuthRoles", () => {
 	it("parses, trims, and de-duplicates comma-separated roles", () => {
-		expect(parseBetterAuthRoles(" owner, admin,owner, member ")).toEqual([
-			"owner",
-			"admin",
-			"member",
-		]);
+		expect(parseBetterAuthRoles(" owner, admin,owner, member ")).toEqual(
+			new Set(["owner", "admin", "member"]),
+		);
 	});
 
 	it("removes empty role values", () => {
-		expect(parseBetterAuthRoles(" ,admin,, ")).toEqual(["admin"]);
+		expect(parseBetterAuthRoles(" ,admin,, ")).toEqual(new Set(["admin"]));
 	});
 
 	it("preserves custom role casing", () => {
-		expect(parseBetterAuthRoles("Billing, billing")).toEqual([
-			"Billing",
-			"billing",
-		]);
+		expect(parseBetterAuthRoles("Billing, billing")).toEqual(
+			new Set(["Billing", "billing"]),
+		);
 	});
 });
 
@@ -76,16 +72,5 @@ describe("mapBetterAuthRoleToPolar", () => {
 				{ billingManagerRoles: ["finance"] },
 			),
 		).toBe("billing_manager");
-	});
-});
-
-describe("rankPolarMemberRole", () => {
-	it("orders member, billing manager, and owner", () => {
-		expect(rankPolarMemberRole("member")).toBeLessThan(
-			rankPolarMemberRole("billing_manager"),
-		);
-		expect(rankPolarMemberRole("billing_manager")).toBeLessThan(
-			rankPolarMemberRole("owner"),
-		);
 	});
 });
