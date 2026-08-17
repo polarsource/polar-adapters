@@ -55,6 +55,16 @@ export const auth = betterAuth({
 				}),
 				webhooks({
 					secret: process.env["POLAR_WEBHOOK_SECRET"] as string,
+					onCustomerSeatAssigned: async (payload) => {
+						void payload;
+					},
+					onCustomerSeatClaimed: async (payload) => {
+						// Benefits become available to the member after the claim.
+						void payload;
+					},
+					onCustomerSeatRevoked: async (payload) => {
+						void payload;
+					},
 					onMemberCreated: async (payload) => {
 						// Notification only: do not mutate Better Auth memberships here.
 						void payload;

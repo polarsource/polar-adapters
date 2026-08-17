@@ -205,6 +205,9 @@ describe("webhooks", () => {
   });
 
   it.each([
+    ["customer_seat.assigned", "onCustomerSeatAssigned"],
+    ["customer_seat.claimed", "onCustomerSeatClaimed"],
+    ["customer_seat.revoked", "onCustomerSeatRevoked"],
     ["member.created", "onMemberCreated"],
     ["member.updated", "onMemberUpdated"],
     ["member.deleted", "onMemberDeleted"],
