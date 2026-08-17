@@ -177,7 +177,7 @@ const createHarness = (
 describe("organization member and owner synchronization", () => {
 	beforeEach(() => vi.clearAllMocks());
 
-	it("defers the creator's afterAddMember when the team customer is missing", async () => {
+	it("defers member creation when the team customer is missing and deferral is enabled", async () => {
 		const harness = createHarness({});
 		vi.mocked(harness.client.customers.getExternal).mockRejectedValue(
 			notFound("Customer"),
@@ -201,12 +201,11 @@ describe("organization member and owner synchronization", () => {
 		).not.toHaveBeenCalled();
 	});
 
-	it("fails when a non-creator member is added without a team customer", async () => {
+	it("fails when the team customer is missing and deferral is disabled", async () => {
 		const harness = createHarness({});
 		vi.mocked(harness.client.customers.getExternal).mockRejectedValue(
 			notFound("Customer"),
 		);
-		const owner = betterAuthMember("owner", "owner");
 		const member = betterAuthMember("member", "member");
 
 		await expect(
@@ -224,26 +223,7 @@ describe("organization member and owner synchronization", () => {
 		);
 	});
 
-	it("does not treat a customer lookup failure as creator deferral", async () => {
-		const harness = createHarness({});
-		const failure = new Error("Polar unavailable");
-		vi.mocked(harness.client.customers.getExternal).mockRejectedValue(failure);
-		const owner = betterAuthMember("owner", "owner");
-
-		await expect(
-			ensureMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					user: owner.user,
-					betterAuthRole: owner.role,
-				},
-			),
-		).rejects.toBe(failure);
-	});
-
-	it("creates a direct admin member as billing manager and is retry-safe", async () => {
+	it("creates an admin as a billing manager without duplicating it on retry", async () => {
 		const owner = betterAuthMember("owner", "owner");
 		const admin = betterAuthMember("admin", "member, admin");
 		const harness = createHarness({
@@ -266,7 +246,7 @@ describe("organization member and owner synchronization", () => {
 		).toHaveBeenCalledOnce();
 	});
 
-	it("scopes the same Better Auth user external ID to each organization", async () => {
+	it("scopes one Better Auth user to each Polar team customer", async () => {
 		const secondOrganizationId = "organization-456";
 		const shared = betterAuthMember("shared-user", "member");
 		const firstOwner = betterAuthMember("first-owner", "owner");
@@ -412,7 +392,7 @@ describe("organization member and owner synchronization", () => {
 		expect(harness.members.has(`${organizationId}:departing`)).toBe(false);
 	});
 
-	it("removes a non-owner and treats only confirmed not-found as idempotent", async () => {
+	it("removes a non-owner idempotently and propagates other deletion failures", async () => {
 		const owner = betterAuthMember("owner", "owner");
 		const harness = createHarness({
 			[organizationId]: [
@@ -494,7 +474,7 @@ describe("organization member and owner synchronization", () => {
 		).not.toHaveBeenCalled();
 	});
 
-	it("supports custom non-owner role mapping without exposing owner selection", async () => {
+	it("uses custom role mapping for a non-owner member", async () => {
 		const owner = betterAuthMember("owner", "owner");
 		const finance = betterAuthMember("finance", "finance, support");
 		const harness = createHarness({

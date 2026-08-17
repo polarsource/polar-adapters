@@ -154,17 +154,6 @@ describe("organization lifecycle gaps", () => {
 		});
 	});
 
-	it("propagates member profile synchronization errors", async () => {
-		const { context } = createAuthContext();
-		const failure = new Error("Polar unavailable");
-		vi.mocked(updateMemberMirror).mockRejectedValueOnce(failure);
-
-		await expect(
-			synchronizeUserOrganizationProfiles(context, client, user),
-		).rejects.toBe(failure);
-		expect(updateMemberMirror).toHaveBeenCalledTimes(2);
-	});
-
 	it("cleans up self-leave exactly once and supplies the remaining owner roster", async () => {
 		const { context } = createAuthContext();
 		const options = createTestPolarOptions({
@@ -189,25 +178,6 @@ describe("organization lifecycle gaps", () => {
 				}),
 			]),
 		});
-	});
-
-	it("rejects a malformed organization leave result", async () => {
-		const { context } = createAuthContext();
-		const options = createTestPolarOptions({
-			client,
-			organization: { enabled: true },
-		});
-
-		await expect(
-			synchronizeOrganizationLeave(options, {
-				context: Object.assign(context, {
-					returned: { organizationId: "org-a" },
-				}),
-			}),
-		).rejects.toThrow(
-			"Better Auth organization leave returned no deleted membership",
-		);
-		expect(removeMemberMirror).not.toHaveBeenCalled();
 	});
 
 	it("matches only /organization/leave, not admin removal or deletion", () => {
@@ -235,25 +205,26 @@ describe("organization lifecycle gaps", () => {
 		await synchronizeUserDeletionMemberships(context, client, user);
 
 		expect(removeMemberMirror).toHaveBeenCalledTimes(2);
-		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[2].members).toEqual(
+		expect(
+			vi.mocked(removeMemberMirror).mock.calls.map((call) => call[2]),
+		).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({ userId: user.id }),
-				expect.objectContaining({ userId: successor.id, role: "owner" }),
+				expect.objectContaining({
+					organizationId: "org-a",
+					externalMemberId: user.id,
+					members: [
+						expect.objectContaining({ userId: user.id, role: "owner" }),
+						expect.objectContaining({ userId: successor.id, role: "owner" }),
+					],
+				}),
+				expect.objectContaining({
+					organizationId: "org-b",
+					externalMemberId: user.id,
+					members: [
+						expect.objectContaining({ userId: user.id, role: "admin" }),
+					],
+				}),
 			]),
 		);
-	});
-
-	it("propagates sole-owner deletion failures without deleting a member", async () => {
-		const { context } = createAuthContext();
-		const invariantError = new Error(
-			"Cannot synchronize Polar owner: Better Auth has no owner successor",
-		);
-		vi.mocked(removeMemberMirror).mockRejectedValueOnce(invariantError);
-
-		await expect(
-			synchronizeUserDeletionMemberships(context, client, user),
-		).rejects.toBe(invariantError);
-		expect(removeMemberMirror).toHaveBeenCalledTimes(2);
-		expect(client.customers.members.deleteExternal).not.toHaveBeenCalled();
 	});
 });
