@@ -7,6 +7,9 @@ import type { WebhookCheckoutCreatedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCheckoutUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutupdatedpayload";
 import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload";
 import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
+import type { WebhookCustomerSeatAssignedPayload } from "@polar-sh/sdk/models/components/webhookcustomerseatassignedpayload";
+import type { WebhookCustomerSeatClaimedPayload } from "@polar-sh/sdk/models/components/webhookcustomerseatclaimedpayload";
+import type { WebhookCustomerSeatRevokedPayload } from "@polar-sh/sdk/models/components/webhookcustomerseatrevokedpayload";
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
 import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload";
 import type { WebhookMemberCreatedPayload } from "@polar-sh/sdk/models/components/webhookmembercreatedpayload";
@@ -81,6 +84,15 @@ export interface WebhooksConfig {
 	onCustomerDeleted?: (payload: WebhookCustomerDeletedPayload) => Promise<void>;
 	onCustomerStateChanged?: (
 		payload: WebhookCustomerStateChangedPayload,
+	) => Promise<void>;
+	onCustomerSeatAssigned?: (
+		payload: WebhookCustomerSeatAssignedPayload,
+	) => Promise<void>;
+	onCustomerSeatClaimed?: (
+		payload: WebhookCustomerSeatClaimedPayload,
+	) => Promise<void>;
+	onCustomerSeatRevoked?: (
+		payload: WebhookCustomerSeatRevokedPayload,
 	) => Promise<void>;
 	onMemberCreated?: (payload: WebhookMemberCreatedPayload) => Promise<void>;
 	onMemberUpdated?: (payload: WebhookMemberUpdatedPayload) => Promise<void>;
@@ -211,6 +223,21 @@ export const handleWebhookPayload = async (
 		case "customer.state_changed":
 			if (eventHandlers.onCustomerStateChanged) {
 				promises.push(eventHandlers.onCustomerStateChanged(payload));
+			}
+			break;
+		case "customer_seat.assigned":
+			if (eventHandlers.onCustomerSeatAssigned) {
+				promises.push(eventHandlers.onCustomerSeatAssigned(payload));
+			}
+			break;
+		case "customer_seat.claimed":
+			if (eventHandlers.onCustomerSeatClaimed) {
+				promises.push(eventHandlers.onCustomerSeatClaimed(payload));
+			}
+			break;
+		case "customer_seat.revoked":
+			if (eventHandlers.onCustomerSeatRevoked) {
+				promises.push(eventHandlers.onCustomerSeatRevoked(payload));
 			}
 			break;
 		case "member.created":

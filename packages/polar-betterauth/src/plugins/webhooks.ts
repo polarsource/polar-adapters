@@ -9,6 +9,9 @@ import type { WebhookCheckoutCreatedPayload } from "@polar-sh/sdk/models/compone
 import type { WebhookCheckoutUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcheckoutupdatedpayload";
 import type { WebhookCustomerCreatedPayload } from "@polar-sh/sdk/models/components/webhookcustomercreatedpayload";
 import type { WebhookCustomerDeletedPayload } from "@polar-sh/sdk/models/components/webhookcustomerdeletedpayload";
+import type { WebhookCustomerSeatAssignedPayload } from "@polar-sh/sdk/models/components/webhookcustomerseatassignedpayload";
+import type { WebhookCustomerSeatClaimedPayload } from "@polar-sh/sdk/models/components/webhookcustomerseatclaimedpayload";
+import type { WebhookCustomerSeatRevokedPayload } from "@polar-sh/sdk/models/components/webhookcustomerseatrevokedpayload";
 import type { WebhookCustomerStateChangedPayload } from "@polar-sh/sdk/models/components/webhookcustomerstatechangedpayload";
 import type { WebhookCustomerUpdatedPayload } from "@polar-sh/sdk/models/components/webhookcustomerupdatedpayload";
 import type { WebhookMemberCreatedPayload } from "@polar-sh/sdk/models/components/webhookmembercreatedpayload";
@@ -166,6 +169,24 @@ export interface WebhooksOptions {
 	 */
 	onCustomerStateChanged?: (
 		payload: WebhookCustomerStateChangedPayload,
+	) => Promise<void>;
+	/**
+	 * Notification that a seat was assigned and its invitation was created.
+	 */
+	onCustomerSeatAssigned?: (
+		payload: WebhookCustomerSeatAssignedPayload,
+	) => Promise<void>;
+	/**
+	 * Notification that a member claimed a seat and can receive its benefits.
+	 */
+	onCustomerSeatClaimed?: (
+		payload: WebhookCustomerSeatClaimedPayload,
+	) => Promise<void>;
+	/**
+	 * Notification that a seat was revoked from a member.
+	 */
+	onCustomerSeatRevoked?: (
+		payload: WebhookCustomerSeatRevokedPayload,
 	) => Promise<void>;
 	/**
 	 * Notification that a Polar member was created.

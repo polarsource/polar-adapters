@@ -612,8 +612,11 @@ The plugin supports handlers for all Polar webhook events:
 - `onCustomerUpdated` - Triggered when a customer is updated
 - `onCustomerDeleted` - Triggered when a customer is deleted
 - `onCustomerStateChanged` - Triggered when customer state changes
+- `onCustomerSeatAssigned` - Triggered when a seat is assigned and its invitation is created
+- `onCustomerSeatClaimed` - Triggered when a member claims a seat
+- `onCustomerSeatRevoked` - Triggered when a seat is revoked from a member
 - `onMemberCreated` - Triggered when a Polar member is created
 - `onMemberUpdated` - Triggered when a Polar member is updated
 - `onMemberDeleted` - Triggered when a Polar member is deleted
 
-Member webhook callbacks are notification-only. Better Auth is the organization roster source of truth: never create, update, or delete Better Auth memberships from these callbacks. Webhook delivery and ownership-related member events may be reordered or repeated, so handlers must be idempotent.
+Seat callbacks describe product-seat assignment and claim state; they do not replace Better Auth organization membership. Member webhook callbacks are notification-only. Better Auth is the organization roster source of truth: never create, update, or delete Better Auth memberships from these callbacks. Webhook delivery may be reordered or repeated, so handlers must be idempotent.
