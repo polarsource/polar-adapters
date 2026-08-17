@@ -8,6 +8,7 @@ import { memberAc } from "better-auth/plugins/organization/access";
 import { describe, expect, it, vi } from "vitest";
 import type { PolarOrganizationOptions } from "../../organization/types";
 import { checkout } from "../../plugins/checkout";
+import { portal } from "../../plugins/portal";
 import { polar } from "../../server";
 import { createMockCheckout, createMockPolarClient } from "../utils/mocks";
 
@@ -1008,5 +1009,129 @@ describe("Better Auth organization integration", () => {
 
     expect(client.customers.delete).not.toHaveBeenCalled();
     expect(client.customers.members.deleteExternal).not.toHaveBeenCalled();
+  });
+
+  it("preserves referenceId billing without enabling Polar organization support", async () => {
+    const database: MemoryDB = {
+      user: [],
+      session: [],
+      account: [],
+      verification: [],
+      organization: [],
+      member: [],
+      invitation: [],
+    };
+    const client = createMockPolarClient();
+    vi.mocked(client.checkouts.create).mockResolvedValue(createMockCheckout());
+    vi.mocked(client.subscriptions.list).mockResolvedValue({
+      items: [],
+      pagination: { total: 0, maxPage: 1 },
+    });
+    const auth = betterAuth({
+      baseURL,
+      secret: "better-auth-secret-that-is-long-enough-for-tests",
+      database: memoryAdapter(database),
+      emailAndPassword: { enabled: true },
+      rateLimit: { enabled: false },
+      plugins: [
+        organization(),
+        polar({
+          client,
+          createCustomerOnSignUp: false,
+          use: [
+            checkout({
+              products: [{ slug: "pro", productId: "product-pro" }],
+            }),
+            portal(),
+          ],
+        }),
+      ],
+    });
+    const post = (path: string, body: unknown, cookie?: string) =>
+      auth.handler(
+        new Request(`${baseURL}/api/auth${path}`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(cookie ? { cookie } : {}),
+          },
+          body: JSON.stringify(body),
+        }),
+      );
+
+    const signUpResponse = await post("/sign-up/email", {
+      email: "legacy-owner@example.com",
+      password: "password123",
+      name: "Legacy Owner",
+    });
+    if (!signUpResponse.ok) {
+      throw new Error(`Sign-up failed: ${await signUpResponse.text()}`);
+    }
+    const sessionCookie = signUpResponse.headers
+      .get("set-cookie")
+      ?.match(/better-auth\.session_token=[^;,]+/)?.[0];
+    if (!sessionCookie) {
+      throw new Error("Sign-up returned no Better Auth session cookie");
+    }
+    const { user } = (await signUpResponse.json()) as {
+      user: { id: string };
+    };
+
+    const organizationResponse = await post(
+      "/organization/create",
+      { name: "Legacy Acme", slug: "legacy-acme" },
+      sessionCookie,
+    );
+    if (!organizationResponse.ok) {
+      throw new Error(
+        `Organization creation failed: ${await organizationResponse.text()}`,
+      );
+    }
+    const createdOrganization = (await organizationResponse.json()) as {
+      id: string;
+    };
+
+    expect(client.customers.create).not.toHaveBeenCalled();
+
+    const checkoutResponse = await post(
+      "/checkout",
+      {
+        slug: "pro",
+        referenceId: createdOrganization.id,
+        redirect: false,
+      },
+      sessionCookie,
+    );
+    if (!checkoutResponse.ok) {
+      throw new Error(`Checkout failed: ${await checkoutResponse.text()}`);
+    }
+    expect(client.checkouts.create).toHaveBeenCalledOnce();
+    expect(client.checkouts.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        externalCustomerId: user.id,
+        products: ["product-pro"],
+        metadata: { referenceId: createdOrganization.id },
+      }),
+    );
+
+    const subscriptionsResponse = await auth.handler(
+      new Request(
+        `${baseURL}/api/auth/customer/subscriptions/list?referenceId=${createdOrganization.id}&active=true`,
+        { headers: { cookie: sessionCookie } },
+      ),
+    );
+    if (!subscriptionsResponse.ok) {
+      throw new Error(
+        `Subscription lookup failed: ${await subscriptionsResponse.text()}`,
+      );
+    }
+    expect(client.subscriptions.list).toHaveBeenCalledOnce();
+    expect(client.subscriptions.list).toHaveBeenCalledWith({
+      page: undefined,
+      limit: undefined,
+      active: true,
+      metadata: { referenceId: createdOrganization.id },
+    });
+    expect(client.customerSessions.create).not.toHaveBeenCalled();
   });
 });

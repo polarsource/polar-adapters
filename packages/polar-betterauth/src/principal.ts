@@ -12,14 +12,11 @@ export type BillingPrincipal =
 			kind: "individual";
 			/** Undefined preserves endpoints that allow checkout without a session. */
 			externalCustomerId: string | undefined;
-			isAnonymous: boolean;
 	  }
 	| {
 			kind: "team";
 			externalCustomerId: string;
 			externalMemberId: string;
-			betterAuthRole: string;
-			isAnonymous: false;
 	  };
 
 export interface BillingPrincipalSession {
@@ -76,7 +73,6 @@ export const resolveBillingPrincipal = async ({
 		return {
 			kind: "individual",
 			externalCustomerId: session?.user.id,
-			isAnonymous: session?.user.isAnonymous === true,
 		};
 	}
 
@@ -131,7 +127,5 @@ export const resolveBillingPrincipal = async ({
 		kind: "team",
 		externalCustomerId: organizationId,
 		externalMemberId: session.user.id,
-		betterAuthRole: membership.role,
-		isAnonymous: false,
 	};
 };

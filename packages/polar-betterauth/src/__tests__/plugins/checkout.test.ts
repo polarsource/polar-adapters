@@ -135,8 +135,6 @@ describe("checkout plugin", () => {
 				kind: "team",
 				externalCustomerId: "organization-123",
 				externalMemberId: "user-123",
-				betterAuthRole: "owner",
-				isAnonymous: false,
 			});
 			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
 
