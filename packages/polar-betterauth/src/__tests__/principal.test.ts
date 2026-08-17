@@ -48,7 +48,6 @@ describe("resolveBillingPrincipal", () => {
 			).resolves.toEqual({
 				kind: "individual",
 				externalCustomerId: undefined,
-				isAnonymous: false,
 			});
 			expect(findOne).not.toHaveBeenCalled();
 		});
@@ -61,7 +60,6 @@ describe("resolveBillingPrincipal", () => {
 			).resolves.toEqual({
 				kind: "individual",
 				externalCustomerId: "user-123",
-				isAnonymous: false,
 			});
 			expect(findOne).not.toHaveBeenCalled();
 		});
@@ -77,7 +75,6 @@ describe("resolveBillingPrincipal", () => {
 			).resolves.toEqual({
 				kind: "individual",
 				externalCustomerId: "user-123",
-				isAnonymous: true,
 			});
 		});
 
@@ -130,8 +127,6 @@ describe("resolveBillingPrincipal", () => {
 				kind: "team",
 				externalCustomerId: "organization-123",
 				externalMemberId: "user-123",
-				betterAuthRole: "member",
-				isAnonymous: false,
 			});
 			expect(findOne).toHaveBeenCalledOnce();
 			expect(findOne).toHaveBeenCalledWith({
@@ -263,7 +258,6 @@ describe("resolveBillingPrincipal", () => {
 				}),
 			).resolves.toMatchObject({
 				kind: "team",
-				betterAuthRole: role,
 			});
 		});
 
@@ -300,7 +294,6 @@ describe("resolveBillingPrincipal", () => {
 				}),
 			).resolves.toMatchObject({
 				kind: "team",
-				betterAuthRole: "founder",
 			});
 		});
 
@@ -320,7 +313,6 @@ describe("resolveBillingPrincipal", () => {
 				}),
 			).resolves.toMatchObject({
 				kind: "team",
-				betterAuthRole: "member, finance",
 			});
 		});
 	});

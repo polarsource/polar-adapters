@@ -417,8 +417,6 @@ describe("usage plugin", () => {
 			kind: "team" as const,
 			externalCustomerId: "organization-123",
 			externalMemberId: "user-123",
-			betterAuthRole: "member",
-			isAnonymous: false as const,
 		};
 		const context = { session: { user: { id: "user-123" } } };
 
