@@ -279,18 +279,52 @@ checkout.addEventListener("success", (event) => {
 });
 ```
 
-### Reference metadata
+### Metadata-based organization billing with `referenceId`
 
-`referenceId` is generic metadata copied to the checkout and resulting billing objects. It does not select a Polar team customer, authorize Better Auth organization membership, or establish an organization relationship.
+The previous `referenceId` setup remains supported when you do not enable Polar organization synchronization. Keep Better Auth's `organization()` plugin, but omit the `organization` option from `polar()`:
 
 ```typescript
-await authClient.checkout({
-  products: ["e651f46d-ac20-4f26-b769-ad088b123df2"],
-  referenceId: "your-application-reference",
+const auth = betterAuth({
+  plugins: [
+    organization(),
+    polar({
+      client: polarClient,
+      createCustomerOnSignUp: true,
+      use: [
+        checkout({
+          products: [{ productId: "123-456-789", slug: "pro" }],
+        }),
+        portal(),
+      ],
+    }),
+  ],
 });
 ```
 
-If an existing integration used a Better Auth organization ID as `referenceId`, treat it as legacy reporting metadata only. Enable `organization.enabled`, then migrate organization checkout to the explicit, membership-authorized field:
+Pass the Better Auth organization ID as checkout metadata:
+
+```typescript
+const organizationId = (await authClient.organization.list()).data?.[0]?.id;
+
+await authClient.checkout({
+  slug: "pro",
+  referenceId: organizationId,
+});
+```
+
+The checkout remains attached to the authenticated user's personal Polar customer. `referenceId` is copied to the checkout, order, and subscription metadata, allowing subscriptions to be queried by organization ID:
+
+```typescript
+const { data: subscriptions } =
+  await authClient.customer.subscriptions.list({
+    query: {
+      referenceId: organizationId,
+      active: true,
+    },
+  });
+```
+
+This is metadata-based tracking, not Polar team-customer billing. The adapter does not authorize Better Auth organization membership for `referenceId`, so your application must verify membership before using the result to grant access. For adapter-managed membership authorization and Polar team customers, enable `organization: { enabled: true }` and use `organizationId` instead:
 
 ```typescript
 await authClient.checkout({
@@ -411,9 +445,9 @@ const { data: subscriptions } = await authClient.customer.subscriptions.list({
 });
 ```
 
-**Legacy `referenceId` filtering**
+**Metadata-based organization filtering**
 
-Passing `referenceId` switches this method to a Polar organization-level metadata query. It is not a Better Auth organization authorization boundary and must not be used to grant access based only on a caller-provided organization ID.
+When Polar organization synchronization is not enabled, pass the Better Auth organization ID as `referenceId`. This performs a Polar metadata query and does not authorize Better Auth organization membership.
 
 ```typescript
 const { data: subscriptions } = await authClient.customer.subscriptions.list({
@@ -421,7 +455,7 @@ const { data: subscriptions } = await authClient.customer.subscriptions.list({
     page: 1,
     limit: 10,
     active: true,
-    referenceId: "your-application-reference",
+    referenceId: organizationId,
   },
 });
 ```
