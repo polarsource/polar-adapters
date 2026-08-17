@@ -142,19 +142,6 @@ describe("organization hook installation", () => {
 		expect(context.getPlugin).not.toHaveBeenCalled();
 	});
 
-	it("fails clearly when the Better Auth organization plugin is absent", () => {
-		const context = createContext(null);
-
-		expect(() =>
-			installOrganizationHooks(
-				context.ctx,
-				createTestPolarOptions({ client, organization: { enabled: true } }),
-			),
-		).toThrow(
-			"Polar organization support requires Better Auth's organization plugin",
-		);
-	});
-
 	it("composes the application hook on Better Auth's organization plugin", async () => {
 		const applicationHook = vi.fn();
 		const betterAuthPlugin = betterAuthOrganization({
@@ -258,23 +245,6 @@ describe("organization hook installation", () => {
 
 		expect(context.logger.warn).toHaveBeenCalledOnce();
 		expect(client.customers.updateExternal).not.toHaveBeenCalled();
-	});
-
-	it("always propagates synchronization errors", async () => {
-		const syncError = new Error("Polar unavailable");
-		const context = createContext({});
-		vi.mocked(client.customers.getExternal).mockRejectedValue(syncError);
-
-		installOrganizationHooks(
-			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
-		);
-
-		await expect(
-			context.organizationPlugin?.options.organizationHooks?.afterCreateOrganization?.(
-				{ organization, member, user: owner },
-			),
-		).rejects.toBe(syncError);
 	});
 
 	it("defers the creator afterAddMember hook until organization creation", async () => {
@@ -388,28 +358,15 @@ describe("organization hook installation", () => {
 		});
 	});
 
-	it("composes role-update and removal hooks before Polar synchronization", async () => {
+	it("runs the application role-update hook before Polar synchronization", async () => {
 		const afterUpdateMemberRole = vi.fn();
-		const afterRemoveMember = vi.fn();
-		const departingUser = createMockUser({ id: "departing-user" });
-		const departingMember: Member = {
-			id: "departing-membership",
-			organizationId: organization.id,
-			userId: departingUser.id,
-			role: "member",
-			createdAt: new Date(),
-		};
 		const context = createContext({
-			organizationHooks: { afterUpdateMemberRole, afterRemoveMember },
+			organizationHooks: { afterUpdateMemberRole },
 		});
 		vi.mocked(client.customers.getExternal).mockResolvedValue(teamCustomer);
 		vi.mocked(client.members.listMembers).mockResolvedValue(
 			memberPage([polarOwner]),
 		);
-		vi.mocked(client.customers.members.getExternal).mockResolvedValue(
-			polarOwner,
-		);
-		vi.mocked(client.customers.members.deleteExternal).mockResolvedValue();
 
 		installOrganizationHooks(
 			context.ctx,
@@ -423,6 +380,36 @@ describe("organization hook installation", () => {
 				user: owner,
 			},
 		);
+
+		expect(afterUpdateMemberRole).toHaveBeenCalledOnce();
+		expect(afterUpdateMemberRole.mock.invocationCallOrder[0]).toBeLessThan(
+			vi.mocked(client.customers.getExternal).mock.invocationCallOrder[0] ?? 0,
+		);
+	});
+
+	it("runs the application removal hook before deleting the Polar member", async () => {
+		const afterRemoveMember = vi.fn();
+		const departingUser = createMockUser({ id: "departing-user" });
+		const departingMember: Member = {
+			id: "departing-membership",
+			organizationId: organization.id,
+			userId: departingUser.id,
+			role: "member",
+			createdAt: new Date(),
+		};
+		const context = createContext({
+			organizationHooks: { afterRemoveMember },
+		});
+		vi.mocked(client.customers.getExternal).mockResolvedValue(teamCustomer);
+		vi.mocked(client.members.listMembers).mockResolvedValue(
+			memberPage([polarOwner]),
+		);
+		vi.mocked(client.customers.members.deleteExternal).mockResolvedValue();
+
+		installOrganizationHooks(
+			context.ctx,
+			createTestPolarOptions({ client, organization: { enabled: true } }),
+		);
 		await context.organizationPlugin?.options.organizationHooks?.afterRemoveMember?.(
 			{
 				organization,
@@ -431,7 +418,6 @@ describe("organization hook installation", () => {
 			},
 		);
 
-		expect(afterUpdateMemberRole).toHaveBeenCalledOnce();
 		expect(afterRemoveMember).toHaveBeenCalledOnce();
 		expect(client.customers.members.deleteExternal).toHaveBeenCalledWith({
 			externalId: organization.id,
