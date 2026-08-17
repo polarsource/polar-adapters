@@ -5,7 +5,11 @@ import type { Member } from "better-auth/plugins/organization";
 import * as z from "zod/v4";
 import type { PolarOptions } from "../types";
 import { getBetterAuthCreatorRole } from "./roles";
-import { removeMemberMirror, updateMemberMirror } from "./sync";
+import {
+  isTeamCustomerSynchronized,
+  removeMemberMirror,
+  updateMemberMirror,
+} from "./sync";
 import type { PolarOrganizationRoleSyncOptions } from "./types";
 
 export const ORGANIZATION_LEAVE_PATH = "/organization/leave";
@@ -79,12 +83,20 @@ export const synchronizeUserOrganizationProfiles = async (
   );
 
   const results = await Promise.allSettled(
-    memberships.map((membership) =>
-      updateMemberMirror(client, {
+    memberships.map(async (membership) => {
+      if (
+        !(await isTeamCustomerSynchronized(
+          client,
+          membership.organizationId,
+        ))
+      ) {
+        return;
+      }
+      await updateMemberMirror(client, {
         organizationId: membership.organizationId,
         user,
-      }),
-    ),
+      });
+    }),
   );
 
   const rejection = results.find((result) => result.status === "rejected");
@@ -104,6 +116,9 @@ export const removeOrganizationMemberMirror = async (input: {
   userId: string;
   roleOptions?: PolarOrganizationRoleSyncOptions;
 }) => {
+  if (!(await isTeamCustomerSynchronized(input.client, input.organizationId))) {
+    return;
+  }
   const members = await loadBetterAuthOrganizationMembers(
     input.authContext,
     input.organizationId,

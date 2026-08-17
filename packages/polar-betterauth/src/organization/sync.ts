@@ -93,6 +93,12 @@ const findTeamCustomer = async (
 	}
 };
 
+export const isTeamCustomerSynchronized = async (
+	client: Polar,
+	externalCustomerId: string,
+): Promise<boolean> =>
+	(await findTeamCustomer(client, externalCustomerId)) !== null;
+
 export const ensureTeamCustomer = async (
 	client: Polar,
 	organizationOptions: PolarOrganizationOptions,

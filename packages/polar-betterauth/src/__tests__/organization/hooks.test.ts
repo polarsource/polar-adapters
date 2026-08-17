@@ -208,6 +208,7 @@ describe("organization hook installation", () => {
 		const context = createContext({
 			organizationHooks: { afterUpdateOrganization: applicationHook },
 		});
+		vi.mocked(client.customers.getExternal).mockResolvedValue(teamCustomer);
 		vi.mocked(client.customers.updateExternal).mockResolvedValue({
 			...teamCustomer,
 			name: "New name",
