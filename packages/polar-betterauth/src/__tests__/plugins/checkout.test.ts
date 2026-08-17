@@ -288,6 +288,35 @@ describe("checkout plugin", () => {
 			expect(parsed.organizationId).toBe("organization-123");
 		});
 
+		it("forwards seat-based pricing parameters", async () => {
+			const mockCheckout = createMockCheckout();
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+
+			const ctx = {
+				...mockContext,
+				body: {
+					products: ["prod-123"],
+					seats: 10,
+					minSeats: 5,
+					maxSeats: 25,
+				},
+				json: vi.fn(),
+			};
+
+			await handler(ctx);
+
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({
+					seats: 10,
+					minSeats: 5,
+					maxSeats: 25,
+				}),
+			);
+		});
+
 		it("should create checkout with single product ID", async () => {
 			const mockCheckout = createMockCheckout();
 			vi.mocked(getSessionFromCtx).mockResolvedValue({
