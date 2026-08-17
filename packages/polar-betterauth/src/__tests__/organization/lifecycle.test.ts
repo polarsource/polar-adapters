@@ -9,6 +9,7 @@ import {
 	synchronizeUserOrganizationProfiles,
 } from "../../organization/lifecycle";
 import {
+	isTeamCustomerSynchronized,
 	removeMemberMirror,
 	updateMemberMirror,
 } from "../../organization/sync";
@@ -20,6 +21,7 @@ vi.mock("../../organization/sync", async (importOriginal) => {
 		await importOriginal<typeof import("../../organization/sync")>();
 	return {
 		...actual,
+		isTeamCustomerSynchronized: vi.fn(),
 		removeMemberMirror: vi.fn(),
 		updateMemberMirror: vi.fn(),
 	};
@@ -134,6 +136,7 @@ describe("organization lifecycle gaps", () => {
 	beforeEach(() => {
 		client = createMockPolarClient();
 		vi.clearAllMocks();
+		vi.mocked(isTeamCustomerSynchronized).mockResolvedValue(true);
 		vi.mocked(updateMemberMirror).mockResolvedValue();
 		vi.mocked(removeMemberMirror).mockResolvedValue();
 	});
@@ -197,6 +200,17 @@ describe("organization lifecycle gaps", () => {
 		);
 		expect(matcher?.({ path: "/organization/delete" } as never)).toBe(false);
 		expect(deleteCustomer).not.toHaveBeenCalled();
+	});
+
+	it("skips profile and deletion sync for existing unsynchronized organizations", async () => {
+		const { context } = createAuthContext();
+		vi.mocked(isTeamCustomerSynchronized).mockResolvedValue(false);
+
+		await synchronizeUserOrganizationProfiles(context, client, user);
+		await synchronizeUserDeletionMemberships(context, client, user);
+
+		expect(updateMemberMirror).not.toHaveBeenCalled();
+		expect(removeMemberMirror).not.toHaveBeenCalled();
 	});
 
 	it("uses the user delete before-state for every membership", async () => {

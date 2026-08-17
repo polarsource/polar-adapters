@@ -1060,6 +1060,114 @@ describe("Better Auth organization integration", () => {
       );
 
     const signUpResponse = await post("/sign-up/email", {
+      email: "reference-owner@example.com",
+      password: "password123",
+      name: "Reference Owner",
+    });
+    if (!signUpResponse.ok) {
+      throw new Error(`Sign-up failed: ${await signUpResponse.text()}`);
+    }
+    const sessionCookie = signUpResponse.headers
+      .get("set-cookie")
+      ?.match(/better-auth\.session_token=[^;,]+/)?.[0];
+    if (!sessionCookie) {
+      throw new Error("Sign-up returned no Better Auth session cookie");
+    }
+    const { user } = (await signUpResponse.json()) as {
+      user: { id: string };
+    };
+    const referenceId = "existing-organization-id";
+
+    const checkoutResponse = await post(
+      "/checkout",
+      { slug: "pro", referenceId, redirect: false },
+      sessionCookie,
+    );
+    if (!checkoutResponse.ok) {
+      throw new Error(`Checkout failed: ${await checkoutResponse.text()}`);
+    }
+    expect(client.checkouts.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        externalCustomerId: user.id,
+        products: ["product-pro"],
+        metadata: { referenceId },
+      }),
+    );
+
+    const subscriptionsResponse = await auth.handler(
+      new Request(
+        `${baseURL}/api/auth/customer/subscriptions/list?referenceId=${referenceId}&active=true`,
+        { headers: { cookie: sessionCookie } },
+      ),
+    );
+    if (!subscriptionsResponse.ok) {
+      throw new Error(
+        `Subscription lookup failed: ${await subscriptionsResponse.text()}`,
+      );
+    }
+    expect(client.subscriptions.list).toHaveBeenCalledWith({
+      page: undefined,
+      limit: undefined,
+      active: true,
+      metadata: { referenceId },
+    });
+    expect(client.customerSessions.create).not.toHaveBeenCalled();
+  });
+
+  it("preserves existing referenceId billing after organization sync is enabled", async () => {
+    const database: MemoryDB = {
+      user: [],
+      session: [],
+      account: [],
+      verification: [],
+      organization: [],
+      member: [],
+      invitation: [],
+    };
+    const client = createMockPolarClient();
+    vi.mocked(client.checkouts.create).mockResolvedValue(createMockCheckout());
+    vi.mocked(client.subscriptions.list).mockResolvedValue({
+      items: [],
+      pagination: { total: 0, maxPage: 1 },
+    });
+    const createAuth = (enableOrganizationSync: boolean) =>
+      betterAuth({
+        baseURL,
+        secret: "better-auth-secret-that-is-long-enough-for-tests",
+        database: memoryAdapter(database),
+        emailAndPassword: { enabled: true },
+        rateLimit: { enabled: false },
+        plugins: [
+          organization(),
+          polar({
+            client,
+            createCustomerOnSignUp: false,
+            ...(enableOrganizationSync
+              ? { organization: { enabled: true } }
+              : {}),
+            use: [
+              checkout({
+                products: [{ slug: "pro", productId: "product-pro" }],
+              }),
+              portal(),
+            ],
+          }),
+        ],
+      });
+    let auth = createAuth(false);
+    const post = (path: string, body: unknown, cookie?: string) =>
+      auth.handler(
+        new Request(`${baseURL}/api/auth${path}`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(cookie ? { cookie } : {}),
+          },
+          body: JSON.stringify(body),
+        }),
+      );
+
+    const signUpResponse = await post("/sign-up/email", {
       email: "legacy-owner@example.com",
       password: "password123",
       name: "Legacy Owner",
@@ -1092,6 +1200,67 @@ describe("Better Auth organization integration", () => {
     };
 
     expect(client.customers.create).not.toHaveBeenCalled();
+
+    vi.mocked(client.customers.getExternal).mockRejectedValue(notFound());
+    auth = createAuth(true);
+
+    const updateResponse = await post(
+      "/organization/update",
+      {
+        organizationId: createdOrganization.id,
+        data: { name: "Legacy Acme Updated" },
+      },
+      sessionCookie,
+    );
+    if (!updateResponse.ok) {
+      throw new Error(
+        `Legacy organization update failed: ${await updateResponse.text()}`,
+      );
+    }
+    expect(client.customers.updateExternal).not.toHaveBeenCalled();
+    expect(client.customers.members.updateExternal).not.toHaveBeenCalled();
+
+    const memberSignUpResponse = await post("/sign-up/email", {
+      email: "legacy-member@example.com",
+      password: "password123",
+      name: "Legacy Member",
+    });
+    if (!memberSignUpResponse.ok) {
+      throw new Error(
+        `Member sign-up failed: ${await memberSignUpResponse.text()}`,
+      );
+    }
+    const { user: legacyMemberUser } = (await memberSignUpResponse.json()) as {
+      user: { id: string };
+    };
+    const addedMember = await auth.api.addMember({
+      headers: new Headers({ cookie: sessionCookie }),
+      body: {
+        organizationId: createdOrganization.id,
+        userId: legacyMemberUser.id,
+        role: "member",
+      },
+    });
+    if (!addedMember) {
+      throw new Error("Better Auth returned no legacy member");
+    }
+    expect(client.customers.members.createExternal).not.toHaveBeenCalled();
+
+    const roleUpdateResponse = await post(
+      "/organization/update-member-role",
+      {
+        organizationId: createdOrganization.id,
+        memberId: addedMember.id,
+        role: "admin",
+      },
+      sessionCookie,
+    );
+    if (!roleUpdateResponse.ok) {
+      throw new Error(
+        `Legacy member role update failed: ${await roleUpdateResponse.text()}`,
+      );
+    }
+    expect(client.customers.members.updateExternal).not.toHaveBeenCalled();
 
     const checkoutResponse = await post(
       "/checkout",
@@ -1133,5 +1302,18 @@ describe("Better Auth organization integration", () => {
       metadata: { referenceId: createdOrganization.id },
     });
     expect(client.customerSessions.create).not.toHaveBeenCalled();
+
+    vi.mocked(client.checkouts.create).mockClear();
+    const teamCheckoutResponse = await post(
+      "/checkout",
+      {
+        slug: "pro",
+        organizationId: createdOrganization.id,
+        redirect: false,
+      },
+      sessionCookie,
+    );
+    expect(teamCheckoutResponse.ok).toBe(false);
+    expect(client.checkouts.create).not.toHaveBeenCalled();
   });
 });

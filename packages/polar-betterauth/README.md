@@ -182,6 +182,8 @@ All new customers are created with an associated `externalId`, which is the ID o
 
 Organization synchronization is opt-in and requires both Better Auth's `organization()` plugin and `organization: { enabled: true }` on `polar()`. Enabling it without the Better Auth plugin fails during startup.
 
+Organizations created after synchronization is enabled are mirrored normally. Existing Better Auth organizations without a Polar team customer remain on the metadata-based `referenceId` flow: lifecycle hooks skip them instead of failing or partially synchronizing their roster. An explicit `organizationId` checkout requires an existing team customer and is rejected for an unsynchronized organization, preventing Polar from creating a regular customer with the organization ID.
+
 The current mapping is deterministic:
 
 | Better Auth | Polar |
@@ -281,7 +283,7 @@ checkout.addEventListener("success", (event) => {
 
 ### Metadata-based organization billing with `referenceId`
 
-The previous `referenceId` setup remains supported when you do not enable Polar organization synchronization. Keep Better Auth's `organization()` plugin, but omit the `organization` option from `polar()`:
+The previous `referenceId` setup remains supported when you do not enable Polar organization synchronization. It also keeps working for existing unsynchronized organizations after synchronization is enabled. To use only the metadata-based setup, keep Better Auth's `organization()` plugin but omit the `organization` option from `polar()`:
 
 ```typescript
 const auth = betterAuth({

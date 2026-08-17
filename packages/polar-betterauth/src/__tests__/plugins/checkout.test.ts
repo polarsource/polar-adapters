@@ -5,6 +5,7 @@ import { mockApiError, mockApiResponse } from "../utils/helpers";
 import {
 	createMockBetterAuthContext,
 	createMockCheckout,
+	createMockCustomer,
 	createMockPolarClient,
 } from "../utils/mocks";
 
@@ -137,6 +138,12 @@ describe("checkout plugin", () => {
 				externalMemberId: "user-123",
 			});
 			vi.mocked(mockClient.checkouts.create).mockResolvedValue(mockCheckout);
+			vi.mocked(mockClient.customers.getExternal).mockResolvedValue(
+				createMockCustomer({
+					type: "team",
+					externalId: "organization-123",
+				}),
+			);
 
 			const ctx = {
 				...mockContext,

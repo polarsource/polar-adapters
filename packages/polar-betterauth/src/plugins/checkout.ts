@@ -6,6 +6,7 @@ import {
 } from "better-auth/api";
 import * as z from "zod/v4";
 import { getBetterAuthCreatorRole } from "../organization/roles";
+import { isTeamCustomerSynchronized } from "../organization/sync";
 import { resolveBillingPrincipal } from "../principal";
 import type { PolarOptions, Product } from "../types";
 
@@ -136,6 +137,18 @@ export const checkout =
 								},
 							})
 						: undefined;
+					if (
+						principal?.kind === "team" &&
+						!(await isTeamCustomerSynchronized(
+							polar,
+							principal.externalCustomerId,
+						))
+					) {
+						throw new APIError("BAD_REQUEST", {
+							message:
+								"Polar team customer was not found for this Better Auth organization. Use referenceId for an existing unsynchronized organization.",
+						});
+					}
 					const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
 					const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
 
