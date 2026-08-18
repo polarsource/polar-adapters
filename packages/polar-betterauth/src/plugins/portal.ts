@@ -19,7 +19,10 @@ export interface PortalConfig {
 
 export const portal =
 	({ returnUrl, theme }: PortalConfig = {}) =>
-	(polar: Polar, rootOptions?: Pick<PolarOptions, "experimental_organization">) => {
+	(
+		polar: Polar,
+		rootOptions?: Pick<PolarOptions, "experimental_organization">,
+	) => {
 		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
 
 		return {
@@ -53,7 +56,8 @@ export const portal =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -110,7 +114,8 @@ export const portal =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -160,7 +165,8 @@ export const portal =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -223,7 +229,8 @@ export const portal =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -318,7 +325,8 @@ export const portal =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;

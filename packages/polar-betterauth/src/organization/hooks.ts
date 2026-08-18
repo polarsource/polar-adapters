@@ -134,22 +134,27 @@ export const installOrganizationHooks = (
 
 	const syncMember = async (
 		data: AfterAddMemberData | AfterAcceptInvitationData,
-		deferInitialCreator: boolean,
 	) => {
 		if (!(await isTeamCustomerSynchronized(client, data.organization.id))) {
 			return;
 		}
 
-		const members = deferInitialCreator
-			? await listOrganizationMembers(data.organization.id)
-			: [];
 		await ensureMemberMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			user: data.user,
 			betterAuthRole: data.member.role,
-			deferIfCustomerMissing:
-				members.length === 1 && members[0]?.userId === data.member.userId,
 		});
+	};
+
+	const syncAddedMember = async (data: AfterAddMemberData) => {
+		const members = await listOrganizationMembers(data.organization.id);
+		const isInitialCreator =
+			members.length === 1 && members[0]?.userId === data.member.userId;
+
+		// afterCreateOrganization mirrors the creator as the Polar team owner.
+		if (isInitialCreator) return;
+
+		await syncMember(data);
 	};
 
 	const syncUpdatedMemberRole = async (data: AfterUpdateMemberRoleData) => {
@@ -188,11 +193,11 @@ export const installOrganizationHooks = (
 		},
 		afterAddMember: async (data: AfterAddMemberData) => {
 			await existingHooks.afterAddMember?.(data);
-			await syncMember(data, true);
+			await syncAddedMember(data);
 		},
 		afterAcceptInvitation: async (data: AfterAcceptInvitationData) => {
 			await existingHooks.afterAcceptInvitation?.(data);
-			await syncMember(data, false);
+			await syncMember(data);
 		},
 		afterUpdateMemberRole: async (data: AfterUpdateMemberRoleData) => {
 			await existingHooks.afterUpdateMemberRole?.(data);

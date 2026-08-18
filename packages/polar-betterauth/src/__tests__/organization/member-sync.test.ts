@@ -177,31 +177,7 @@ const createHarness = (
 describe("organization member and owner synchronization", () => {
 	beforeEach(() => vi.clearAllMocks());
 
-	it("defers member creation when the team customer is missing and deferral is enabled", async () => {
-		const harness = createHarness({});
-		vi.mocked(harness.client.customers.getExternal).mockRejectedValue(
-			notFound("Customer"),
-		);
-		const owner = betterAuthMember("owner", "owner");
-
-		await expect(
-			ensureMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					user: owner.user,
-					betterAuthRole: owner.role,
-					deferIfCustomerMissing: true,
-				},
-			),
-		).resolves.toBeUndefined();
-		expect(
-			harness.client.customers.members.createExternal,
-		).not.toHaveBeenCalled();
-	});
-
-	it("fails when the team customer is missing and deferral is disabled", async () => {
+	it("fails when the team customer is missing", async () => {
 		const harness = createHarness({});
 		vi.mocked(harness.client.customers.getExternal).mockRejectedValue(
 			notFound("Customer"),

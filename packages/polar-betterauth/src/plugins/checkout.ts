@@ -78,7 +78,10 @@ export type CheckoutParams = z.infer<typeof CheckoutParams>;
 
 export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
-	(polar: Polar, rootOptions?: Pick<PolarOptions, "experimental_organization">) => {
+	(
+		polar: Polar,
+		rootOptions?: Pick<PolarOptions, "experimental_organization">,
+	) => {
 		return {
 			checkout: createAuthEndpoint(
 				"/checkout",
@@ -133,7 +136,8 @@ export const checkout =
 								context: ctx.context,
 								session,
 								organizationId: ctx.body.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "billing",
 								roleMapping: {
 									creatorRole: getBetterAuthCreatorRole(ctx.context),

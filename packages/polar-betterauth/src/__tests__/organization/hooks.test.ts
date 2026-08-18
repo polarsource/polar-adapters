@@ -136,7 +136,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: false } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: false },
+			}),
 		);
 
 		expect(context.getPlugin).not.toHaveBeenCalled();
@@ -161,7 +164,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 		await betterAuthPlugin.options.organizationHooks?.afterCreateOrganization?.(
 			{
@@ -192,7 +198,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 
 		await expect(
@@ -216,7 +225,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterUpdateOrganization?.(
 			{
@@ -238,7 +250,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 
 		await expect(
@@ -251,7 +266,7 @@ describe("organization hook installation", () => {
 		expect(client.customers.updateExternal).not.toHaveBeenCalled();
 	});
 
-	it("defers the creator afterAddMember hook until organization creation", async () => {
+	it("skips creator mirroring because organization creation mirrors the owner", async () => {
 		const applicationHook = vi.fn();
 		const context = createContext({
 			organizationHooks: { afterAddMember: applicationHook },
@@ -260,13 +275,17 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterAddMember?.(
 			{ organization, member, user: owner },
 		);
 
 		expect(applicationHook).toHaveBeenCalledOnce();
+		expect(client.customers.getExternal).not.toHaveBeenCalled();
 		expect(client.customers.members.createExternal).not.toHaveBeenCalled();
 		expect(client.members.listMembers).not.toHaveBeenCalled();
 	});
@@ -324,7 +343,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterAddMember?.(
 			{ organization, member: invitedMember, user: invitedUser },
@@ -374,7 +396,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterUpdateMemberRole?.(
 			{
@@ -412,7 +437,10 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
+			createTestPolarOptions({
+				client,
+				experimental_organization: { enabled: true },
+			}),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterRemoveMember?.(
 			{
