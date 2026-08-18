@@ -154,7 +154,7 @@ describe("organization lifecycle gaps", () => {
 		vi.mocked(removeMemberMirror).mockResolvedValue();
 	});
 
-	it("synchronizes a profile across every organization concurrently", async () => {
+	it("synchronizes a profile across every organization", async () => {
 		const { context } = createAuthContext();
 
 		await synchronizeUserOrganizationProfiles(context, client, user);
@@ -168,6 +168,26 @@ describe("organization lifecycle gaps", () => {
 			organizationId: "org-b",
 			user,
 		});
+	});
+
+	it("attempts every profile synchronization before propagating a failure", async () => {
+		const manyMemberships: Member[] = Array.from({ length: 8 }, (_, index) => ({
+			id: `member-${index}`,
+			organizationId: `org-${index}`,
+			userId: user.id,
+			role: "admin",
+			createdAt: new Date(2024, 0, index + 1),
+		}));
+		const { context } = createAuthContext(manyMemberships);
+		const failure = new Error("Polar update failed");
+		vi.mocked(updateMemberMirror).mockImplementation(async (_client, input) => {
+			if (input.organizationId === "org-0") throw failure;
+		});
+
+		await expect(
+			synchronizeUserOrganizationProfiles(context, client, user),
+		).rejects.toBe(failure);
+		expect(updateMemberMirror).toHaveBeenCalledTimes(8);
 	});
 
 	it("cleans up self-leave exactly once and supplies the earliest remaining owner", async () => {

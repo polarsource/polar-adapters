@@ -64,14 +64,20 @@ const assertTeamCustomer = (customer: Customer, externalCustomerId: string) => {
 	}
 };
 
-const isExternalIdConflict = (error: unknown): boolean =>
+const isExternalIdConflict = (
+	error: unknown,
+	externalCustomerId: string,
+): boolean =>
 	error instanceof HTTPValidationError &&
+	error.statusCode === 422 &&
 	Boolean(
 		error.detail?.some(
 			(detail) =>
-				detail.loc.some(
-					(value) => value === "external_id" || value === "externalId",
-				) && detail.msg.toLowerCase().includes("already exists"),
+				detail.type === "value_error" &&
+				detail.loc.length === 2 &&
+				detail.loc[0] === "body" &&
+				detail.loc[1] === "external_id" &&
+				detail.input === externalCustomerId,
 		),
 	);
 
@@ -129,7 +135,7 @@ export const ensureTeamCustomer = async (
 
 		assertTeamCustomer(customer, data.organization.id);
 	} catch (error) {
-		if (!isExternalIdConflict(error)) {
+		if (!isExternalIdConflict(error, data.organization.id)) {
 			throw error;
 		}
 

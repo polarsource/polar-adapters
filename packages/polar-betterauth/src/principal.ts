@@ -2,8 +2,12 @@ import type { AuthContext, User } from "better-auth";
 import { APIError } from "better-auth/api";
 import type { AnonymousSession } from "better-auth/plugins/anonymous";
 import type { Member } from "better-auth/plugins/organization";
-import { mapBetterAuthRoleToPolar } from "./organization/roles";
-import type { BetterAuthRoleMappingOptions } from "./organization/types";
+import {
+	hasBetterAuthCreatorRole,
+	mapBetterAuthRoleToPolar,
+	parseBetterAuthRoles,
+} from "./organization/roles";
+import type { PolarOrganizationRoleSyncOptions } from "./organization/types";
 
 export type BillingAuthorization = "member" | "billing";
 
@@ -20,7 +24,7 @@ export type BillingPrincipal =
 	  };
 
 export interface BillingPrincipalSession {
-	user: Pick<User, "id"> &
+	user: Pick<User, "id" | "email" | "name"> &
 		Partial<Pick<AnonymousSession["user"], "isAnonymous">>;
 }
 
@@ -37,23 +41,48 @@ export interface ResolveBillingPrincipalInput {
 	organizationEnabled?: boolean | undefined;
 	/** Organization permission required by the endpoint. @default "member" */
 	authorization?: BillingAuthorization | undefined;
-	/** Role names used by the default billing authorization policy. */
-	roleMapping?: BetterAuthRoleMappingOptions | undefined;
+	/** Better Auth-to-Polar role mapping used by billing authorization. */
+	roleMapping?: PolarOrganizationRoleSyncOptions | undefined;
 }
 
-const isBillingRole = (
+const isBillingRole = async (
 	role: string,
-	roleMapping: BetterAuthRoleMappingOptions | undefined,
-) =>
-	mapBetterAuthRoleToPolar(
-		{
+	organizationId: string,
+	user: BillingPrincipalSession["user"],
+	roleMapping: PolarOrganizationRoleSyncOptions | undefined,
+): Promise<boolean> => {
+	const creatorRole = roleMapping?.creatorRole;
+
+	// Both canonical and additional Better Auth owners are billing-capable.
+	// Canonical ownership is irrelevant to this local authorization check.
+	if (hasBetterAuthCreatorRole(role, creatorRole)) {
+		return true;
+	}
+
+	if (roleMapping?.mapBetterAuthRoleToPolarRole) {
+		const polarRole = await roleMapping.mapBetterAuthRoleToPolarRole({
 			role,
-			// Both canonical and additional Better Auth owners are billing-capable.
-			// Canonical ownership is irrelevant to this local authorization check.
-			isCanonicalOwner: false,
-		},
-		roleMapping,
-	) !== "member";
+			roles: parseBetterAuthRoles(role),
+			organizationId,
+			user: {
+				id: user.id,
+				email: user.email,
+				name: user.name,
+			},
+		});
+		return polarRole === "billing_manager";
+	}
+
+	return (
+		mapBetterAuthRoleToPolar(
+			{
+				role,
+				isCanonicalOwner: false,
+			},
+			roleMapping,
+		) !== "member"
+	);
+};
 
 /**
  * Resolve the Polar billing identity and authorize explicit organization access.
@@ -116,7 +145,12 @@ export const resolveBillingPrincipal = async ({
 
 	if (
 		authorization === "billing" &&
-		!isBillingRole(membership.role, roleMapping)
+		!(await isBillingRole(
+			membership.role,
+			organizationId,
+			session.user,
+			roleMapping,
+		))
 	) {
 		throw new APIError("FORBIDDEN", {
 			message: "Organization billing access requires a billing role",

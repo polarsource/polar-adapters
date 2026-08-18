@@ -70,19 +70,23 @@ const notFound = () =>
 		sdkErrorMetadata(404),
 	);
 
-const externalIdConflict = () =>
+const validationError = (
+	{
+		type = "value_error",
+		loc = ["body", "external_id"],
+		input = organization.id,
+		msg = "Duplicate external identifier.",
+	}: {
+		type?: string;
+		loc?: Array<string | number>;
+		input?: unknown;
+		msg?: string;
+	} = {},
+	status = 422,
+) =>
 	new HTTPValidationError(
-		{
-			detail: [
-				{
-					loc: ["body", "external_id"],
-					msg: "A customer with this external ID already exists.",
-					type: "value_error",
-					input: organization.id,
-				},
-			],
-		},
-		sdkErrorMetadata(422),
+		{ detail: [{ loc, msg, type, input }] },
+		sdkErrorMetadata(status),
 	);
 
 describe("organization customer synchronization", () => {
@@ -178,7 +182,7 @@ describe("organization customer synchronization", () => {
 		vi.mocked(client.customers.getExternal)
 			.mockRejectedValueOnce(notFound())
 			.mockResolvedValueOnce(createTeamCustomer());
-		vi.mocked(client.customers.create).mockRejectedValue(externalIdConflict());
+		vi.mocked(client.customers.create).mockRejectedValue(validationError());
 
 		await ensureTeamCustomer(
 			client,
@@ -189,6 +193,32 @@ describe("organization customer synchronization", () => {
 			},
 		);
 
+		expect(client.customers.getExternal).toHaveBeenCalledTimes(2);
+	});
+
+	it.each([
+		["validation type", { type: "string_type" }],
+		["validation location", { loc: ["body", "email"] }],
+		["validation input", { input: "another-organization" }],
+	])("does not recover from a mismatched external ID %s", async (_, detail) => {
+		const error = validationError(detail);
+		vi.mocked(client.customers.getExternal).mockRejectedValue(notFound());
+		vi.mocked(client.customers.create).mockRejectedValue(error);
+
+		await expect(
+			ensureTeamCustomer(client, { enabled: true }, { organization, owner }),
+		).rejects.toBe(error);
+		expect(client.customers.getExternal).toHaveBeenCalledOnce();
+	});
+
+	it("rethrows a matching external ID error when no raced customer exists", async () => {
+		const error = validationError();
+		vi.mocked(client.customers.getExternal).mockRejectedValue(notFound());
+		vi.mocked(client.customers.create).mockRejectedValue(error);
+
+		await expect(
+			ensureTeamCustomer(client, { enabled: true }, { organization, owner }),
+		).rejects.toBe(error);
 		expect(client.customers.getExternal).toHaveBeenCalledTimes(2);
 	});
 

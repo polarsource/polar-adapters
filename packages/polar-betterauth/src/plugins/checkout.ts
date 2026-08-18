@@ -134,6 +134,9 @@ export const checkout =
 								authorization: "billing",
 								roleMapping: {
 									creatorRole: getBetterAuthCreatorRole(ctx.context),
+									mapBetterAuthRoleToPolarRole:
+										rootOptions?.experimental_organization
+											?.mapBetterAuthRoleToPolarRole,
 								},
 							})
 						: undefined;
