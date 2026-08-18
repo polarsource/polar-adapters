@@ -217,7 +217,7 @@ const createIntegrationHarness = (options: IntegrationHarnessOptions = {}) => {
       polar({
         client,
         createCustomerOnSignUp: false,
-        organization: {
+        experimental_organization: {
           enabled: true,
           mapBetterAuthRoleToPolarRole: options.mapBetterAuthRoleToPolarRole,
         },
@@ -1143,7 +1143,7 @@ describe("Better Auth organization integration", () => {
             client,
             createCustomerOnSignUp: false,
             ...(enableOrganizationSync
-              ? { organization: { enabled: true } }
+              ? { experimental_organization: { enabled: true } }
               : {}),
             use: [
               checkout({

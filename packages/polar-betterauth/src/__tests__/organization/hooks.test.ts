@@ -136,7 +136,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: false } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: false } }),
 		);
 
 		expect(context.getPlugin).not.toHaveBeenCalled();
@@ -161,7 +161,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await betterAuthPlugin.options.organizationHooks?.afterCreateOrganization?.(
 			{
@@ -192,7 +192,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 
 		await expect(
@@ -216,7 +216,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterUpdateOrganization?.(
 			{
@@ -238,7 +238,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterUpdateOrganization?.(
 			{ organization: null, member, user: owner },
@@ -257,7 +257,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterAddMember?.(
 			{ organization, member, user: owner },
@@ -321,7 +321,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterAddMember?.(
 			{ organization, member: invitedMember, user: invitedUser },
@@ -371,7 +371,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterUpdateMemberRole?.(
 			{
@@ -409,7 +409,7 @@ describe("organization hook installation", () => {
 
 		installOrganizationHooks(
 			context.ctx,
-			createTestPolarOptions({ client, organization: { enabled: true } }),
+			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
 		await context.organizationPlugin?.options.organizationHooks?.afterRemoveMember?.(
 			{

@@ -193,7 +193,7 @@ export const synchronizeOrganizationLeave = async (
     ...membership,
     roleOptions: {
       mapBetterAuthRoleToPolarRole:
-        options.organization?.mapBetterAuthRoleToPolarRole,
+        options.experimental_organization?.mapBetterAuthRoleToPolarRole,
     },
   });
 };
@@ -201,7 +201,7 @@ export const synchronizeOrganizationLeave = async (
 export const createOrganizationLifecycleHooks = (
   options: PolarOptions,
 ): BetterAuthPlugin["hooks"] | undefined => {
-  if (!options.organization?.enabled) {
+  if (!options.experimental_organization?.enabled) {
     return undefined;
   }
   return {

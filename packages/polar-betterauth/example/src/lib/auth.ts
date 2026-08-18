@@ -26,7 +26,7 @@ export const auth = betterAuth({
 					},
 				};
 			},
-			organization: {
+			experimental_organization: {
 				enabled: true,
 				async getTeamCustomerCreateParams({ organization, owner }) {
 					return {
