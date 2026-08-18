@@ -56,11 +56,15 @@ export interface PolarOptions {
 		metadata?: Record<string, string | number | boolean>;
 	}>;
 	/**
-	 * Mirror Better Auth organizations to Polar team customers.
+	 * EXPERIMENTAL: Mirror Better Auth organizations to Polar team customers.
+	 *
+	 * Do not enable this for applications that already handle organization
+	 * billing. Existing billing data is not migrated and can become inconsistent
+	 * with the newly synchronized Polar team customer.
 	 *
 	 * Organization support is disabled when omitted.
 	 */
-	organization?: PolarOrganizationOptions;
+	experimental_organization?: PolarOrganizationOptions;
 	/**
 	 * Use Polar plugins
 	 */

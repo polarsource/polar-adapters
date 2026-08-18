@@ -62,6 +62,14 @@ export type PolarOrganizationCustomerCreateParams = Omit<
 	"externalId" | "name" | "owner" | "type"
 >;
 
+/**
+ * Experimental Better Auth organization synchronization options.
+ *
+ * Existing organization billing data is not migrated. Applications that
+ * already handle organization billing should not enable this integration.
+ *
+ * @experimental
+ */
 export interface PolarOrganizationOptions {
 	/**
 	 * Enable Better Auth organization to Polar team-customer synchronization.
