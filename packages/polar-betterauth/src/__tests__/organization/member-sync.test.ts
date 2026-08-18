@@ -368,15 +368,11 @@ describe("organization member and owner synchronization", () => {
 			],
 		});
 
-		await removeMemberMirror(
-			harness.client,
-			{},
-			{
-				organizationId,
-				externalMemberId: "departing",
-				members: [successor],
-			},
-		);
+		await removeMemberMirror(harness.client, {
+			organizationId,
+			externalMemberId: "departing",
+			successorExternalMemberId: successor.userId,
+		});
 
 		const promotion = vi
 			.mocked(harness.client.customers.members.updateExternal)
@@ -392,8 +388,7 @@ describe("organization member and owner synchronization", () => {
 		expect(harness.members.has(`${organizationId}:departing`)).toBe(false);
 	});
 
-	it("removes a non-owner idempotently and propagates other deletion failures", async () => {
-		const owner = betterAuthMember("owner", "owner");
+	it("removes a non-owner directly", async () => {
 		const harness = createHarness({
 			[organizationId]: [
 				polarMember("owner", "owner"),
@@ -402,46 +397,37 @@ describe("organization member and owner synchronization", () => {
 		});
 
 		await expect(
-			removeMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					externalMemberId: "member",
-					members: [owner],
-				},
-			),
+			removeMemberMirror(harness.client, {
+				organizationId,
+				externalMemberId: "member",
+			}),
 		).resolves.toBeUndefined();
-		await expect(
-			removeMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					externalMemberId: "member",
-					members: [owner],
-				},
-			),
-		).resolves.toBeUndefined();
+	});
+
+	it("removes a non-owner idempotently and propagates other deletion failures", async () => {
+		const harness = createHarness({
+			[organizationId]: [
+				polarMember("owner", "owner"),
+				polarMember("member", "member"),
+			],
+		});
+		const remove = (externalMemberId: string) =>
+			removeMemberMirror(harness.client, {
+				organizationId,
+				externalMemberId,
+			});
+
+		await expect(remove("member")).resolves.toBeUndefined();
+		await expect(remove("member")).resolves.toBeUndefined();
 
 		const failure = new Error("Forbidden");
 		vi.mocked(
 			harness.client.customers.members.deleteExternal,
 		).mockRejectedValueOnce(failure);
-		await expect(
-			removeMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					externalMemberId: "another-member",
-					members: [owner],
-				},
-			),
-		).rejects.toBe(failure);
+		await expect(remove("another-member")).rejects.toBe(failure);
 	});
 
-	it("refuses to demote or remove the last Better Auth owner", async () => {
+	it("refuses to demote the last Better Auth owner", async () => {
 		const harness = createHarness({
 			[organizationId]: [polarMember("owner", "owner")],
 		});
@@ -458,20 +444,6 @@ describe("organization member and owner synchronization", () => {
 				},
 			),
 		).rejects.toBeInstanceOf(PolarOrganizationOwnerInvariantError);
-		await expect(
-			removeMemberMirror(
-				harness.client,
-				{},
-				{
-					organizationId,
-					externalMemberId: "owner",
-					members: [],
-				},
-			),
-		).rejects.toBeInstanceOf(PolarOrganizationOwnerInvariantError);
-		expect(
-			harness.client.customers.members.deleteExternal,
-		).not.toHaveBeenCalled();
 	});
 
 	it("uses custom role mapping for a non-owner member", async () => {
