@@ -1,5 +1,5 @@
 ---
-"@polar-sh/adapter-utils": minor
+"@polar-sh/adapter-utils": patch
 ---
 
-Add typed handlers for Polar member created, updated, and deleted webhook events.
+Add typed handlers for Polar member created, updated, deleted, customer seat assigned, claimed, and revoked webhook events.
