@@ -4,7 +4,10 @@ import {
 	getOrgAdapter,
 } from "better-auth/plugins/organization";
 import type { PolarOptions } from "../types";
-import { removeOrganizationMemberMirror } from "./lifecycle";
+import {
+	BetterAuthOrganizationStateError,
+	removeOrganizationMemberMirror,
+} from "./lifecycle";
 import {
 	ensureMemberMirror,
 	ensureTeamCustomer,
@@ -118,10 +121,9 @@ export const installOrganizationHooks = (
 	const syncUpdatedOrganization = async (data: AfterUpdateOrganizationData) => {
 		const updatedOrganization = data.organization;
 		if (!updatedOrganization) {
-			ctx.logger.warn(
-				"Polar organization update sync skipped because the Better Auth adapter returned no organization",
+			throw new BetterAuthOrganizationStateError(
+				`Better Auth adapter returned no updated organization for "${data.member.organizationId}"`,
 			);
-			return;
 		}
 		if (!(await isTeamCustomerSynchronized(client, updatedOrganization.id))) {
 			return;

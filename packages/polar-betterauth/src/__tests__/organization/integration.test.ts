@@ -772,6 +772,57 @@ describe("Better Auth organization integration", () => {
     });
   });
 
+  it("allows checkout for a custom role mapped to Polar billing manager", async () => {
+    const { auth, client, post, signUp, createOrganization } =
+      createIntegrationHarness({
+        checkout: true,
+        includeFinanceRole: true,
+        mapBetterAuthRoleToPolarRole: ({ roles }) =>
+          roles.has("finance") ? "billing_manager" : "member",
+      });
+    const owner = await signUp({
+      email: "owner@example.com",
+      password: "password123",
+      name: "Owner",
+    });
+    const financeUser = await signUp({
+      email: "finance@example.com",
+      password: "password123",
+      name: "Finance",
+    });
+    const createdOrganization = await createOrganization(owner.sessionCookie, {
+      name: "Acme",
+      slug: "acme",
+    });
+    await auth.api.addMember({
+      headers: new Headers({ cookie: owner.sessionCookie }),
+      body: {
+        organizationId: createdOrganization.id,
+        userId: financeUser.user.id,
+        role: "finance",
+      },
+    });
+
+    const checkoutResponse = await post(
+      "/checkout",
+      {
+        slug: "pro",
+        organizationId: createdOrganization.id,
+        redirect: false,
+      },
+      financeUser.sessionCookie,
+    );
+
+    expect(checkoutResponse.ok).toBe(true);
+    expect(client.checkouts.create).toHaveBeenCalledOnce();
+    expect(client.checkouts.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        externalCustomerId: createdOrganization.id,
+        products: ["product-pro"],
+      }),
+    );
+  });
+
   it("calls Polar checkout only for billing-capable organization members", async () => {
     const { auth, client, post, signUp, createOrganization } =
       createIntegrationHarness({ checkout: true });

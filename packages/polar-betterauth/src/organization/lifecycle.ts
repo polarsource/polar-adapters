@@ -30,6 +30,44 @@ export class BetterAuthOrganizationStateError extends Error {
 }
 
 const OWNER_CANDIDATE_PAGE_SIZE = 100;
+const ORGANIZATION_SYNC_CONCURRENCY = 5;
+
+/**
+ * Run every synchronization while limiting the number of organizations that
+ * can issue Polar requests at once. Like Promise.allSettled, a failure does not
+ * prevent the remaining synchronizations from being attempted.
+ */
+const synchronizeWithConcurrency = async <T>(
+	items: readonly T[],
+	synchronize: (item: T) => Promise<void>,
+): Promise<void> => {
+	let nextIndex = 0;
+	let firstRejection: { index: number; reason: unknown } | undefined;
+
+	const worker = async () => {
+		while (nextIndex < items.length) {
+			const index = nextIndex++;
+			try {
+				await synchronize(items[index] as T);
+			} catch (reason) {
+				if (!firstRejection || index < firstRejection.index) {
+					firstRejection = { index, reason };
+				}
+			}
+		}
+	};
+
+	await Promise.all(
+		Array.from(
+			{ length: Math.min(ORGANIZATION_SYNC_CONCURRENCY, items.length) },
+			worker,
+		),
+	);
+
+	if (firstRejection) {
+		throw firstRejection.reason;
+	}
+};
 
 const compareOwnerCandidates = (
 	left: BetterAuthMember,
@@ -112,24 +150,17 @@ export const synchronizeUserOrganizationProfiles = async (
 		user.id,
 	);
 
-	const results = await Promise.allSettled(
-		memberships.map(async (membership) => {
-			if (
-				!(await isTeamCustomerSynchronized(client, membership.organizationId))
-			) {
-				return;
-			}
-			await updateMemberMirror(client, {
-				organizationId: membership.organizationId,
-				user,
-			});
-		}),
-	);
-
-	const rejection = results.find((result) => result.status === "rejected");
-	if (rejection?.status === "rejected") {
-		throw rejection.reason;
-	}
+	await synchronizeWithConcurrency(memberships, async (membership) => {
+		if (
+			!(await isTeamCustomerSynchronized(client, membership.organizationId))
+		) {
+			return;
+		}
+		await updateMemberMirror(client, {
+			organizationId: membership.organizationId,
+			user,
+		});
+	});
 };
 
 /**
@@ -262,21 +293,14 @@ export const synchronizeUserDeletionMemberships = async (
 		user.id,
 	);
 
-	const results = await Promise.allSettled(
-		memberships.map((membership) =>
-			removeOrganizationMemberMirror({
-				authContext,
-				client,
-				organizationId: membership.organizationId,
-				userId: user.id,
-				role: membership.role,
-				roleOptions: options,
-			}),
-		),
+	await synchronizeWithConcurrency(memberships, (membership) =>
+		removeOrganizationMemberMirror({
+			authContext,
+			client,
+			organizationId: membership.organizationId,
+			userId: user.id,
+			role: membership.role,
+			roleOptions: options,
+		}),
 	);
-
-	const rejection = results.find((result) => result.status === "rejected");
-	if (rejection?.status === "rejected") {
-		throw rejection.reason;
-	}
 };

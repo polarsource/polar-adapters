@@ -21,6 +21,8 @@ const createSession = (
 ): BillingPrincipalSession => ({
 	user: {
 		id: "user-123",
+		email: "user@example.com",
+		name: "Test User",
 		...overrides,
 	},
 });
@@ -314,6 +316,53 @@ describe("resolveBillingPrincipal", () => {
 			).resolves.toMatchObject({
 				kind: "team",
 			});
+		});
+
+		it("authorizes a role mapped to Polar billing manager by a custom mapper", async () => {
+			const { context } = createContext(
+				createMembership({ role: "member, finance" }),
+			);
+			const mapBetterAuthRoleToPolarRole = vi
+				.fn()
+				.mockResolvedValue("billing_manager" as const);
+
+			await expect(
+				resolveBillingPrincipal({
+					context,
+					session: createSession(),
+					organizationId: "organization-123",
+					organizationEnabled: true,
+					authorization: "billing",
+					roleMapping: { mapBetterAuthRoleToPolarRole },
+				}),
+			).resolves.toMatchObject({ kind: "team" });
+			expect(mapBetterAuthRoleToPolarRole).toHaveBeenCalledWith({
+				role: "member, finance",
+				roles: new Set(["member", "finance"]),
+				organizationId: "organization-123",
+				user: {
+					id: "user-123",
+					email: "user@example.com",
+					name: "Test User",
+				},
+			});
+		});
+
+		it("denies a role mapped to an ordinary Polar member", async () => {
+			const { context } = createContext(createMembership({ role: "finance" }));
+
+			await expect(
+				resolveBillingPrincipal({
+					context,
+					session: createSession(),
+					organizationId: "organization-123",
+					organizationEnabled: true,
+					authorization: "billing",
+					roleMapping: {
+						mapBetterAuthRoleToPolarRole: async () => "member",
+					},
+				}),
+			).rejects.toMatchObject({ status: "FORBIDDEN" });
 		});
 	});
 });

@@ -233,18 +233,21 @@ describe("organization hook installation", () => {
 		});
 	});
 
-	it("skips and warns when an adapter returns no updated organization", async () => {
+	it("fails when an adapter returns no updated organization", async () => {
 		const context = createContext({});
 
 		installOrganizationHooks(
 			context.ctx,
 			createTestPolarOptions({ client, experimental_organization: { enabled: true } }),
 		);
-		await context.organizationPlugin?.options.organizationHooks?.afterUpdateOrganization?.(
-			{ organization: null, member, user: owner },
-		);
 
-		expect(context.logger.warn).toHaveBeenCalledOnce();
+		await expect(
+			context.organizationPlugin?.options.organizationHooks?.afterUpdateOrganization?.(
+				{ organization: null, member, user: owner },
+			),
+		).rejects.toThrow(
+			`Better Auth adapter returned no updated organization for "${organization.id}"`,
+		);
 		expect(client.customers.updateExternal).not.toHaveBeenCalled();
 	});
 

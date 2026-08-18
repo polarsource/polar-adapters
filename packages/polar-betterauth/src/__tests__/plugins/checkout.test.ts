@@ -173,6 +173,63 @@ describe("checkout plugin", () => {
 			);
 		});
 
+		it("forwards the custom role mapper for organization checkout authorization", async () => {
+			const mapBetterAuthRoleToPolarRole = vi
+				.fn()
+				.mockReturnValue("billing_manager" as const);
+			const endpoints = checkout({
+				products: [{ productId: "prod-123", slug: "test-product" }],
+			})(mockClient, {
+				experimental_organization: {
+					enabled: true,
+					mapBetterAuthRoleToPolarRole,
+				},
+			});
+			const customHandler = endpoints.checkout.handler;
+			const session = {
+				user: {
+					id: "user-123",
+					email: "user@example.com",
+					name: "Test User",
+				},
+			};
+			vi.mocked(getSessionFromCtx).mockResolvedValue(session);
+			vi.mocked(resolveBillingPrincipal).mockResolvedValue({
+				kind: "team",
+				externalCustomerId: "organization-123",
+				externalMemberId: "user-123",
+			});
+			vi.mocked(mockClient.customers.getExternal).mockResolvedValue(
+				createMockCustomer({
+					type: "team",
+					externalId: "organization-123",
+				}),
+			);
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(
+				createMockCheckout(),
+			);
+
+			await customHandler({
+				...mockContext,
+				context: mockContext,
+				body: {
+					products: ["prod-123"],
+					organizationId: "organization-123",
+				},
+				json: vi.fn(),
+			});
+
+			expect(resolveBillingPrincipal).toHaveBeenCalledWith(
+				expect.objectContaining({
+					organizationEnabled: true,
+					roleMapping: {
+						creatorRole: "owner",
+						mapBetterAuthRoleToPolarRole,
+					},
+				}),
+			);
+		});
+
 		it("rejects unauthorized organization checkout before calling Polar", async () => {
 			vi.mocked(getSessionFromCtx).mockResolvedValue({
 				user: { id: "user-123" },
