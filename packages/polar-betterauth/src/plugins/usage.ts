@@ -17,7 +17,10 @@ export interface UsageOptions {
 
 export const usage =
 	(_usageOptions?: UsageOptions) =>
-	(polar: Polar, rootOptions?: Pick<PolarOptions, "experimental_organization">) => {
+	(
+		polar: Polar,
+		rootOptions?: Pick<PolarOptions, "experimental_organization">,
+	) => {
 		return {
 			meters: createAuthEndpoint(
 				"/usage/meters/list",
@@ -42,7 +45,8 @@ export const usage =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -105,7 +109,8 @@ export const usage =
 								context: ctx.context,
 								session: ctx.context.session,
 								organizationId: ctx.body.organizationId,
-								organizationEnabled: rootOptions?.experimental_organization?.enabled,
+								organizationEnabled:
+									rootOptions?.experimental_organization?.enabled,
 								authorization: "member",
 							})
 						: undefined;

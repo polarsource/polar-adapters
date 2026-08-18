@@ -121,7 +121,7 @@ export const ensureTeamCustomer = async (
 		: {};
 
 	try {
-		const customer = await client.customers.create({
+		await client.customers.create({
 			...customParams,
 			externalId: data.organization.id,
 			name: data.organization.name,
@@ -132,8 +132,6 @@ export const ensureTeamCustomer = async (
 			},
 			type: "team",
 		});
-
-		assertTeamCustomer(customer, data.organization.id);
 	} catch (error) {
 		if (!isExternalIdConflict(error, data.organization.id)) {
 			throw error;
@@ -380,13 +378,10 @@ export const ensureMemberMirror = async (
 		organizationId: string;
 		user: BetterAuthOrganizationUser;
 		betterAuthRole: string;
-		/** Only the initial creator hook may run before the team customer exists. */
-		deferIfCustomerMissing?: boolean;
 	},
 ) => {
 	const customer = await findTeamCustomer(client, data.organizationId);
 	if (!customer) {
-		if (data.deferIfCustomerMissing) return;
 		throw new PolarOrganizationTeamCustomerNotFoundError(data.organizationId);
 	}
 
