@@ -258,6 +258,39 @@ const updateMemberRole = async (
 	});
 };
 
+const getCurrentPolarOwner = async (
+	client: Polar,
+	organizationId: string,
+): Promise<PolarMember> => {
+	const customer = await findTeamCustomer(client, organizationId);
+	if (!customer) {
+		throw new PolarOrganizationTeamCustomerNotFoundError(organizationId);
+	}
+
+	const ownerPage = await client.members.listMembers({
+		externalCustomerId: organizationId,
+		role: "owner",
+		limit: 100,
+	});
+
+	const polarOwners = ownerPage.result.items;
+	if (polarOwners.length !== 1) {
+		throw new PolarOrganizationOwnerInvariantError(
+			organizationId,
+			`Polar returned ${polarOwners.length} owners`,
+		);
+	}
+
+	const currentOwner = polarOwners[0];
+	if (!currentOwner?.externalId) {
+		throw new PolarOrganizationOwnerInvariantError(
+			organizationId,
+			"the current Polar owner has no external ID",
+		);
+	}
+	return currentOwner;
+};
+
 /** Transfer ownership only when the current Polar owner is no longer a Better Auth owner. */
 const syncOwnerTransfer = async (
 	client: Polar,
@@ -267,11 +300,6 @@ const syncOwnerTransfer = async (
 		members: readonly BetterAuthOrganizationMemberMirror[];
 	},
 ) => {
-	const customer = await findTeamCustomer(client, data.organizationId);
-	if (!customer) {
-		throw new PolarOrganizationTeamCustomerNotFoundError(data.organizationId);
-	}
-
 	const creatorRole = options.creatorRole ?? "owner";
 	const ownerCandidates = data.members
 		.filter((member) => hasBetterAuthCreatorRole(member.role, creatorRole))
@@ -284,30 +312,12 @@ const syncOwnerTransfer = async (
 		);
 	}
 
-	const ownerPage = await client.members.listMembers({
-		externalCustomerId: data.organizationId,
-		role: "owner",
-		limit: 100,
-	});
-	const polarOwners = ownerPage.result.items;
-	if (polarOwners.length !== 1) {
-		throw new PolarOrganizationOwnerInvariantError(
-			data.organizationId,
-			`Polar returned ${polarOwners.length} owners`,
-		);
-	}
-
-	const currentOwner = polarOwners[0];
-	if (!currentOwner?.externalId) {
-		throw new PolarOrganizationOwnerInvariantError(
-			data.organizationId,
-			"the current Polar owner has no external ID",
-		);
-	}
+	const currentOwner = await getCurrentPolarOwner(client, data.organizationId);
 
 	const retainedOwner = ownerCandidates.find(
 		(candidate) => candidate.userId === currentOwner.externalId,
 	);
+
 	if (retainedOwner) {
 		return { canonicalOwner: retainedOwner, currentOwner, transferred: false };
 	}
@@ -336,12 +346,14 @@ const syncOwnerTransfer = async (
 	const previousOwner = data.members.find(
 		(member) => member.userId === currentOwner.externalId,
 	);
+
 	if (previousOwner) {
 		const previousOwnerRole = await resolveNonOwnerRole(
 			options,
 			data.organizationId,
 			previousOwner,
 		);
+
 		if (previousOwnerRole !== "billing_manager") {
 			await updateMemberRole(
 				client,
@@ -434,21 +446,31 @@ export const updateMemberMirror = async (
 
 export const removeMemberMirror = async (
 	client: Polar,
-	options: PolarOrganizationRoleSyncOptions,
 	data: {
 		organizationId: string;
 		externalMemberId: string;
-		members: readonly BetterAuthOrganizationMemberMirror[];
+		successorExternalMemberId?: string;
 	},
 ) => {
-	const remainingMembers = data.members.filter(
-		(member) => member.userId !== data.externalMemberId,
-	);
-
-	await syncOwnerTransfer(client, options, {
-		organizationId: data.organizationId,
-		members: remainingMembers,
-	});
+	if (data.successorExternalMemberId) {
+		const polarSuccessor = await findMember(
+			client,
+			data.organizationId,
+			data.successorExternalMemberId,
+		);
+		if (!polarSuccessor) {
+			throw new PolarOrganizationOwnerInvariantError(
+				data.organizationId,
+				`successor "${data.successorExternalMemberId}" is not a Polar member`,
+			);
+		}
+		await updateMemberRole(
+			client,
+			data.organizationId,
+			data.successorExternalMemberId,
+			"owner",
+		);
+	}
 
 	try {
 		await client.customers.members.deleteExternal({

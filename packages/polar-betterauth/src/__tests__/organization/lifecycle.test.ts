@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	ORGANIZATION_LEAVE_PATH,
 	createOrganizationLifecycleHooks,
+	removeOrganizationMemberMirror,
 	synchronizeOrganizationLeave,
 	synchronizeUserDeletionMemberships,
 	synchronizeUserOrganizationProfiles,
@@ -79,7 +80,7 @@ const memberships: Member[] = [
 	},
 ];
 
-const createAuthContext = () => {
+const createAuthContext = (storedMemberships = memberships) => {
 	const logger = {
 		error: vi.fn(),
 		warn: vi.fn(),
@@ -96,25 +97,37 @@ const createAuthContext = () => {
 				organizations.find((organization) => organization.id === id) ?? null
 			);
 		}),
-		findMany: vi.fn(async ({ model, where }) => {
+		findMany: vi.fn(async ({ model, where, sortBy, limit, offset = 0 }) => {
 			if (model === "member") {
-				const organizationId = where?.find(
-					(item: { field: string }) => item.field === "organizationId",
-				)?.value;
-				const userId = where?.find(
-					(item: { field: string }) => item.field === "userId",
-				)?.value;
-				return memberships.filter(
-					(member) =>
-						(!organizationId || member.organizationId === organizationId) &&
-						(!userId || member.userId === userId),
+				let result = storedMemberships.filter((member) =>
+					where?.every(
+						(clause: {
+							field: keyof Member;
+							value: unknown;
+							operator?: string;
+						}) => {
+							const value = member[clause.field];
+							if (clause.operator === "ne") return value !== clause.value;
+							if (clause.operator === "contains") {
+								return String(value).includes(String(clause.value));
+							}
+							return value === clause.value;
+						},
+					),
 				);
+				if (sortBy?.field === "createdAt") {
+					result = result.toSorted(
+						(left, right) =>
+							left.createdAt.getTime() - right.createdAt.getTime(),
+					);
+				}
+				return result.slice(offset, limit ? offset + limit : undefined);
 			}
 			if (model === "user") {
 				const ids = where[0].value as string[];
-				return [user, successor].filter((candidate) =>
-					ids.includes(candidate.id),
-				);
+				return [user, successor]
+					.filter((candidate) => ids.includes(candidate.id))
+					.slice(0, limit);
 			}
 			return [];
 		}),
@@ -157,7 +170,7 @@ describe("organization lifecycle gaps", () => {
 		});
 	});
 
-	it("cleans up self-leave exactly once and supplies the remaining owner roster", async () => {
+	it("cleans up self-leave exactly once and supplies the earliest remaining owner", async () => {
 		const { context } = createAuthContext();
 		const options = createTestPolarOptions({
 			client,
@@ -171,16 +184,68 @@ describe("organization lifecycle gaps", () => {
 		});
 
 		expect(removeMemberMirror).toHaveBeenCalledOnce();
-		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[2]).toMatchObject({
+		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[1]).toMatchObject({
 			organizationId: "org-a",
 			externalMemberId: user.id,
-			members: expect.arrayContaining([
-				expect.objectContaining({
-					userId: successor.id,
-					role: "owner",
-				}),
-			]),
+			successorExternalMemberId: successor.id,
 		});
+	});
+
+	it("refuses to remove the last creator", async () => {
+		const ownerMembership = memberships[0];
+		if (!ownerMembership) throw new Error("Missing owner membership fixture");
+		const { context } = createAuthContext([ownerMembership]);
+
+		await expect(
+			removeOrganizationMemberMirror({
+				authContext: context,
+				client,
+				organizationId: ownerMembership.organizationId,
+				userId: ownerMembership.userId,
+				role: ownerMembership.role,
+			}),
+		).rejects.toThrow('Better Auth has no member with creator role "owner"');
+		expect(removeMemberMirror).not.toHaveBeenCalled();
+	});
+
+	it("paginates role prefilter false positives to find the earliest actual owner", async () => {
+		const ownerMembership = memberships[2];
+		if (!ownerMembership) throw new Error("Missing owner membership fixture");
+		const falsePositives: Member[] = Array.from(
+			{ length: 100 },
+			(_, index) => ({
+				id: `member-coowner-${index}`,
+				organizationId: "org-a",
+				userId: `coowner-${index}`,
+				role: "coowner",
+				createdAt: new Date(
+					ownerMembership.createdAt.getTime() - (100 - index) * 1_000,
+				),
+			}),
+		);
+		const { context, adapter } = createAuthContext([
+			...falsePositives,
+			ownerMembership,
+		]);
+		const options = createTestPolarOptions({
+			client,
+			experimental_organization: { enabled: true },
+		});
+
+		await synchronizeOrganizationLeave(options, {
+			context: Object.assign(context, {
+				returned: memberships[0],
+			}),
+		});
+
+		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[1]).toMatchObject({
+			successorExternalMemberId: successor.id,
+		});
+		expect(
+			vi
+				.mocked(adapter.findMany)
+				.mock.calls.filter(([call]) => call.model === "member"),
+		).toHaveLength(2);
 	});
 
 	it("matches only /organization/leave, not admin removal or deletion", () => {
@@ -214,31 +279,33 @@ describe("organization lifecycle gaps", () => {
 	});
 
 	it("uses the user delete before-state for every membership", async () => {
-		const { context } = createAuthContext();
+		const { context, adapter } = createAuthContext();
 
 		await synchronizeUserDeletionMemberships(context, client, user);
 
 		expect(removeMemberMirror).toHaveBeenCalledTimes(2);
-		expect(
-			vi.mocked(removeMemberMirror).mock.calls.map((call) => call[2]),
-		).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					organizationId: "org-a",
-					externalMemberId: user.id,
-					members: [
-						expect.objectContaining({ userId: user.id, role: "owner" }),
-						expect.objectContaining({ userId: successor.id, role: "owner" }),
-					],
-				}),
-				expect.objectContaining({
-					organizationId: "org-b",
-					externalMemberId: user.id,
-					members: [
-						expect.objectContaining({ userId: user.id, role: "admin" }),
-					],
-				}),
-			]),
+		const removals = vi
+			.mocked(removeMemberMirror)
+			.mock.calls.map((call) => call[1]);
+		const organizationARemoval = removals.find(
+			(removal) => removal.organizationId === "org-a",
 		);
+		const organizationBRemoval = removals.find(
+			(removal) => removal.organizationId === "org-b",
+		);
+		expect(organizationARemoval).toMatchObject({
+			externalMemberId: user.id,
+			successorExternalMemberId: successor.id,
+		});
+		expect(organizationBRemoval).toEqual({
+			organizationId: "org-b",
+			externalMemberId: user.id,
+			successorExternalMemberId: undefined,
+		});
+		expect(
+			vi
+				.mocked(adapter.findMany)
+				.mock.calls.filter(([call]) => call.model === "member"),
+		).toHaveLength(2);
 	});
 });
