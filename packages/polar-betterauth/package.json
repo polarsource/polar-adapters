@@ -40,7 +40,8 @@
     "check": "biome check --write ./src"
   },
   "files": [
-    "dist"
+    "dist",
+    ".agents"
   ],
   "keywords": [
     "polar",

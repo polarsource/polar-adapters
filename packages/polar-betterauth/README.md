@@ -209,6 +209,18 @@ Organization billing is always selected explicitly; the active Better Auth organ
 
 The adapter verifies the authenticated user's Better Auth membership before calling Polar. Organization checkout requires a billing-capable role. Team portal and meter requests create a member-scoped customer session with `externalCustomerId = organization.id` and `externalMemberId = user.id`; usage events carry both IDs. Omitting `organizationId` preserves personal-customer behavior.
 
+### Organization backfill agent skill
+
+The repository includes an agent skill for generating an application-specific backfill script across unsynchronized, synchronized, and partially synchronized Better Auth organizations. Install it with the [`skills`](https://skills.sh/) installer:
+
+```bash
+npx skills add https://github.com/polarsource/polar-adapters \
+  --skill polar-better-auth-organization-backfill \
+  --full-depth
+```
+
+Then ask your coding agent to use `$polar-better-auth-organization-backfill`. The skill guides the agent through database connection setup, Better Auth schema discovery, role and ownership mapping, Polar API calls, dry runs, batching, and safe resumability.
+
 ## Checkout Plugin
 
 To support checkouts in your app, simply pass the Checkout plugin to the use-property.
