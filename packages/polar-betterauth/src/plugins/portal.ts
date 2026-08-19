@@ -21,7 +21,7 @@ export const portal =
 	({ returnUrl, theme }: PortalConfig = {}) =>
 	(
 		polar: Polar,
-		rootOptions?: Pick<PolarOptions, "experimental_organization">,
+		rootOptions?: Pick<PolarOptions, "experimental_organizationSync">,
 	) => {
 		const retUrl = returnUrl ? new URL(returnUrl) : undefined;
 
@@ -57,7 +57,7 @@ export const portal =
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -115,7 +115,7 @@ export const portal =
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -166,7 +166,7 @@ export const portal =
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -230,7 +230,7 @@ export const portal =
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -326,7 +326,7 @@ export const portal =
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;

@@ -55,7 +55,7 @@ export const installOrganizationHooks = (
 	ctx: AuthContext,
 	options: PolarOptions,
 ) => {
-	const organizationOptions = options.experimental_organization;
+	const organizationOptions = options.experimental_organizationSync;
 	if (!organizationOptions?.enabled) {
 		return;
 	}

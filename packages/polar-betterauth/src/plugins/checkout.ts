@@ -80,7 +80,7 @@ export const checkout =
 	(checkoutOptions: CheckoutOptions = {}) =>
 	(
 		polar: Polar,
-		rootOptions?: Pick<PolarOptions, "experimental_organization">,
+		rootOptions?: Pick<PolarOptions, "experimental_organizationSync">,
 	) => {
 		return {
 			checkout: createAuthEndpoint(
@@ -137,12 +137,12 @@ export const checkout =
 								session,
 								organizationId: ctx.body.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "billing",
 								roleMapping: {
 									creatorRole: getBetterAuthCreatorRole(ctx.context),
 									mapBetterAuthRoleToPolarRole:
-										rootOptions?.experimental_organization
+										rootOptions?.experimental_organizationSync
 											?.mapBetterAuthRoleToPolarRole,
 								},
 							})
