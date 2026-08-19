@@ -8,6 +8,7 @@ import {
 	BetterAuthOrganizationStateError,
 	removeOrganizationMemberMirror,
 } from "./lifecycle";
+import { DEFAULT_BETTER_AUTH_CREATOR_ROLE } from "./roles";
 import {
 	ensureMemberMirror,
 	ensureTeamCustomer,
@@ -74,7 +75,9 @@ export const installOrganizationHooks = (
 	const existingHooks = betterAuthOrganizationOptions.organizationHooks ?? {};
 
 	const roleSyncOptions: PolarOrganizationRoleSyncOptions = {
-		creatorRole: betterAuthOrganizationOptions.creatorRole ?? "owner",
+		creatorRole:
+			betterAuthOrganizationOptions.creatorRole ??
+			DEFAULT_BETTER_AUTH_CREATOR_ROLE,
 		mapBetterAuthRoleToPolarRole:
 			organizationOptions.mapBetterAuthRoleToPolarRole,
 	};
@@ -97,18 +100,7 @@ export const installOrganizationHooks = (
 			);
 		}
 
-		return result.members.map((member) => ({
-			id: member.id,
-			organizationId: member.organizationId,
-			userId: member.userId,
-			role: member.role,
-			createdAt: member.createdAt,
-			user: {
-				id: member.user.id,
-				email: member.user.email,
-				name: member.user.name,
-			},
-		}));
+		return result.members;
 	};
 
 	const syncCreatedOrganization = async (data: AfterCreateOrganizationData) => {

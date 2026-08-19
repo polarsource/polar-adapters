@@ -5,6 +5,7 @@ import { HTTPValidationError } from "@polar-sh/sdk/models/errors/httpvalidatione
 import { ResourceNotFound } from "@polar-sh/sdk/models/errors/resourcenotfound.js";
 import type { Organization } from "better-auth/plugins/organization";
 import {
+	DEFAULT_BETTER_AUTH_CREATOR_ROLE,
 	hasBetterAuthCreatorRole,
 	mapBetterAuthRoleToPolar,
 	parseBetterAuthRoles,
@@ -237,9 +238,9 @@ const resolveNonOwnerRole = async (
 	return role;
 };
 
-const compareOwnerCandidates = (
-	left: BetterAuthOrganizationMemberMirror,
-	right: BetterAuthOrganizationMemberMirror,
+export const byEarliestMembership = (
+	left: Pick<BetterAuthOrganizationMemberMirror, "id" | "createdAt">,
+	right: Pick<BetterAuthOrganizationMemberMirror, "id" | "createdAt">,
 ): number => {
 	const createdAtDifference =
 		left.createdAt.getTime() - right.createdAt.getTime();
@@ -304,10 +305,11 @@ const syncOwnerTransfer = async (
 		members: readonly BetterAuthOrganizationMemberMirror[];
 	},
 ) => {
-	const creatorRole = options.creatorRole ?? "owner";
+	const creatorRole =
+		options.creatorRole ?? DEFAULT_BETTER_AUTH_CREATOR_ROLE;
 	const ownerCandidates = data.members
 		.filter((member) => hasBetterAuthCreatorRole(member.role, creatorRole))
-		.sort(compareOwnerCandidates);
+		.sort(byEarliestMembership);
 	const fallbackOwner = ownerCandidates[0];
 	if (!fallbackOwner) {
 		throw new PolarOrganizationOwnerInvariantError(
