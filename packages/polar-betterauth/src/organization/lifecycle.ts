@@ -7,6 +7,7 @@ import type { PolarOptions } from "../types";
 import { getBetterAuthCreatorRole, hasBetterAuthCreatorRole } from "./roles";
 import {
 	PolarOrganizationOwnerInvariantError,
+	byEarliestMembership,
 	isTeamCustomerSynchronized,
 	removeMemberMirror,
 	updateMemberMirror,
@@ -69,18 +70,6 @@ const synchronizeWithConcurrency = async <T>(
 	}
 };
 
-const compareOwnerCandidates = (
-	left: BetterAuthMember,
-	right: BetterAuthMember,
-): number => {
-	const createdAtDifference =
-		left.createdAt.getTime() - right.createdAt.getTime();
-	if (createdAtDifference !== 0) return createdAtDifference;
-	if (left.id < right.id) return -1;
-	if (left.id > right.id) return 1;
-	return 0;
-};
-
 export const findEarliestBetterAuthOwnerCandidate = async (
 	authContext: AuthContext,
 	organizationId: string,
@@ -102,7 +91,7 @@ export const findEarliestBetterAuthOwnerCandidate = async (
 
 		const successor = members
 			.filter((member) => hasBetterAuthCreatorRole(member.role, creatorRole))
-			.sort(compareOwnerCandidates)[0];
+			.sort(byEarliestMembership)[0];
 
 		if (successor) {
 			const users = await authContext.adapter.findMany<BetterAuthUser>({
