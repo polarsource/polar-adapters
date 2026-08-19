@@ -180,7 +180,7 @@ describe("checkout plugin", () => {
 			const endpoints = checkout({
 				products: [{ productId: "prod-123", slug: "test-product" }],
 			})(mockClient, {
-				experimental_organization: {
+				experimental_organizationSync: {
 					enabled: true,
 					mapBetterAuthRoleToPolarRole,
 				},

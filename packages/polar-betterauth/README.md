@@ -59,7 +59,7 @@ const auth = betterAuth({
             createCustomerOnSignUp: true,
             // Experimental: do not enable this if your application already
             // handles organization billing. Existing billing is not migrated.
-            experimental_organization: {
+            experimental_organizationSync: {
                 enabled: true,
                 getTeamCustomerCreateParams: async ({ organization, owner }) => ({
                     metadata: {
@@ -148,7 +148,7 @@ const auth = betterAuth({
         },
       }),
       // Experimental: only enable this with a reviewed billing cutover plan.
-      experimental_organization: {
+      experimental_organizationSync: {
         enabled: true,
         getTeamCustomerCreateParams: async ({ organization, owner }) => ({
           metadata: {
@@ -173,7 +173,7 @@ const auth = betterAuth({
 
 - `createCustomerOnSignUp`: Automatically create a Polar customer when a user signs up
 - `getCustomerCreateParams`: Custom function to provide additional personal-customer creation metadata
-- `experimental_organization`: Experimental Better Auth organization synchronization configuration. Set `experimental_organization.enabled` to `true`; `experimental_organization.getTeamCustomerCreateParams` can add team-customer fields such as metadata or billing details.
+- `experimental_organizationSync`: Experimental Better Auth organization synchronization configuration. Set `experimental_organizationSync.enabled` to `true`; `experimental_organizationSync.getTeamCustomerCreateParams` can add team-customer fields such as metadata or billing details.
 
 ### Customers
 
@@ -184,9 +184,9 @@ All new customers are created with an associated `externalId`, which is the ID o
 ### Experimental organization synchronization
 
 > [!WARNING]
-> This integration is experimental. If your application already handles organization billing, keep using that implementation and do not enable `experimental_organization`. This option synchronizes Better Auth organizations and members, but it does not migrate existing subscriptions, orders, benefits, or seats. Enabling it on an existing billing setup can leave Better Auth and Polar inconsistent: the new Polar team customer can have the correct roster while billing remains attached to personal customers. Team-customer APIs may then report no subscription and a new checkout can create duplicate billing.
+> This integration is experimental. If your application already handles organization billing, keep using that implementation and do not enable `experimental_organizationSync`. This option synchronizes Better Auth organizations and members, but it does not migrate existing subscriptions, orders, benefits, or seats. Enabling it on an existing billing setup can leave Better Auth and Polar inconsistent: the new Polar team customer can have the correct roster while billing remains attached to personal customers. Team-customer APIs may then report no subscription and a new checkout can create duplicate billing.
 
-Experimental organization synchronization is opt-in and requires both Better Auth's `organization()` plugin and `experimental_organization: { enabled: true }` on `polar()`. Enabling it without the Better Auth plugin fails during startup. Use it only when you understand and control the billing cutover for every existing organization.
+Experimental organization synchronization is opt-in and requires both Better Auth's `organization()` plugin and `experimental_organizationSync: { enabled: true }` on `polar()`. Enabling it without the Better Auth plugin fails during startup. Use it only when you understand and control the billing cutover for every existing organization.
 
 Organizations created after synchronization is enabled are mirrored normally. Existing Better Auth organizations without a Polar team customer remain on the metadata-based `referenceId` flow: lifecycle hooks skip them instead of failing or partially synchronizing their roster. An explicit `organizationId` checkout requires an existing team customer and is rejected for an unsynchronized organization, preventing Polar from creating a regular customer with the organization ID.
 
@@ -198,13 +198,13 @@ The current mapping is deterministic:
 | Organization creator `user.id` | Initial owner member `externalId` |
 | `organization.name` | Team customer `name` |
 
-On organization creation, the adapter creates or reuses a team customer and supplies the creator as its explicit owner. The team customer has no email by default, avoiding collisions when one user owns several organizations. `experimental_organization.getTeamCustomerCreateParams` may add metadata, locale, address, tax, or other supported team-customer fields, but cannot override `type`, `externalId`, `name`, or owner identity. Organization name changes update the team customer.
+On organization creation, the adapter creates or reuses a team customer and supplies the creator as its explicit owner. The team customer has no email by default, avoiding collisions when one user owns several organizations. `experimental_organizationSync.getTeamCustomerCreateParams` may add metadata, locale, address, tax, or other supported team-customer fields, but cannot override `type`, `externalId`, `name`, or owner identity. Organization name changes update the team customer.
 
 This requires Polar's member model to be enabled. The Polar organization access token needs `customers:read`, `customers:write`, `members:read`, and `members:write` scopes.
 
 Better Auth users map to Polar member `externalId` values using `user.id` within each team customer. Direct additions and accepted invitations are mirrored, and profile, role, removal, self-leave, and user-deletion paths are synchronized. Better Auth remains the roster source of truth.
 
-Polar permits one owner. The adapter reads Better Auth's configured `creatorRole` (defaulting to `owner`), retains the current valid creator-role member as Polar's canonical owner, and uses the same role for checkout authorization. If a transfer is required, it deterministically selects the earliest eligible owner. Additional creator-role members and `admin` map to `billing_manager`; other roles map to `member`. `experimental_organization.mapBetterAuthRoleToPolarRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
+Polar permits one owner. The adapter reads Better Auth's configured `creatorRole` (defaulting to `owner`), retains the current valid creator-role member as Polar's canonical owner, and uses the same role for checkout authorization. If a transfer is required, it deterministically selects the earliest eligible owner. Additional creator-role members and `admin` map to `billing_manager`; other roles map to `member`. `experimental_organizationSync.mapBetterAuthRoleToPolarRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
 
 Organization deletion in Better Auth does **not** delete the Polar team customer or its billing data. Cross-system writes are not transactional: synchronization errors propagate, but an earlier Better Auth or Polar write cannot be rolled back. Polar synchronization uses deterministic external IDs, and each lifecycle hook updates only the customer or members affected by that Better Auth operation.
 
@@ -289,7 +289,7 @@ checkout.addEventListener("success", (event) => {
 
 ### Metadata-based organization billing with `referenceId`
 
-The previous `referenceId` setup remains supported when you do not enable Polar organization synchronization. It also keeps working for existing unsynchronized organizations after synchronization is enabled. To use only the metadata-based setup, keep Better Auth's `organization()` plugin but omit the `experimental_organization` option from `polar()`:
+The previous `referenceId` setup remains supported when you do not enable Polar organization synchronization. It also keeps working for existing unsynchronized organizations after synchronization is enabled. To use only the metadata-based setup, keep Better Auth's `organization()` plugin but omit the `experimental_organizationSync` option from `polar()`:
 
 ```typescript
 const auth = betterAuth({
@@ -334,7 +334,7 @@ const { data: subscriptions } =
 
 This is metadata-based tracking, not Polar team-customer billing. The adapter does not authorize Better Auth organization membership for `referenceId`, so your application must verify membership before using the result to grant access.
 
-If this is already how your application handles organization billing, keep using it and do not enable `experimental_organization`. Existing billing objects are not migrated to the team customer, so mixing an established `referenceId` setup with experimental team-customer billing can produce an inconsistent billing state. Only applications with an explicit, reviewed cutover plan should enable `experimental_organization` and use `organizationId`:
+If this is already how your application handles organization billing, keep using it and do not enable `experimental_organizationSync`. Existing billing objects are not migrated to the team customer, so mixing an established `referenceId` setup with experimental team-customer billing can produce an inconsistent billing state. Only applications with an explicit, reviewed cutover plan should enable `experimental_organizationSync` and use `organizationId`:
 
 ```typescript
 await authClient.checkout({

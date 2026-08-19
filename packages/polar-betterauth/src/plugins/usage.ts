@@ -19,7 +19,7 @@ export const usage =
 	(_usageOptions?: UsageOptions) =>
 	(
 		polar: Polar,
-		rootOptions?: Pick<PolarOptions, "experimental_organization">,
+		rootOptions?: Pick<PolarOptions, "experimental_organizationSync">,
 	) => {
 		return {
 			meters: createAuthEndpoint(
@@ -46,7 +46,7 @@ export const usage =
 								session: ctx.context.session,
 								organizationId: ctx.query.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;
@@ -110,7 +110,7 @@ export const usage =
 								session: ctx.context.session,
 								organizationId: ctx.body.organizationId,
 								organizationEnabled:
-									rootOptions?.experimental_organization?.enabled,
+									rootOptions?.experimental_organizationSync?.enabled,
 								authorization: "member",
 							})
 						: undefined;

@@ -194,7 +194,7 @@ describe("organization lifecycle gaps", () => {
 		const { context } = createAuthContext();
 		const options = createTestPolarOptions({
 			client,
-			experimental_organization: { enabled: true },
+			experimental_organizationSync: { enabled: true },
 		});
 
 		await synchronizeOrganizationLeave(options, {
@@ -249,7 +249,7 @@ describe("organization lifecycle gaps", () => {
 		]);
 		const options = createTestPolarOptions({
 			client,
-			experimental_organization: { enabled: true },
+			experimental_organizationSync: { enabled: true },
 		});
 
 		await synchronizeOrganizationLeave(options, {
@@ -274,7 +274,7 @@ describe("organization lifecycle gaps", () => {
 		const hooks = createOrganizationLifecycleHooks(
 			createTestPolarOptions({
 				client,
-				experimental_organization: { enabled: true },
+				experimental_organizationSync: { enabled: true },
 			}),
 		);
 		const matcher = hooks?.after?.[0]?.matcher;

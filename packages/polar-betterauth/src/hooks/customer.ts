@@ -123,7 +123,7 @@ export const onUserUpdate =
 			}
 		}
 
-		if (!options.experimental_organization?.enabled) {
+		if (!options.experimental_organizationSync?.enabled) {
 			return;
 		}
 
@@ -149,7 +149,7 @@ export const onUserUpdate =
 export const onBeforeUserDelete =
 	(options: PolarOptions, initContext?: AuthContext) =>
 	async (user: User, context: GenericEndpointContext | null) => {
-		if (!options.experimental_organization?.enabled) {
+		if (!options.experimental_organizationSync?.enabled) {
 			return;
 		}
 		const authContext = context?.context ?? initContext;
@@ -164,7 +164,7 @@ export const onBeforeUserDelete =
 			user,
 			{
 				mapBetterAuthRoleToPolarRole:
-					options.experimental_organization.mapBetterAuthRoleToPolarRole,
+					options.experimental_organizationSync.mapBetterAuthRoleToPolarRole,
 			},
 		);
 	};

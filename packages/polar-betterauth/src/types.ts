@@ -64,7 +64,7 @@ export interface PolarOptions {
 	 *
 	 * Organization support is disabled when omitted.
 	 */
-	experimental_organization?: PolarOrganizationOptions;
+	experimental_organizationSync?: PolarOrganizationOptions;
 	/**
 	 * Use Polar plugins
 	 */

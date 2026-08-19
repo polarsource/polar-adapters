@@ -102,7 +102,7 @@ describe("polar plugin", () => {
 	it("should validate the Better Auth organization plugin during init", () => {
 		const options = createTestPolarOptions({
 			client: mockClient,
-			experimental_organization: { enabled: true },
+			experimental_organizationSync: { enabled: true },
 			use: [checkout()],
 		});
 		const plugin = polar(options);
