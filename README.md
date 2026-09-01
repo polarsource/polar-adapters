@@ -1,36 +1,72 @@
-# Polar Adapters
+# Polar Adapters (deprecated)
 
-This repository hosts a wide array of Polar adapters for your TypeScript framework. Our Adapters are built to make it as easy as possible to integrate Polar in your application.
+> [!IMPORTANT]
+> **This repository has been deprecated**. No further releases will be
+> made from it. Find your package in the table below.
 
-### Adapters
+Polar's actively maintained framework adapters now live in the
+[main Polar monorepo](https://github.com/polarsource/polar) and ship as `1.x`
+against the Polar SDK 1.0. The remaining adapters are sunset and no longer
+maintained.
 
-- [BetterAuth](./packages/polar-betterauth)
-- [Supabase](./packages/polar-supabase/)
-- [Deno](./packages//polar-deno/)
-- [Astro](./packages/polar-astro)
-- [Elysia](./packages/polar-elysia)
-- [Express](./packages/polar-express)
-- [Fastify](./packages/polar-fastify)
-- [Hono](./packages/polar-hono)
-- [Next.js](./packages/polar-nextjs)
-- [Nuxt](./packages/polar-nuxt)
-- [Remix](./packages/polar-remix)
-- [Sveltekit](./packages/polar-sveltekit)
-- [TanStack Start](./packages/polar-tanstack-start)
+## Package status
 
+| Package | Status | What to do |
+| --- | --- | --- |
+| `@polar-sh/nextjs` | ➡️ Moved to [polarsource/polar](https://github.com/polarsource/polar/tree/main/clients/packages/adapters) | [Upgrade to 1.x](#upgrading-a-kept-adapter) |
+| `@polar-sh/better-auth` | ➡️ Moved to [polarsource/polar](https://github.com/polarsource/polar/tree/main/clients/packages/adapters) | [Upgrade to 1.x](#upgrading-a-kept-adapter) |
+| `@polar-sh/tanstack-start` | ➡️ Moved to [polarsource/polar](https://github.com/polarsource/polar/tree/main/clients/packages/adapters) | [Upgrade to 1.x](#upgrading-a-kept-adapter) |
+| `@polar-sh/nuxt` | ➡️ Moved to [polarsource/polar](https://github.com/polarsource/polar/tree/main/clients/packages/adapters) | [Upgrade to 1.x](#upgrading-a-kept-adapter) |
+| `@polar-sh/adapter-utils` | ➡️ Moved to [polarsource/polar](https://github.com/polarsource/polar/tree/main/clients/packages/adapters) | [Upgrade to 1.x](#upgrading-a-kept-adapter) |
+| `@polar-sh/hono` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/sveltekit` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/astro` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/remix` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/elysia` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/express` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/fastify` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/supabase` | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
+| `@polar-sh/deno` (JSR) | 🪦 Sunset | [Migrate to the SDK](#migrating-off-a-sunset-adapter) |
 
-### Deploying Adapters
+`npm install` will show a deprecation notice pointing back here.
 
-1. To deploy the adapters, you need to create a new changeset. You can do this by running and follow the instructions in the terminal:
+## Upgrading a non deprecated adapter
 
 ```bash
-npx @changesets/cli
+# Next.JS
+npm install @polar-sh/nextjs@^1
+# Better Auth
+npm install @polar-sh/better-auth@^1
+# TanStack
+npm install @polar-sh/tanstack-start@^1
+# Nuxt
+npm install @polar-sh/nuxt@^1
+# Adapter utils
+npm install @polar-sh/adapter-utils@^1
 ```
 
-2. After you have created the changeset, you should create a pull request to the main branch. 
-3. Once the pull request is merged, a new pull request will be created that will bump the version of the adapters.
-4. Merge it to the main branch and the adapters will be published to npm.
+## Migrating off a sunset adapter
 
+The sunset adapters were thin wrappers around
+[`@polar-sh/sdk`](https://www.npmjs.com/package/@polar-sh/sdk), which you keep.
+Migrate with the
+[**`polar-integration` skill**](https://github.com/polarsource/skills/tree/main/skills/polar-integration), it covers SDK-direct integration in any framework and includes a
+[migration mapping](https://github.com/polarsource/skills/blob/main/skills/polar-integration/references/adapter-migration.md)
+from the old adapter API.
 
-> [!WARNING]  
-> Deno package is published to JSR registry, not npm. At the moment this is done manually.
+### Agent skill
+
+Our integration skill will handle the migration for you:
+
+```bash
+npx skills add https://github.com/polarsource/skills --skill polar-integration
+```
+
+### Agent prompt
+
+You can also paste this prompt into the LLM of your choice:
+
+> Read <https://raw.githubusercontent.com/polarsource/skills/main/skills/polar-integration/SKILL.md>
+> and <https://raw.githubusercontent.com/polarsource/skills/main/skills/polar-integration/references/adapter-migration.md>.
+> This project uses a deprecated `@polar-sh/*` adapter. Migrate it to the
+> SDK-direct recipes, preserving current behavior.
