@@ -1,5 +1,11 @@
 # @polar-sh/adapter-utils
 
+## 0.4.7
+
+### Patch Changes
+
+- 10d913c: Add typed handlers for Polar member created, updated, deleted, customer seat assigned, claimed, and revoked webhook events.
+
 ## 0.4.6
 
 ### Patch Changes
