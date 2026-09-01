@@ -11,6 +11,7 @@ import {
 } from "../../organization/lifecycle";
 import {
 	isTeamCustomerSynchronized,
+	promoteMemberMirrorToOwner,
 	removeMemberMirror,
 	updateMemberMirror,
 } from "../../organization/sync";
@@ -23,6 +24,7 @@ vi.mock("../../organization/sync", async (importOriginal) => {
 	return {
 		...actual,
 		isTeamCustomerSynchronized: vi.fn(),
+		promoteMemberMirrorToOwner: vi.fn(),
 		removeMemberMirror: vi.fn(),
 		updateMemberMirror: vi.fn(),
 	};
@@ -145,19 +147,26 @@ const createAuthContext = (storedMemberships = memberships) => {
 
 describe("organization lifecycle gaps", () => {
 	let client: ReturnType<typeof createMockPolarClient>;
+	const organizationOptions = { enabled: true };
 
 	beforeEach(() => {
 		client = createMockPolarClient();
 		vi.clearAllMocks();
 		vi.mocked(isTeamCustomerSynchronized).mockResolvedValue(true);
 		vi.mocked(updateMemberMirror).mockResolvedValue();
+		vi.mocked(promoteMemberMirrorToOwner).mockResolvedValue();
 		vi.mocked(removeMemberMirror).mockResolvedValue();
 	});
 
 	it("synchronizes a profile across every organization", async () => {
 		const { context } = createAuthContext();
 
-		await synchronizeUserOrganizationProfiles(context, client, user);
+		await synchronizeUserOrganizationProfiles(
+			context,
+			client,
+			user,
+			organizationOptions,
+		);
 
 		expect(updateMemberMirror).toHaveBeenCalledTimes(2);
 		expect(vi.mocked(updateMemberMirror).mock.calls[0]?.[1]).toMatchObject({
@@ -185,7 +194,12 @@ describe("organization lifecycle gaps", () => {
 		});
 
 		await expect(
-			synchronizeUserOrganizationProfiles(context, client, user),
+			synchronizeUserOrganizationProfiles(
+				context,
+				client,
+				user,
+				organizationOptions,
+			),
 		).rejects.toBe(failure);
 		expect(updateMemberMirror).toHaveBeenCalledTimes(8);
 	});
@@ -203,11 +217,14 @@ describe("organization lifecycle gaps", () => {
 			}),
 		});
 
+		expect(promoteMemberMirrorToOwner).toHaveBeenCalledWith(client, {
+			organizationId: "org-a",
+			externalMemberId: successor.id,
+		});
 		expect(removeMemberMirror).toHaveBeenCalledOnce();
-		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[1]).toMatchObject({
+		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[1]).toEqual({
 			organizationId: "org-a",
 			externalMemberId: user.id,
-			successorExternalMemberId: successor.id,
 		});
 	});
 
@@ -223,6 +240,7 @@ describe("organization lifecycle gaps", () => {
 				organizationId: ownerMembership.organizationId,
 				userId: ownerMembership.userId,
 				role: ownerMembership.role,
+				organizationOptions,
 			}),
 		).rejects.toThrow('Better Auth has no member with creator role "owner"');
 		expect(removeMemberMirror).not.toHaveBeenCalled();
@@ -258,8 +276,9 @@ describe("organization lifecycle gaps", () => {
 			}),
 		});
 
-		expect(vi.mocked(removeMemberMirror).mock.calls[0]?.[1]).toMatchObject({
-			successorExternalMemberId: successor.id,
+		expect(promoteMemberMirrorToOwner).toHaveBeenCalledWith(client, {
+			organizationId: "org-a",
+			externalMemberId: successor.id,
 		});
 		expect(
 			vi
@@ -291,8 +310,18 @@ describe("organization lifecycle gaps", () => {
 		const { context } = createAuthContext();
 		vi.mocked(isTeamCustomerSynchronized).mockResolvedValue(false);
 
-		await synchronizeUserOrganizationProfiles(context, client, user);
-		await synchronizeUserDeletionMemberships(context, client, user);
+		await synchronizeUserOrganizationProfiles(
+			context,
+			client,
+			user,
+			organizationOptions,
+		);
+		await synchronizeUserDeletionMemberships(
+			context,
+			client,
+			user,
+			organizationOptions,
+		);
 
 		expect(updateMemberMirror).not.toHaveBeenCalled();
 		expect(removeMemberMirror).not.toHaveBeenCalled();
@@ -301,7 +330,12 @@ describe("organization lifecycle gaps", () => {
 	it("uses the user delete before-state for every membership", async () => {
 		const { context, adapter } = createAuthContext();
 
-		await synchronizeUserDeletionMemberships(context, client, user);
+		await synchronizeUserDeletionMemberships(
+			context,
+			client,
+			user,
+			organizationOptions,
+		);
 
 		expect(removeMemberMirror).toHaveBeenCalledTimes(2);
 		const removals = vi
@@ -313,14 +347,13 @@ describe("organization lifecycle gaps", () => {
 		const organizationBRemoval = removals.find(
 			(removal) => removal.organizationId === "org-b",
 		);
-		expect(organizationARemoval).toMatchObject({
+		expect(organizationARemoval).toEqual({
+			organizationId: "org-a",
 			externalMemberId: user.id,
-			successorExternalMemberId: successor.id,
 		});
 		expect(organizationBRemoval).toEqual({
 			organizationId: "org-b",
 			externalMemberId: user.id,
-			successorExternalMemberId: undefined,
 		});
 		expect(
 			vi

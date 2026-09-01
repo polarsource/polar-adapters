@@ -226,11 +226,7 @@ const resolveNonOwnerRole = async (
     role: member.role,
     roles: parseBetterAuthRoles(member.role),
     organizationId,
-    user: {
-      id: member.userId,
-      email: member.user.email,
-      name: member.user.name,
-    },
+    user: member.user,
   });
   if (role !== "member" && role !== "billing_manager") {
     throw new PolarOrganizationMemberRoleMappingError(role);
@@ -446,34 +442,39 @@ export const updateMemberMirror = async (
   });
 };
 
+export const promoteMemberMirrorToOwner = async (
+  client: Polar,
+  data: {
+    organizationId: string;
+    externalMemberId: string;
+  },
+) => {
+  const polarSuccessor = await findMember(
+    client,
+    data.organizationId,
+    data.externalMemberId,
+  );
+  if (!polarSuccessor) {
+    throw new PolarOrganizationOwnerInvariantError(
+      data.organizationId,
+      `successor "${data.externalMemberId}" is not a Polar member`,
+    );
+  }
+  await updateMemberRole(
+    client,
+    data.organizationId,
+    data.externalMemberId,
+    "owner",
+  );
+};
+
 export const removeMemberMirror = async (
   client: Polar,
   data: {
     organizationId: string;
     externalMemberId: string;
-    successorExternalMemberId?: string;
   },
 ) => {
-  if (data.successorExternalMemberId) {
-    const polarSuccessor = await findMember(
-      client,
-      data.organizationId,
-      data.successorExternalMemberId,
-    );
-    if (!polarSuccessor) {
-      throw new PolarOrganizationOwnerInvariantError(
-        data.organizationId,
-        `successor "${data.successorExternalMemberId}" is not a Polar member`,
-      );
-    }
-    await updateMemberRole(
-      client,
-      data.organizationId,
-      data.successorExternalMemberId,
-      "owner",
-    );
-  }
-
   try {
     await client.customers.members.deleteExternal({
       externalId: data.organizationId,

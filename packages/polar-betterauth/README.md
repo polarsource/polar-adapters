@@ -173,7 +173,7 @@ const auth = betterAuth({
 
 - `createCustomerOnSignUp`: Automatically create a Polar customer when a user signs up
 - `getCustomerCreateParams`: Custom function to provide additional personal-customer creation metadata
-- `experimental_organizationSync`: Experimental Better Auth organization synchronization configuration. Set `experimental_organizationSync.enabled` to `true`; `experimental_organizationSync.getTeamCustomerCreateParams` can add team-customer fields such as metadata or billing details.
+- `experimental_organizationSync`: Experimental Better Auth organization synchronization configuration. Set `experimental_organizationSync.enabled` to `true`; `experimental_organizationSync.getTeamCustomerCreateParams` can add team-customer fields such as metadata or billing details. Automatic seat management is separately opt-in through `experimental_organizationSync.syncSeats`, and `experimental_organizationSync.selectSeatProductsForMember` can customize per-member product-seat allocation when it is enabled.
 
 ### Customers
 
@@ -200,9 +200,48 @@ The current mapping is deterministic:
 
 On organization creation, the adapter creates or reuses a team customer and supplies the creator as its explicit owner. The team customer has no email by default, avoiding collisions when one user owns several organizations. `experimental_organizationSync.getTeamCustomerCreateParams` may add metadata, locale, address, tax, or other supported team-customer fields, but cannot override `type`, `externalId`, `name`, or owner identity. Organization name changes update the team customer.
 
-This requires Polar's member model to be enabled. The Polar organization access token needs `customers:read`, `customers:write`, `members:read`, and `members:write` scopes.
+This requires Polar's member model to be enabled. The Polar organization access token needs `customers:read`, `customers:write`, `members:read`, and `members:write` scopes. Automatic seat management additionally requires `products:read`, `subscriptions:read`, `subscriptions:write`, `customer_seats:read`, and `customer_seats:write`.
 
 Better Auth users map to Polar member `externalId` values using `user.id` within each team customer. Direct additions and accepted invitations are mirrored, and profile, role, removal, self-leave, and user-deletion paths are synchronized. Better Auth remains the roster source of truth.
+
+#### Automatic organization seat management
+
+Automatic seat management is disabled by default, even when organization synchronization is enabled. Set `experimental_organizationSync.syncSeats` to `true` to size and assign recurring Polar subscriptions with seat-based pricing from the Better Auth roster. The adapter manages subscriptions in `active`, `trialing`, and `past_due` status. It assigns seats with `externalMemberId = user.id` and `immediateClaim: true`, because accepting a Better Auth invitation already proves membership. Subscription quantities remain at or above the product's minimum even when fewer members are selected; excess seats remain unassigned. Subscription updates omit `prorationBehavior`, so the Polar organization's configured default applies.
+
+Include the `webhooks()` plugin and configure Polar to send `subscription.created` and `subscription.active` events. Checkout sets the quantity but does not assign the existing roster; the verified webhook performs that initial provisioning and corrects membership changes that happened while checkout was open.
+
+When seat management is enabled, every organization member receives every candidate recurring seat product by default. Use `selectSeatProductsForMember` to return a subset of the supplied product IDs, or `[]` for no seat:
+
+```typescript
+polar({
+  client,
+  experimental_organizationSync: {
+    enabled: true,
+    syncSeats: true,
+    selectSeatProductsForMember: async ({ member, user, products }) => {
+      const roles = new Set(member.role.split(",").map((role) => role.trim()));
+
+      return products
+        .filter((product) => {
+          if (product.metadata.seatAudience === "everyone") return true;
+          if (product.metadata.seatAudience === user.department) return true;
+          return roles.has("admin") && product.id === ANALYTICS_PRODUCT_ID;
+        })
+        .map((product) => product.id);
+    },
+  },
+  use: [
+    checkout(),
+    webhooks({ secret: process.env.POLAR_WEBHOOK_SECRET! }),
+  ],
+});
+```
+
+The selector receives the Better Auth organization, membership, complete user record (including custom fields), and candidate products as Polar SDK `Product` objects. Returned IDs must come from `products`; unknown IDs fail synchronization. Keep the selector deterministic from these inputs so retries calculate the same desired state. Applications that need additional billing context can fetch it with their Polar SDK client.
+
+When seat management is enabled, organization checkout ignores caller-provided `seats`, `minSeats`, and `maxSeats` for recurring seat products and locks all three to the calculated allocation. Polar exposes one shared seat quantity for every product in a checkout. If selected products need different quantities, the adapter rejects the request; create one checkout per seat-based product instead. A calculated allocation of zero is also rejected.
+
+One-time seat products are not automatically managed because an order quantity cannot be reduced as the Better Auth roster changes. Personal checkout and non-seat products retain their existing behavior. Better Auth membership plus the selector remain authoritative: later lifecycle or purchase synchronization can overwrite manual Polar portal seat changes. Cross-system writes are not transactional; errors propagate and retries recompute absolute targets from the current roster without post-write assertions.
 
 Polar permits one owner. The adapter reads Better Auth's configured `creatorRole` (defaulting to `owner`), retains the current valid creator-role member as Polar's canonical owner, and uses the same role for checkout authorization. If a transfer is required, it deterministically selects the earliest eligible owner. Additional creator-role members and `admin` map to `billing_manager`; other roles map to `member`. `experimental_organizationSync.mapBetterAuthRoleToPolarRole` may map non-owners to `member` or `billing_manager`, but cannot assign ownership.
 

@@ -139,6 +139,7 @@ export const onUserUpdate =
 			authContext,
 			options.client,
 			user,
+			options.experimental_organizationSync,
 		);
 	};
 
@@ -162,10 +163,7 @@ export const onBeforeUserDelete =
 			authContext,
 			options.client,
 			user,
-			{
-				mapBetterAuthRoleToPolarRole:
-					options.experimental_organizationSync.mapBetterAuthRoleToPolarRole,
-			},
+			options.experimental_organizationSync,
 		);
 	};
 

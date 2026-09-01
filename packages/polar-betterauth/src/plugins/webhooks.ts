@@ -34,6 +34,17 @@ import type { WebhookSubscriptionUncanceledPayload } from "@polar-sh/sdk/models/
 import type { WebhookSubscriptionUpdatedPayload } from "@polar-sh/sdk/models/components/webhooksubscriptionupdatedpayload";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
 import { APIError, createAuthEndpoint } from "better-auth/api";
+import { DEFAULT_BETTER_AUTH_CREATOR_ROLE } from "../organization/roles";
+import {
+	MANAGED_SUBSCRIPTION_STATUSES,
+	getBetterAuthOrganizationOptions,
+	getOrganizationRoster,
+	synchronizeOrganizationSeats,
+} from "../organization/seats";
+import { ensureMemberMirror } from "../organization/sync";
+import type { PolarOptions } from "../types";
+
+type WebhookRootOptions = Pick<PolarOptions, "experimental_organizationSync">;
 
 export interface WebhooksOptions {
 	/**
@@ -208,84 +219,146 @@ export interface WebhooksOptions {
 	onMemberDeleted?: (payload: WebhookMemberDeletedPayload) => Promise<void>;
 }
 
-export const webhooks = (options: WebhooksOptions) => (_polar: Polar) => {
-	return {
-		polarWebhooks: createAuthEndpoint(
-			"/polar/webhooks",
-			{
-				method: "POST",
-				metadata: {
-					isAction: false,
+export const webhooks =
+	(options: WebhooksOptions) =>
+	(polar: Polar, rootOptions?: WebhookRootOptions) => {
+		return {
+			polarWebhooks: createAuthEndpoint(
+				"/polar/webhooks",
+				{
+					method: "POST",
+					metadata: {
+						isAction: false,
+					},
+					cloneRequest: true,
 				},
-				cloneRequest: true,
-			},
-			async (ctx) => {
-				const { secret, ...eventHandlers } = options;
+				async (ctx) => {
+					const { secret, ...eventHandlers } = options;
 
-				if (!ctx.request?.body) {
-					throw new APIError("INTERNAL_SERVER_ERROR");
-				}
-				const buf = await ctx.request.text();
-				let event: ReturnType<typeof validateEvent>;
-				try {
-					if (!secret) {
-						throw new APIError("INTERNAL_SERVER_ERROR", {
-							message: "Polar webhook secret not found",
-						});
+					if (!ctx.request?.body) {
+						throw new APIError("INTERNAL_SERVER_ERROR");
 					}
+					const buf = await ctx.request.text();
+					let event: ReturnType<typeof validateEvent>;
+					try {
+						if (!secret) {
+							throw new APIError("INTERNAL_SERVER_ERROR", {
+								message: "Polar webhook secret not found",
+							});
+						}
 
-					const headers = {
-						"webhook-id": ctx.request.headers.get("webhook-id") as string,
-						"webhook-timestamp": ctx.request.headers.get(
-							"webhook-timestamp",
-						) as string,
-						"webhook-signature": ctx.request.headers.get(
-							"webhook-signature",
-						) as string,
-					};
+						const headers = {
+							"webhook-id": ctx.request.headers.get("webhook-id") as string,
+							"webhook-timestamp": ctx.request.headers.get(
+								"webhook-timestamp",
+							) as string,
+							"webhook-signature": ctx.request.headers.get(
+								"webhook-signature",
+							) as string,
+						};
 
-					event = validateEvent(buf, headers, secret);
-				} catch (err: unknown) {
-					if (err instanceof Error) {
-						ctx.context.logger.error(`${err.message}`);
+						event = validateEvent(buf, headers, secret);
+					} catch (err: unknown) {
+						if (err instanceof Error) {
+							ctx.context.logger.error(`${err.message}`);
+							throw new APIError("BAD_REQUEST", {
+								message: `Webhook Error: ${err.message}`,
+							});
+						}
 						throw new APIError("BAD_REQUEST", {
-							message: `Webhook Error: ${err.message}`,
+							message: `Webhook Error: ${err}`,
 						});
 					}
-					throw new APIError("BAD_REQUEST", {
-						message: `Webhook Error: ${err}`,
-					});
-				}
 
-				try {
-					// adapter-utils intentionally remains on SDK 0.47 while this package
-					// validates with 0.49. Both versions expose the same webhook event
-					// contract here, but their generated OpenEnum brands are nominally
-					// incompatible to TypeScript.
-					const adapterPayload = event as Parameters<
-						typeof handleWebhookPayload
-					>[0];
-					const adapterConfig = {
-						webhookSecret: secret,
-						...eventHandlers,
-					} as Parameters<typeof handleWebhookPayload>[1];
-					await handleWebhookPayload(adapterPayload, adapterConfig);
-				} catch (e: unknown) {
-					if (e instanceof Error) {
-						ctx.context.logger.error(
-							`Polar webhook failed. Error: ${e.message}`,
-						);
-					} else {
-						ctx.context.logger.error(`Polar webhook failed. Error: ${e}`);
+					try {
+						const organizationOptions =
+							rootOptions?.experimental_organizationSync;
+						if (
+							organizationOptions?.enabled &&
+							organizationOptions.syncSeats &&
+							(event.type === "subscription.created" ||
+								event.type === "subscription.active") &&
+							event.data.customer.type === "team" &&
+							event.data.customer.externalId &&
+							event.data.seats != null &&
+							MANAGED_SUBSCRIPTION_STATUSES.has(event.data.status)
+						) {
+							const organizationId = event.data.customer.externalId;
+							const organization = await ctx.context.adapter.findOne({
+								model: "organization",
+								where: [{ field: "id", value: organizationId }],
+							});
+							if (organization) {
+								const subscription = await polar.subscriptions.get({
+									id: event.data.id,
+								});
+								if (
+									subscription.customer.type === "team" &&
+									subscription.customer.externalId === organizationId &&
+									subscription.seats != null &&
+									MANAGED_SUBSCRIPTION_STATUSES.has(subscription.status)
+								) {
+									const betterAuthOrganizationOptions =
+										getBetterAuthOrganizationOptions(ctx.context);
+									const roster = await getOrganizationRoster(
+										ctx.context,
+										betterAuthOrganizationOptions,
+										organizationId,
+									);
+									const roleOptions = {
+										creatorRole:
+											betterAuthOrganizationOptions.creatorRole ??
+											DEFAULT_BETTER_AUTH_CREATOR_ROLE,
+										mapBetterAuthRoleToPolarRole:
+											organizationOptions.mapBetterAuthRoleToPolarRole,
+									};
+									for (const member of roster) {
+										await ensureMemberMirror(polar, roleOptions, {
+											organizationId,
+											user: member.user,
+											betterAuthRole: member.role,
+										});
+									}
+									await synchronizeOrganizationSeats({
+										authContext: ctx.context,
+										client: polar,
+										organizationId,
+										organizationOptions,
+										betterAuthOrganizationOptions,
+										subscriptions: [subscription],
+									});
+								}
+							}
+						}
+
+						// adapter-utils intentionally remains on SDK 0.47 while this package
+						// validates with 0.49. Both versions expose the same webhook event
+						// contract here, but their generated OpenEnum brands are nominally
+						// incompatible to TypeScript.
+						const adapterPayload = event as Parameters<
+							typeof handleWebhookPayload
+						>[0];
+						const adapterConfig = {
+							webhookSecret: secret,
+							...eventHandlers,
+						} as Parameters<typeof handleWebhookPayload>[1];
+						await handleWebhookPayload(adapterPayload, adapterConfig);
+					} catch (e: unknown) {
+						if (e instanceof Error) {
+							ctx.context.logger.error(
+								`Polar webhook failed. Error: ${e.message}`,
+							);
+						} else {
+							ctx.context.logger.error(`Polar webhook failed. Error: ${e}`);
+						}
+
+						throw new APIError("BAD_REQUEST", {
+							message: "Webhook error: See server logs for more information.",
+						});
 					}
 
-					throw new APIError("BAD_REQUEST", {
-						message: "Webhook error: See server logs for more information.",
-					});
-				}
-
-				return ctx.json({ received: true });
-			},
-		),
+					return ctx.json({ received: true });
+				},
+			),
+		};
 	};
-};

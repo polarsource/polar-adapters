@@ -1,18 +1,26 @@
 import type { Polar } from "@polar-sh/sdk";
 import type { AuthContext, BetterAuthPlugin, User } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import type { Member } from "better-auth/plugins/organization";
+import type {
+	Member,
+	OrganizationOptions,
+} from "better-auth/plugins/organization";
 import * as z from "zod/v4";
 import type { PolarOptions } from "../types";
 import { getBetterAuthCreatorRole, hasBetterAuthCreatorRole } from "./roles";
+import { synchronizeOrganizationSeats } from "./seats";
 import {
 	PolarOrganizationOwnerInvariantError,
 	byEarliestMembership,
 	isTeamCustomerSynchronized,
+	promoteMemberMirrorToOwner,
 	removeMemberMirror,
 	updateMemberMirror,
 } from "./sync";
-import type { PolarOrganizationRoleSyncOptions } from "./types";
+import type {
+	PolarOrganizationOptions,
+	PolarOrganizationRoleSyncOptions,
+} from "./types";
 
 export const ORGANIZATION_LEAVE_PATH = "/organization/leave";
 
@@ -133,6 +141,7 @@ export const synchronizeUserOrganizationProfiles = async (
 	authContext: AuthContext,
 	client: Polar,
 	user: User,
+	organizationOptions: PolarOrganizationOptions,
 ) => {
 	const memberships = await listBetterAuthMembershipsForUser(
 		authContext,
@@ -149,6 +158,13 @@ export const synchronizeUserOrganizationProfiles = async (
 			organizationId: membership.organizationId,
 			user,
 		});
+
+		await synchronizeOrganizationSeats({
+			authContext,
+			client,
+			organizationId: membership.organizationId,
+			organizationOptions,
+		});
 	});
 };
 
@@ -163,6 +179,8 @@ export const removeOrganizationMemberMirror = async (input: {
 	userId: string;
 	role: string;
 	roleOptions?: PolarOrganizationRoleSyncOptions;
+	organizationOptions: PolarOrganizationOptions;
+	betterAuthOrganizationOptions?: OrganizationOptions;
 }) => {
 	if (!(await isTeamCustomerSynchronized(input.client, input.organizationId))) {
 		return;
@@ -188,10 +206,25 @@ export const removeOrganizationMemberMirror = async (input: {
 		successorExternalMemberId = successor.userId;
 	}
 
+	if (successorExternalMemberId) {
+		await promoteMemberMirrorToOwner(input.client, {
+			organizationId: input.organizationId,
+			externalMemberId: successorExternalMemberId,
+		});
+	}
+
+	await synchronizeOrganizationSeats({
+		authContext: input.authContext,
+		client: input.client,
+		organizationId: input.organizationId,
+		organizationOptions: input.organizationOptions,
+		betterAuthOrganizationOptions: input.betterAuthOrganizationOptions,
+		excludedUserId: input.userId,
+	});
+
 	await removeMemberMirror(input.client, {
 		organizationId: input.organizationId,
 		externalMemberId: input.userId,
-		successorExternalMemberId,
 	});
 };
 
@@ -241,6 +274,10 @@ export const synchronizeOrganizationLeave = async (
 	if (!membership) {
 		return;
 	}
+	const organizationOptions = options.experimental_organizationSync;
+	if (!organizationOptions?.enabled) {
+		return;
+	}
 
 	await removeOrganizationMemberMirror({
 		authContext: context.context,
@@ -248,8 +285,9 @@ export const synchronizeOrganizationLeave = async (
 		...membership,
 		roleOptions: {
 			mapBetterAuthRoleToPolarRole:
-				options.experimental_organizationSync?.mapBetterAuthRoleToPolarRole,
+				organizationOptions.mapBetterAuthRoleToPolarRole,
 		},
+		organizationOptions,
 	});
 };
 
@@ -275,7 +313,7 @@ export const synchronizeUserDeletionMemberships = async (
 	authContext: AuthContext,
 	client: Polar,
 	user: User,
-	options?: PolarOrganizationRoleSyncOptions,
+	options: PolarOrganizationOptions,
 ) => {
 	const memberships = await listBetterAuthMembershipsForUser(
 		authContext,
@@ -289,7 +327,10 @@ export const synchronizeUserDeletionMemberships = async (
 			organizationId: membership.organizationId,
 			userId: user.id,
 			role: membership.role,
-			roleOptions: options,
+			roleOptions: {
+				mapBetterAuthRoleToPolarRole: options.mapBetterAuthRoleToPolarRole,
+			},
+			organizationOptions: options,
 		}),
 	);
 };
