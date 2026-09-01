@@ -1,6 +1,6 @@
 {
   "name": "@polar-sh/adapter-utils",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Core package for Polar adapters",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

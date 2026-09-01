@@ -1,5 +1,12 @@
 # @polar-sh/tanstack-start
 
+## 0.4.7
+
+### Patch Changes
+
+- Updated dependencies [10d913c]
+  - @polar-sh/adapter-utils@0.4.7
+
 ## 0.4.6
 
 ### Patch Changes
