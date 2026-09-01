@@ -1,14 +1,12 @@
 import type { AuthContext, BetterAuthPlugin } from "better-auth";
-import {
-	type OrganizationOptions,
-	getOrgAdapter,
-} from "better-auth/plugins/organization";
+import type { OrganizationOptions } from "better-auth/plugins/organization";
 import type { PolarOptions } from "../types";
 import {
 	BetterAuthOrganizationStateError,
 	removeOrganizationMemberMirror,
 } from "./lifecycle";
 import { DEFAULT_BETTER_AUTH_CREATOR_ROLE } from "./roles";
+import { getOrganizationRoster, synchronizeOrganizationSeats } from "./seats";
 import {
 	ensureMemberMirror,
 	ensureTeamCustomer,
@@ -16,10 +14,7 @@ import {
 	updateMemberRoleMirror,
 	updateTeamCustomer,
 } from "./sync";
-import type {
-	BetterAuthOrganizationMemberMirror,
-	PolarOrganizationRoleSyncOptions,
-} from "./types";
+import type { PolarOrganizationRoleSyncOptions } from "./types";
 
 type BetterAuthOrganizationPlugin = BetterAuthPlugin & {
 	id: "organization";
@@ -82,27 +77,6 @@ export const installOrganizationHooks = (
 			organizationOptions.mapBetterAuthRoleToPolarRole,
 	};
 
-	const organizationAdapter = getOrgAdapter(ctx, betterAuthOrganizationOptions);
-
-	const listOrganizationMembers = async (
-		organizationId: string,
-	): Promise<BetterAuthOrganizationMemberMirror[]> => {
-		let result = await organizationAdapter.listMembers({ organizationId });
-		if (result.members.length < result.total) {
-			result = await organizationAdapter.listMembers({
-				organizationId,
-				limit: result.total,
-			});
-		}
-		if (result.members.length < result.total) {
-			throw new Error(
-				`Better Auth returned only ${result.members.length} of ${result.total} members for organization "${organizationId}"`,
-			);
-		}
-
-		return result.members;
-	};
-
 	const syncCreatedOrganization = async (data: AfterCreateOrganizationData) => {
 		await ensureTeamCustomer(client, organizationOptions, {
 			organization: data.organization,
@@ -122,6 +96,13 @@ export const installOrganizationHooks = (
 		}
 
 		await updateTeamCustomer(client, updatedOrganization);
+		await synchronizeOrganizationSeats({
+			authContext: ctx,
+			client,
+			organizationId: updatedOrganization.id,
+			organizationOptions,
+			betterAuthOrganizationOptions,
+		});
 	};
 
 	const syncMember = async (
@@ -136,10 +117,21 @@ export const installOrganizationHooks = (
 			user: data.user,
 			betterAuthRole: data.member.role,
 		});
+		await synchronizeOrganizationSeats({
+			authContext: ctx,
+			client,
+			organizationId: data.organization.id,
+			organizationOptions,
+			betterAuthOrganizationOptions,
+		});
 	};
 
 	const syncAddedMember = async (data: AfterAddMemberData) => {
-		const members = await listOrganizationMembers(data.organization.id);
+		const members = await getOrganizationRoster(
+			ctx,
+			betterAuthOrganizationOptions,
+			data.organization.id,
+		);
 		const isInitialCreator =
 			members.length === 1 && members[0]?.userId === data.member.userId;
 
@@ -153,12 +145,23 @@ export const installOrganizationHooks = (
 		if (!(await isTeamCustomerSynchronized(client, data.organization.id))) {
 			return;
 		}
-		const members = await listOrganizationMembers(data.organization.id);
+		const members = await getOrganizationRoster(
+			ctx,
+			betterAuthOrganizationOptions,
+			data.organization.id,
+		);
 		await updateMemberRoleMirror(client, roleSyncOptions, {
 			organizationId: data.organization.id,
 			user: data.user,
 			betterAuthRole: data.member.role,
 			members,
+		});
+		await synchronizeOrganizationSeats({
+			authContext: ctx,
+			client,
+			organizationId: data.organization.id,
+			organizationOptions,
+			betterAuthOrganizationOptions,
 		});
 	};
 
@@ -170,6 +173,8 @@ export const installOrganizationHooks = (
 			userId: data.member.userId,
 			role: data.member.role,
 			roleOptions: roleSyncOptions,
+			organizationOptions,
+			betterAuthOrganizationOptions,
 		});
 	};
 

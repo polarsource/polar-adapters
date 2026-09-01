@@ -3,6 +3,8 @@ export { polar } from "./server";
 export type {
 	PolarOrganizationCustomerCreateParams,
 	PolarOrganizationOptions,
+	SelectSeatProductsForMember,
+	SelectSeatProductsForMemberInput,
 } from "./organization/types";
 export type { PolarOptions } from "./types";
 

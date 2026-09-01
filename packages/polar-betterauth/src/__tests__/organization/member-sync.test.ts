@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	PolarOrganizationOwnerInvariantError,
 	ensureMemberMirror,
+	promoteMemberMirrorToOwner,
 	removeMemberMirror,
 	updateMemberRoleMirror,
 } from "../../organization/sync";
@@ -344,10 +345,13 @@ describe("organization member and owner synchronization", () => {
 			],
 		});
 
+		await promoteMemberMirrorToOwner(harness.client, {
+			organizationId,
+			externalMemberId: successor.userId,
+		});
 		await removeMemberMirror(harness.client, {
 			organizationId,
 			externalMemberId: "departing",
-			successorExternalMemberId: successor.userId,
 		});
 
 		const promotion = vi

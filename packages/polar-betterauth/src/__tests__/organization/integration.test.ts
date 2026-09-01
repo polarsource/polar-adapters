@@ -1,12 +1,18 @@
+import type { CustomerSeat } from "@polar-sh/sdk/models/components/customerseat.js";
 import type { CustomerTeam } from "@polar-sh/sdk/models/components/customerteam.js";
 import type { Member as PolarMember } from "@polar-sh/sdk/models/components/member.js";
+import type { Product } from "@polar-sh/sdk/models/components/product.js";
+import type { Subscription } from "@polar-sh/sdk/models/components/subscription.js";
 import { ResourceNotFound } from "@polar-sh/sdk/models/errors/resourcenotfound.js";
 import { betterAuth } from "better-auth";
 import { type MemoryDB, memoryAdapter } from "better-auth/adapters/memory";
 import { organization } from "better-auth/plugins";
 import { memberAc } from "better-auth/plugins/organization/access";
 import { describe, expect, it, vi } from "vitest";
-import type { PolarOrganizationOptions } from "../../organization/types";
+import type {
+	PolarOrganizationOptions,
+	SelectSeatProductsForMember,
+} from "../../organization/types";
 import { checkout } from "../../plugins/checkout";
 import { portal } from "../../plugins/portal";
 import { polar } from "../../server";
@@ -24,11 +30,28 @@ const notFound = () =>
 		},
 	);
 
+const createSeatProduct = (id = "product-pro"): Product =>
+	({
+		id,
+		name: "Seat product",
+		metadata: {},
+		isRecurring: true,
+		prices: [
+			{
+				amountType: "seat_based",
+				seatTiers: { minimumSeats: 1 },
+			},
+		],
+	}) as Product;
+
 interface IntegrationHarnessOptions {
 	creatorRole?: string;
 	includeFinanceRole?: boolean;
 	mapBetterAuthRoleToPolarRole?: PolarOrganizationOptions["mapBetterAuthRoleToPolarRole"];
+	syncSeats?: boolean;
+	selectSeatProductsForMember?: SelectSeatProductsForMember;
 	checkout?: boolean;
+	checkoutSeatProduct?: boolean;
 }
 
 const createIntegrationHarness = (options: IntegrationHarnessOptions = {}) => {
@@ -45,6 +68,12 @@ const createIntegrationHarness = (options: IntegrationHarnessOptions = {}) => {
 	vi.mocked(client.checkouts.create).mockResolvedValue(createMockCheckout());
 	const customers = new Map<string, CustomerTeam>();
 	const members = new Map<string, PolarMember>();
+	const subscriptions = new Map<string, Subscription>();
+	const subscriptionSeats = new Map<string, CustomerSeat[]>();
+	const checkoutProduct = options.checkoutSeatProduct
+		? createSeatProduct()
+		: ({ id: "product-pro", isRecurring: false, prices: [] } as Product);
+	let nextSeatId = 1;
 	const memberKey = (organizationId: string, userId: string) =>
 		`${organizationId}:${userId}`;
 
@@ -194,6 +223,110 @@ const createIntegrationHarness = (options: IntegrationHarnessOptions = {}) => {
 		},
 	);
 
+	vi.mocked(client.products.get).mockImplementation(
+		async () => checkoutProduct,
+	);
+	vi.mocked(client.subscriptions.list).mockImplementation(
+		async ({ externalCustomerId }) => {
+			const items = [...subscriptions.values()].filter(
+				(subscription) =>
+					subscription.customer.type === "team" &&
+					subscription.customer.externalId === externalCustomerId,
+			);
+			return {
+				result: {
+					items,
+					pagination: { totalCount: items.length, maxPage: 1 },
+				},
+			} as never;
+		},
+	);
+	vi.mocked(client.subscriptions.update).mockImplementation(
+		async ({ id, subscriptionUpdate }) => {
+			const current = subscriptions.get(id);
+			if (!current) throw new Error(`Subscription "${id}" was not seeded`);
+			const updated = {
+				...current,
+				seats: subscriptionUpdate.seats ?? current.seats,
+			} as Subscription;
+			subscriptions.set(id, updated);
+			return updated;
+		},
+	);
+	vi.mocked(client.customerSeats.listSeats).mockImplementation(
+		async ({ subscriptionId }) => {
+			const seats = subscriptionSeats.get(subscriptionId) ?? [];
+			return {
+				seats,
+				availableSeats: 0,
+				totalSeats: seats.filter((seat) => seat.status !== "revoked").length,
+			};
+		},
+	);
+	vi.mocked(client.customerSeats.assignSeat).mockImplementation(
+		async ({ subscriptionId, externalMemberId }) => {
+			const assigned = {
+				id: `seat-${nextSeatId++}`,
+				status: "claimed",
+				member: { externalId: externalMemberId },
+			} as CustomerSeat;
+			subscriptionSeats.set(subscriptionId, [
+				...(subscriptionSeats.get(subscriptionId) ?? []),
+				assigned,
+			]);
+			return assigned as never;
+		},
+	);
+	vi.mocked(client.customerSeats.revokeSeat).mockImplementation(
+		async ({ seatId }) => {
+			for (const [subscriptionId, seats] of subscriptionSeats) {
+				subscriptionSeats.set(
+					subscriptionId,
+					seats.map((seat) =>
+						seat.id === seatId
+							? ({ ...seat, status: "revoked" } as CustomerSeat)
+							: seat,
+					),
+				);
+			}
+		},
+	);
+
+	const seedSubscription = (input: {
+		organizationId: string;
+		memberIds: readonly string[];
+		id?: string;
+		seats?: number;
+	}) => {
+		const id = input.id ?? `subscription-${input.organizationId}`;
+		const product = createSeatProduct();
+		const subscription = {
+			id,
+			productId: product.id,
+			product,
+			prices: product.prices,
+			status: "active",
+			seats: input.seats ?? input.memberIds.length,
+			customer: {
+				type: "team",
+				externalId: input.organizationId,
+			},
+		} as Subscription;
+		subscriptions.set(id, subscription);
+		subscriptionSeats.set(
+			id,
+			input.memberIds.map(
+				(externalMemberId) =>
+					({
+						id: `seat-${nextSeatId++}`,
+						status: "claimed",
+						member: { externalId: externalMemberId },
+					}) as CustomerSeat,
+			),
+		);
+		return subscription;
+	};
+
 	const auth = betterAuth({
 		baseURL,
 		secret: "better-auth-secret-that-is-long-enough-for-tests",
@@ -219,7 +352,9 @@ const createIntegrationHarness = (options: IntegrationHarnessOptions = {}) => {
 				createCustomerOnSignUp: false,
 				experimental_organizationSync: {
 					enabled: true,
+					syncSeats: options.syncSeats,
 					mapBetterAuthRoleToPolarRole: options.mapBetterAuthRoleToPolarRole,
+					selectSeatProductsForMember: options.selectSeatProductsForMember,
 				},
 				use: options.checkout
 					? [
@@ -285,6 +420,9 @@ const createIntegrationHarness = (options: IntegrationHarnessOptions = {}) => {
 		post,
 		signUp,
 		createOrganization,
+		seedSubscription,
+		subscriptions,
+		subscriptionSeats,
 	};
 };
 
@@ -1366,5 +1504,719 @@ describe("Better Auth organization integration", () => {
 		);
 		expect(teamCheckoutResponse.ok).toBe(false);
 		expect(client.checkouts.create).not.toHaveBeenCalled();
+	});
+});
+
+describe("organization seat integration", () => {
+	const createSeatIntegrationHarness = (
+		options: IntegrationHarnessOptions = {},
+	) => createIntegrationHarness({ ...options, syncSeats: true });
+
+	const clearSeatWrites = (
+		client: ReturnType<typeof createMockPolarClient>,
+	) => {
+		vi.mocked(client.subscriptions.update).mockClear();
+		vi.mocked(client.customerSeats.assignSeat).mockClear();
+		vi.mocked(client.customerSeats.revokeSeat).mockClear();
+	};
+
+	it("does not manage seats when syncSeats is omitted", async () => {
+		const selector = vi.fn(
+			({ products }: Parameters<SelectSeatProductsForMember>[0]) =>
+				products.map((product) => product.id),
+		);
+		const { auth, client, post, signUp, createOrganization, seedSubscription } =
+			createIntegrationHarness({
+				checkout: true,
+				checkoutSeatProduct: true,
+				selectSeatProductsForMember: selector,
+			});
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const member = await signUp({
+			email: "member@example.com",
+			password: "password123",
+			name: "Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [owner.user.id],
+		});
+		clearSeatWrites(client);
+
+		await auth.api.addMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				userId: member.user.id,
+				role: "member",
+			},
+		});
+
+		expect(client.subscriptions.update).not.toHaveBeenCalled();
+		expect(client.customerSeats.assignSeat).not.toHaveBeenCalled();
+		expect(client.customerSeats.revokeSeat).not.toHaveBeenCalled();
+
+		vi.mocked(client.checkouts.create).mockClear();
+		const response = await post(
+			"/checkout",
+			{
+				slug: "pro",
+				organizationId: createdOrganization.id,
+				seats: 7,
+				redirect: false,
+			},
+			owner.sessionCookie,
+		);
+
+		expect(response.ok).toBe(true);
+		expect(client.checkouts.create).toHaveBeenCalledWith(
+			expect.objectContaining({ seats: 7 }),
+		);
+		expect(selector).not.toHaveBeenCalled();
+	});
+
+	it("sizes team checkout from the complete Better Auth roster", async () => {
+		const { auth, client, post, signUp, createOrganization } =
+			createSeatIntegrationHarness({
+				checkout: true,
+				checkoutSeatProduct: true,
+			});
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const firstMember = await signUp({
+			email: "first@example.com",
+			password: "password123",
+			name: "First Member",
+		});
+		const secondMember = await signUp({
+			email: "second@example.com",
+			password: "password123",
+			name: "Second Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		for (const user of [firstMember, secondMember]) {
+			await auth.api.addMember({
+				headers: new Headers({ cookie: owner.sessionCookie }),
+				body: {
+					organizationId: createdOrganization.id,
+					userId: user.user.id,
+					role: "member",
+				},
+			});
+		}
+		vi.mocked(client.checkouts.create).mockClear();
+
+		const response = await post(
+			"/checkout",
+			{
+				slug: "pro",
+				organizationId: createdOrganization.id,
+				redirect: false,
+			},
+			owner.sessionCookie,
+		);
+
+		expect(response.ok).toBe(true);
+		expect(client.checkouts.create).toHaveBeenCalledWith(
+			expect.objectContaining({ seats: 3, minSeats: 3, maxSeats: 3 }),
+		);
+	});
+
+	it("grows and assigns a seat when a member is added directly", async () => {
+		const { auth, client, signUp, createOrganization, seedSubscription } =
+			createSeatIntegrationHarness();
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const added = await signUp({
+			email: "added@example.com",
+			password: "password123",
+			name: "Added Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		const subscription = seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [owner.user.id],
+		});
+		clearSeatWrites(client);
+
+		await auth.api.addMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				userId: added.user.id,
+				role: "member",
+			},
+		});
+
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 2 },
+		});
+		expect(client.customerSeats.assignSeat).toHaveBeenCalledWith({
+			subscriptionId: subscription.id,
+			externalMemberId: added.user.id,
+			immediateClaim: true,
+		});
+		expect(
+			vi.mocked(client.subscriptions.update).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(client.customerSeats.assignSeat).mock.invocationCallOrder[0] ??
+				0,
+		);
+	});
+
+	it("assigns a seat only after an invitation is accepted", async () => {
+		const { client, post, signUp, createOrganization, seedSubscription } =
+			createSeatIntegrationHarness();
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const invited = await signUp({
+			email: "invited@example.com",
+			password: "password123",
+			name: "Invited Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		const subscription = seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [owner.user.id],
+		});
+		clearSeatWrites(client);
+
+		const invitationResponse = await post(
+			"/organization/invite-member",
+			{
+				organizationId: createdOrganization.id,
+				email: invited.user.email,
+				role: "member",
+			},
+			owner.sessionCookie,
+		);
+		expect(invitationResponse.ok).toBe(true);
+		const invitation = (await invitationResponse.json()) as { id: string };
+		expect(client.subscriptions.update).not.toHaveBeenCalled();
+		expect(client.customerSeats.assignSeat).not.toHaveBeenCalled();
+
+		const acceptanceResponse = await post(
+			"/organization/accept-invitation",
+			{ invitationId: invitation.id },
+			invited.sessionCookie,
+		);
+
+		expect(acceptanceResponse.ok).toBe(true);
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 2 },
+		});
+		expect(client.customerSeats.assignSeat).toHaveBeenCalledWith({
+			subscriptionId: subscription.id,
+			externalMemberId: invited.user.id,
+			immediateClaim: true,
+		});
+	});
+
+	it("reallocates seats when a member role changes eligibility", async () => {
+		const { auth, client, post, signUp, createOrganization, seedSubscription } =
+			createSeatIntegrationHarness({
+				selectSeatProductsForMember: ({ member, products }) =>
+					member.role === "owner" || member.role === "admin"
+						? products.map((product) => product.id)
+						: [],
+			});
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const user = await signUp({
+			email: "member@example.com",
+			password: "password123",
+			name: "Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		const addedMember = await auth.api.addMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				userId: user.user.id,
+				role: "member",
+			},
+		});
+		if (!addedMember) throw new Error("Better Auth returned no added member");
+		const subscription = seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [owner.user.id],
+		});
+		clearSeatWrites(client);
+
+		const promoteResponse = await post(
+			"/organization/update-member-role",
+			{
+				organizationId: createdOrganization.id,
+				memberId: addedMember.id,
+				role: "admin",
+			},
+			owner.sessionCookie,
+		);
+		expect(promoteResponse.ok).toBe(true);
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 2 },
+		});
+		expect(client.customerSeats.assignSeat).toHaveBeenCalledWith({
+			subscriptionId: subscription.id,
+			externalMemberId: user.user.id,
+			immediateClaim: true,
+		});
+		clearSeatWrites(client);
+
+		const demoteResponse = await post(
+			"/organization/update-member-role",
+			{
+				organizationId: createdOrganization.id,
+				memberId: addedMember.id,
+				role: "member",
+			},
+			owner.sessionCookie,
+		);
+
+		expect(demoteResponse.ok).toBe(true);
+		expect(client.customerSeats.revokeSeat).toHaveBeenCalledOnce();
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 1 },
+		});
+		expect(
+			vi.mocked(client.customerSeats.revokeSeat).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(client.subscriptions.update).mock.invocationCallOrder[0] ?? 0,
+		);
+	});
+
+	it("reallocates seats when a user profile changes eligibility", async () => {
+		const { auth, client, post, signUp, createOrganization, seedSubscription } =
+			createSeatIntegrationHarness({
+				selectSeatProductsForMember: ({ user, products }) =>
+					user.name === "Licensed" ? products.map((product) => product.id) : [],
+			});
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Licensed",
+		});
+		const user = await signUp({
+			email: "member@example.com",
+			password: "password123",
+			name: "Unlicensed",
+		});
+		const organizations = [
+			await createOrganization(owner.sessionCookie, {
+				name: "First Organization",
+				slug: "first-organization",
+			}),
+			await createOrganization(owner.sessionCookie, {
+				name: "Second Organization",
+				slug: "second-organization",
+			}),
+		];
+		for (const organization of organizations) {
+			await auth.api.addMember({
+				headers: new Headers({ cookie: owner.sessionCookie }),
+				body: {
+					organizationId: organization.id,
+					userId: user.user.id,
+					role: "member",
+				},
+			});
+		}
+		const subscriptions = organizations.map((organization) =>
+			seedSubscription({
+				organizationId: organization.id,
+				memberIds: [owner.user.id],
+			}),
+		);
+		clearSeatWrites(client);
+
+		const response = await post(
+			"/update-user",
+			{ name: "Licensed" },
+			user.sessionCookie,
+		);
+
+		expect(response.ok).toBe(true);
+		expect(vi.mocked(client.subscriptions.update).mock.calls).toEqual(
+			expect.arrayContaining(
+				subscriptions.map((subscription) => [
+					{
+						id: subscription.id,
+						subscriptionUpdate: { seats: 2 },
+					},
+				]),
+			),
+		);
+		expect(vi.mocked(client.customerSeats.assignSeat).mock.calls).toEqual(
+			expect.arrayContaining(
+				subscriptions.map((subscription) => [
+					{
+						subscriptionId: subscription.id,
+						externalMemberId: user.user.id,
+						immediateClaim: true,
+					},
+				]),
+			),
+		);
+	});
+
+	it("reallocates seats when organization data changes eligibility", async () => {
+		const { auth, client, post, signUp, createOrganization, seedSubscription } =
+			createSeatIntegrationHarness({
+				selectSeatProductsForMember: ({ organization, products }) =>
+					organization.name === "Licensed Organization"
+						? products.map((product) => product.id)
+						: [],
+			});
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const member = await signUp({
+			email: "member@example.com",
+			password: "password123",
+			name: "Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Unlicensed Organization",
+			slug: "acme",
+		});
+		await auth.api.addMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				userId: member.user.id,
+				role: "member",
+			},
+		});
+		const subscription = seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [],
+			seats: 1,
+		});
+		clearSeatWrites(client);
+
+		const response = await post(
+			"/organization/update",
+			{
+				organizationId: createdOrganization.id,
+				data: { name: "Licensed Organization" },
+			},
+			owner.sessionCookie,
+		);
+
+		expect(response.ok).toBe(true);
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 2 },
+		});
+		expect(client.customerSeats.assignSeat).toHaveBeenCalledTimes(2);
+		expect(
+			vi
+				.mocked(client.customerSeats.assignSeat)
+				.mock.calls.map(([input]) => input.externalMemberId),
+		).toEqual(expect.arrayContaining([owner.user.id, member.user.id]));
+	});
+
+	it("cleans up a seat before removing a member mirror", async () => {
+		const {
+			auth,
+			client,
+			signUp,
+			createOrganization,
+			seedSubscription,
+			subscriptionSeats,
+		} = createSeatIntegrationHarness();
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const user = await signUp({
+			email: "member@example.com",
+			password: "password123",
+			name: "Member",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		const addedMember = await auth.api.addMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				userId: user.user.id,
+				role: "member",
+			},
+		});
+		if (!addedMember) throw new Error("Better Auth returned no added member");
+		const subscription = seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [owner.user.id, user.user.id],
+		});
+		const removedSeat = subscriptionSeats
+			.get(subscription.id)
+			?.find((seat) => seat.member?.externalId === user.user.id);
+		if (!removedSeat) throw new Error("Member seat was not seeded");
+		clearSeatWrites(client);
+		vi.mocked(client.customers.members.deleteExternal).mockClear();
+
+		await auth.api.removeMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				memberIdOrEmail: addedMember.id,
+			},
+		});
+
+		expect(client.customerSeats.revokeSeat).toHaveBeenCalledWith({
+			seatId: removedSeat.id,
+		});
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 1 },
+		});
+		expect(
+			vi.mocked(client.customerSeats.revokeSeat).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(client.subscriptions.update).mock.invocationCallOrder[0] ?? 0,
+		);
+		expect(
+			vi.mocked(client.subscriptions.update).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(client.customers.members.deleteExternal).mock
+				.invocationCallOrder[0] ?? 0,
+		);
+	});
+
+	it("cleans up an owner's seat before deleting them after self-leave", async () => {
+		const { auth, client, post, signUp, createOrganization, seedSubscription } =
+			createSeatIntegrationHarness();
+		const owner = await signUp({
+			email: "owner@example.com",
+			password: "password123",
+			name: "Owner",
+		});
+		const successor = await signUp({
+			email: "successor@example.com",
+			password: "password123",
+			name: "Successor",
+		});
+		const createdOrganization = await createOrganization(owner.sessionCookie, {
+			name: "Acme",
+			slug: "acme",
+		});
+		const successorMember = await auth.api.addMember({
+			headers: new Headers({ cookie: owner.sessionCookie }),
+			body: {
+				organizationId: createdOrganization.id,
+				userId: successor.user.id,
+				role: "member",
+			},
+		});
+		if (!successorMember) throw new Error("Successor member was not added");
+		const promoteResponse = await post(
+			"/organization/update-member-role",
+			{
+				organizationId: createdOrganization.id,
+				memberId: successorMember.id,
+				role: "owner",
+			},
+			owner.sessionCookie,
+		);
+		expect(promoteResponse.ok).toBe(true);
+		const subscription = seedSubscription({
+			organizationId: createdOrganization.id,
+			memberIds: [owner.user.id, successor.user.id],
+		});
+		clearSeatWrites(client);
+		vi.mocked(client.customers.members.deleteExternal).mockClear();
+
+		const leaveResponse = await post(
+			"/organization/leave",
+			{ organizationId: createdOrganization.id },
+			owner.sessionCookie,
+		);
+
+		expect(leaveResponse.ok).toBe(true);
+		expect(client.customerSeats.revokeSeat).toHaveBeenCalledOnce();
+		expect(client.subscriptions.update).toHaveBeenCalledWith({
+			id: subscription.id,
+			subscriptionUpdate: { seats: 1 },
+		});
+		expect(
+			vi.mocked(client.customerSeats.revokeSeat).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(client.subscriptions.update).mock.invocationCallOrder[0] ?? 0,
+		);
+		expect(
+			vi.mocked(client.subscriptions.update).mock.invocationCallOrder[0],
+		).toBeLessThan(
+			vi.mocked(client.customers.members.deleteExternal).mock
+				.invocationCallOrder[0] ?? 0,
+		);
+	});
+
+	it("cleans up a deleted user's seats in every organization", async () => {
+		const {
+			auth,
+			client,
+			post,
+			signUp,
+			createOrganization,
+			seedSubscription,
+			subscriptionSeats,
+		} = createSeatIntegrationHarness();
+		const firstOwner = await signUp({
+			email: "first-owner@example.com",
+			password: "password123",
+			name: "First Owner",
+		});
+		const secondOwner = await signUp({
+			email: "second-owner@example.com",
+			password: "password123",
+			name: "Second Owner",
+		});
+		const deletedUser = await signUp({
+			email: "deleted@example.com",
+			password: "password123",
+			name: "Deleted User",
+		});
+		const firstOrganization = await createOrganization(
+			firstOwner.sessionCookie,
+			{ name: "First Organization", slug: "first-organization" },
+		);
+		const secondOrganization = await createOrganization(
+			secondOwner.sessionCookie,
+			{ name: "Second Organization", slug: "second-organization" },
+		);
+		for (const [organizationId, owner] of [
+			[firstOrganization.id, firstOwner],
+			[secondOrganization.id, secondOwner],
+		] as const) {
+			await auth.api.addMember({
+				headers: new Headers({ cookie: owner.sessionCookie }),
+				body: {
+					organizationId,
+					userId: deletedUser.user.id,
+					role: "member",
+				},
+			});
+		}
+		const firstSubscription = seedSubscription({
+			organizationId: firstOrganization.id,
+			memberIds: [firstOwner.user.id, deletedUser.user.id],
+		});
+		const secondSubscription = seedSubscription({
+			organizationId: secondOrganization.id,
+			memberIds: [secondOwner.user.id, deletedUser.user.id],
+		});
+		const deletedSeatIds = [firstSubscription, secondSubscription].map(
+			(subscription) => {
+				const seat = subscriptionSeats
+					.get(subscription.id)
+					?.find(
+						(candidate) => candidate.member?.externalId === deletedUser.user.id,
+					);
+				if (!seat) throw new Error("Deleted user seat was not seeded");
+				return seat.id;
+			},
+		);
+		clearSeatWrites(client);
+		vi.mocked(client.customers.members.deleteExternal).mockClear();
+
+		const response = await post(
+			"/delete-user",
+			{ password: "password123" },
+			deletedUser.sessionCookie,
+		);
+
+		expect(response.ok).toBe(true);
+		expect(
+			vi
+				.mocked(client.customerSeats.revokeSeat)
+				.mock.calls.map(([input]) => input.seatId),
+		).toEqual(expect.arrayContaining(deletedSeatIds));
+		expect(vi.mocked(client.subscriptions.update).mock.calls).toEqual(
+			expect.arrayContaining(
+				[firstSubscription, secondSubscription].map((subscription) => [
+					{
+						id: subscription.id,
+						subscriptionUpdate: { seats: 1 },
+					},
+				]),
+			),
+		);
+		for (const [organization, subscription, seatId] of [
+			[firstOrganization, firstSubscription, deletedSeatIds[0]],
+			[secondOrganization, secondSubscription, deletedSeatIds[1]],
+		] as const) {
+			const revokeIndex = vi
+				.mocked(client.customerSeats.revokeSeat)
+				.mock.calls.findIndex(([input]) => input.seatId === seatId);
+			const updateIndex = vi
+				.mocked(client.subscriptions.update)
+				.mock.calls.findIndex(([input]) => input.id === subscription.id);
+			const deleteIndex = vi
+				.mocked(client.customers.members.deleteExternal)
+				.mock.calls.findIndex(
+					([input]) =>
+						input.externalId === organization.id &&
+						input.memberExternalId === deletedUser.user.id,
+				);
+			expect(
+				vi.mocked(client.customerSeats.revokeSeat).mock.invocationCallOrder[
+					revokeIndex
+				],
+			).toBeLessThan(
+				vi.mocked(client.subscriptions.update).mock.invocationCallOrder[
+					updateIndex
+				] ?? 0,
+			);
+			expect(
+				vi.mocked(client.subscriptions.update).mock.invocationCallOrder[
+					updateIndex
+				],
+			).toBeLessThan(
+				vi.mocked(client.customers.members.deleteExternal).mock
+					.invocationCallOrder[deleteIndex] ?? 0,
+			);
+		}
 	});
 });

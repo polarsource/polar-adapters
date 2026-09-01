@@ -1,12 +1,13 @@
 import type { CustomerTeamCreate } from "@polar-sh/sdk/models/components/customerteamcreate.js";
 import type { MemberRole } from "@polar-sh/sdk/models/components/memberrole.js";
+import type { Product as PolarProduct } from "@polar-sh/sdk/models/components/product.js";
 import type { User } from "better-auth";
 import type { Member, Organization } from "better-auth/plugins/organization";
 
 export type PolarMemberRole = (typeof MemberRole)[keyof typeof MemberRole];
 export type PolarNonOwnerMemberRole = Exclude<PolarMemberRole, "owner">;
 
-export type BetterAuthOrganizationUser = Pick<User, "id" | "email" | "name">;
+export type BetterAuthOrganizationUser = User & Record<string, unknown>;
 
 export interface BetterAuthRoleMappingInput {
 	/**
@@ -62,6 +63,17 @@ export type PolarOrganizationCustomerCreateParams = Omit<
 	"externalId" | "name" | "owner" | "type"
 >;
 
+export interface SelectSeatProductsForMemberInput {
+	organization: Organization & Record<string, unknown>;
+	member: Member & Record<string, unknown>;
+	user: BetterAuthOrganizationUser;
+	products: PolarProduct[];
+}
+
+export type SelectSeatProductsForMember = (
+	input: SelectSeatProductsForMemberInput,
+) => readonly string[] | Promise<readonly string[]>;
+
 /**
  * Experimental Better Auth organization synchronization options.
  *
@@ -93,4 +105,19 @@ export interface PolarOrganizationOptions {
 	mapBetterAuthRoleToPolarRole?: (
 		data: PolarOrganizationMemberRoleInput,
 	) => PolarNonOwnerMemberRole | Promise<PolarNonOwnerMemberRole>;
+	/**
+	 * Automatically synchronize recurring seat-based subscriptions with the
+	 * Better Auth organization roster.
+	 *
+	 * @default false
+	 */
+	syncSeats?: boolean;
+	/**
+	 * Select the recurring seat-based products assigned to each member when
+	 * `syncSeats` is enabled.
+	 *
+	 * When omitted, every organization member receives every candidate
+	 * recurring seat-based product.
+	 */
+	selectSeatProductsForMember?: SelectSeatProductsForMember;
 }

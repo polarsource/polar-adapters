@@ -6,7 +6,7 @@ import { vi } from "vitest";
 export const createMockPolarClient = (): Polar =>
 	({
 		products: {
-			get: vi.fn(),
+			get: vi.fn().mockResolvedValue({ isRecurring: false, prices: [] }),
 			list: vi.fn(),
 		},
 		checkouts: {
@@ -54,7 +54,23 @@ export const createMockPolarClient = (): Polar =>
 			list: vi.fn(),
 		},
 		subscriptions: {
-			list: vi.fn(),
+			get: vi.fn(),
+			list: vi.fn().mockResolvedValue({
+				result: {
+					items: [],
+					pagination: { totalCount: 0, maxPage: 1 },
+				},
+			}),
+			update: vi.fn(),
+		},
+		customerSeats: {
+			listSeats: vi.fn().mockResolvedValue({
+				seats: [],
+				availableSeats: 0,
+				totalSeats: 0,
+			}),
+			assignSeat: vi.fn(),
+			revokeSeat: vi.fn(),
 		},
 		benefits: {
 			list: vi.fn(),

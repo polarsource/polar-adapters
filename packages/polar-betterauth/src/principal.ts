@@ -24,8 +24,7 @@ export type BillingPrincipal =
 	  };
 
 export interface BillingPrincipalSession {
-	user: Pick<User, "id" | "email" | "name"> &
-		Partial<Pick<AnonymousSession["user"], "isAnonymous">>;
+	user: User & Partial<Pick<AnonymousSession["user"], "isAnonymous">>;
 }
 
 export interface ResolveBillingPrincipalInput {
@@ -64,11 +63,7 @@ const isBillingRole = async (
 			role,
 			roles: parseBetterAuthRoles(role),
 			organizationId,
-			user: {
-				id: user.id,
-				email: user.email,
-				name: user.name,
-			},
+			user,
 		});
 		return polarRole === "billing_manager";
 	}
