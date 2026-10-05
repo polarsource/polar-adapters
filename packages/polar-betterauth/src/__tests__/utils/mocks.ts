@@ -102,6 +102,8 @@ export const createMockUser = (overrides: Partial<User> = {}): User => ({
 
 export const createMockBetterAuthContext = () => ({
 	request: new Request("http://localhost:3000/test"),
+	context: { options: {} },
+	options: {},
 	getPlugin: vi.fn().mockReturnValue({
 		id: "organization",
 		options: { creatorRole: "owner" },
