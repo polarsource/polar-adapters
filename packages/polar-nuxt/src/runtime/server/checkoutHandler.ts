@@ -1,3 +1,4 @@
+import { getClientIpAddress } from "@polar-sh/adapter-utils";
 import { Polar } from "@polar-sh/sdk";
 import { createError, getValidatedQuery, sendRedirect } from "h3";
 import type { H3Event } from "h3";
@@ -10,6 +11,8 @@ export interface CheckoutConfig {
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
+	/** Headers to read the customer IP address from, or `false` to not forward it. */
+	ipAddressHeaders?: string[] | false;
 }
 
 const checkoutQuerySchema = z.object({
@@ -42,6 +45,7 @@ export const Checkout = ({
 	server,
 	theme,
 	includeCheckoutId = true,
+	ipAddressHeaders,
 }: CheckoutConfig) => {
 	return async (event: H3Event) => {
 		const {
@@ -81,7 +85,9 @@ export const Checkout = ({
 					? JSON.parse(customerBillingAddress)
 					: undefined,
 				customerTaxId,
-				customerIpAddress,
+				customerIpAddress:
+					customerIpAddress ??
+					getClientIpAddress(event.headers, ipAddressHeaders),
 				customerMetadata: customerMetadata
 					? JSON.parse(customerMetadata)
 					: undefined,

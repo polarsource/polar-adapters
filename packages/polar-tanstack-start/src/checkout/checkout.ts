@@ -1,3 +1,4 @@
+import { getClientIpAddress } from "@polar-sh/adapter-utils";
 import { Polar } from "@polar-sh/sdk";
 // @ts-expect-error - TODO: fix this
 import type { StartAPIMethodCallback } from "@tanstack/react-start/api";
@@ -9,6 +10,8 @@ export interface CheckoutConfig {
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
+	/** Headers to read the customer IP address from, or `false` to not forward it. */
+	ipAddressHeaders?: string[] | false;
 }
 
 export const Checkout = <TPath extends string = string>({
@@ -18,6 +21,7 @@ export const Checkout = <TPath extends string = string>({
 	server,
 	theme,
 	includeCheckoutId = true,
+	ipAddressHeaders,
 }: CheckoutConfig): StartAPIMethodCallback<TPath> => {
 	const polar = new Polar({
 		accessToken,
@@ -58,7 +62,8 @@ export const Checkout = <TPath extends string = string>({
 					: undefined,
 				customerTaxId: url.searchParams.get("customerTaxId") ?? undefined,
 				customerIpAddress:
-					url.searchParams.get("customerIpAddress") ?? undefined,
+					url.searchParams.get("customerIpAddress") ??
+					getClientIpAddress(request.headers, ipAddressHeaders),
 				customerMetadata: url.searchParams.has("customerMetadata")
 					? JSON.parse(url.searchParams.get("customerMetadata") ?? "{}")
 					: undefined,

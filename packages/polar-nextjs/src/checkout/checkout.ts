@@ -1,3 +1,4 @@
+import { getClientIpAddress } from "@polar-sh/adapter-utils";
 import { Polar } from "@polar-sh/sdk";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -9,6 +10,8 @@ export interface CheckoutConfig {
 	includeCheckoutId?: boolean;
 	server?: "sandbox" | "production";
 	theme?: "light" | "dark";
+	/** Headers to read the customer IP address from, or `false` to not forward it. */
+	ipAddressHeaders?: string[] | false;
 }
 
 export const Checkout = ({
@@ -18,6 +21,7 @@ export const Checkout = ({
 	server,
 	theme,
 	includeCheckoutId = true,
+	ipAddressHeaders,
 }: CheckoutConfig) => {
 	const polar = new Polar({
 		accessToken,
@@ -57,7 +61,8 @@ export const Checkout = ({
 					: undefined,
 				customerTaxId: url.searchParams.get("customerTaxId") ?? undefined,
 				customerIpAddress:
-					url.searchParams.get("customerIpAddress") ?? undefined,
+					url.searchParams.get("customerIpAddress") ??
+					getClientIpAddress(req.headers, ipAddressHeaders),
 				customerMetadata: url.searchParams.has("customerMetadata")
 					? JSON.parse(url.searchParams.get("customerMetadata") ?? "{}")
 					: undefined,

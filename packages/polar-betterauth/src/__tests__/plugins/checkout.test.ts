@@ -516,7 +516,7 @@ describe("checkout plugin", () => {
 			const ctx = {
 				...mockContext,
 				body: { products: ["prod-123"] },
-				context: { logger: { error: vi.fn() } },
+				context: { options: {}, logger: { error: vi.fn() } },
 			};
 
 			await expect(handler(ctx)).rejects.toThrow("Checkout creation failed");
@@ -574,6 +574,43 @@ describe("checkout plugin", () => {
 				expect.objectContaining({
 					products: ["prod-123", "prod-456"],
 				}),
+			);
+		});
+	});
+
+	describe("customer IP address", () => {
+		it.each([
+			[{ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }, {}, "203.0.113.7"],
+			[{ "x-forwarded-for": "unknown" }, {}, undefined],
+			[{}, {}, undefined],
+			[
+				{ "x-forwarded-for": "203.0.113.7", "x-client-ip": "198.51.100.4" },
+				{ ipAddressHeaders: ["x-client-ip"] },
+				"198.51.100.4",
+			],
+			[
+				{ "x-forwarded-for": "203.0.113.7" },
+				{ disableIpTracking: true },
+				undefined,
+			],
+		])("resolves %o with %o to %s", async (headers, ipAddress, expected) => {
+			vi.mocked(getSessionFromCtx).mockResolvedValue({
+				user: { id: "user-123" },
+			});
+			vi.mocked(mockClient.checkouts.create).mockResolvedValue(
+				createMockCheckout(),
+			);
+
+			await checkout()(mockClient).checkout.handler({
+				...mockContext,
+				request: new Request("http://localhost:3000/checkout", { headers }),
+				context: { options: { advanced: { ipAddress } } },
+				body: { products: ["prod-123"] },
+				json: vi.fn(),
+			});
+
+			expect(mockClient.checkouts.create).toHaveBeenCalledWith(
+				expect.objectContaining({ customerIpAddress: expected }),
 			);
 		});
 	});

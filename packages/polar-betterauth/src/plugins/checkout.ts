@@ -1,3 +1,4 @@
+import { getClientIpAddress } from "@polar-sh/adapter-utils";
 import type { Polar } from "@polar-sh/sdk";
 import {
   APIError,
@@ -230,6 +231,7 @@ export const checkout =
             }
           }
 
+          const ipAddressOptions = ctx.context.options.advanced?.ipAddress;
           const successUrl = ctx.body.successUrl ?? checkoutOptions.successUrl;
           const returnUrl = ctx.body.returnUrl ?? checkoutOptions.returnUrl;
 
@@ -251,6 +253,12 @@ export const checkout =
                   }
                 : ctx.body.metadata,
               customFieldData: ctx.body.customFieldData,
+              customerIpAddress: getClientIpAddress(
+                ctx.request?.headers ?? ctx.headers,
+                ipAddressOptions?.disableIpTracking
+                  ? false
+                  : ipAddressOptions?.ipAddressHeaders,
+              ),
               allowDiscountCodes: ctx.body.allowDiscountCodes ?? true,
               discountId: ctx.body.discountId,
               seats,
