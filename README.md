@@ -1,3 +1,17 @@
+> [!IMPORTANT]
+> **This repository is closed and most adapters are deprecated.**
+>
+> We continue to support the following adapters in [our monorepo](https://github.com/polarsource/polar):
+>
+> - Next.js
+> - Nuxt
+> - TanStack Start
+> - Better Auth
+>
+> For more information, see the [adapters documentation](https://polar.sh/docs/integrate/sdk/adapters/introduction).
+>
+> For other frameworks, we now recommend integrating the [Polar SDK](https://polar.sh/docs/integrate/sdk) directly, which your coding agent can set up for you.
+
 # Polar Adapters
 
 This repository hosts a wide array of Polar adapters for your TypeScript framework. Our Adapters are built to make it as easy as possible to integrate Polar in your application.
